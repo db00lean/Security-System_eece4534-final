@@ -34,7 +34,9 @@ the main project branch.
 
 ### Members
 Ben Palmer (leader)
+
 Emma Brodigan
+
 Muhammad Elarbi
 
 ## Computer Vision Team
@@ -47,7 +49,9 @@ Muhammad Elarbi
 
 ### Members
 John Privitera (leader)
+
 Jack Horton
+
 Nicole Johnson
 
 ## System Management Team
