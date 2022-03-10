@@ -83,3 +83,12 @@ Samir Elhelw
 ### Members
 David Boullie (leader)
 
+Tom Doyle
+
+Sam Lambrecht
+
+Joseph Berman
+
+Connor Northway
+
+Matt Downing
