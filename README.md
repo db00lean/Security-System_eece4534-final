@@ -11,7 +11,7 @@ and additionally display all video feeds and bounding boxes via HDMI.
 
 ## Diagram
 
-TODO: Add image of diagram here
+![Top level diagram](media/top_level_diagram.jpg)
 
 ## Project Organization
 
