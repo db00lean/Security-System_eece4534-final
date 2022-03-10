@@ -47,6 +47,8 @@ Muhammad Elarbi
 
 ### Members
 John Privitera (leader)
+Jack Horton
+Nicole Johnson
 
 ## System Management Team
 
