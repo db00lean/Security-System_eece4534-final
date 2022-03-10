@@ -58,12 +58,19 @@ Nicole Johnson
 
 ### Responsibilities
 
-- Overall system info / connection between systems
-- Aggregate all bounding box data from all camera systems and make decision on if someone is
-  in the restricted area
+- Overall system info
+  - connection between systems: acknowleging and enumerating the camera modules
+  - informing each camera module's TX component of any potential instance-specific network config info.
+- Aggregate all bounding box data from all camera systems and make decision on if someone is in the restricted area -> send alert to display subsystem
 
 ### Members
 John Craffey (leader)
+
+Sid Chenrayan
+
+Joshua Erickson
+
+Samir Elhelw
 
 ## HDMI Team
 
