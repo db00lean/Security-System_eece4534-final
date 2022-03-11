@@ -9,6 +9,19 @@ to detect and generate bounding boxes for people in the room, and send all this 
 The base system will aggregate all this data, make a decision on whether there are any people in the forbidden area,
 and additionally display all video feeds and bounding boxes via HDMI.
 
+## High-level 'What'
+(notes from class 3/11)
+
+- self discovering camera modules
+- user determine security zone
+- live feed toggleable
+  - feed auto toggle
+- bounding box for subject
+  - max number of subjects?? 10?
+- what are we detecting? people? objects?
+- HDMI shows text of which camera/camera status, FPS, shapes, RTSP stream
+- 
+
 ## Diagram
 
 ![Top level diagram](media/top_level_diagram.jpg)
