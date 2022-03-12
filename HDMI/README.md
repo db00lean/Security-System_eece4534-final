@@ -11,7 +11,7 @@ and additionally display all video feeds and bounding boxes via HDMI.
 
 ## Diagram
 
-![Top level diagram](media/top_level_diagram.jpg)
+![Top level diagram](../media/top_level_diagram.jpg)
 
 
 ## HDMI Team
