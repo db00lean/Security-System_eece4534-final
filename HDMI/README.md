@@ -23,14 +23,19 @@ and additionally display all video feeds and bounding boxes via HDMI.
 - Render bounding boxes and camera streams on HDMI
 
 ### Members
-David Boullie (leader)
+
+*Sub team: Rendering*  
+David Boullie (leader) - focused on GUI layout design and placement of various elements on display. Additionally, supporting switching to different views.
+
+Sam Lambrecht - focused on displaying frames from camera stream.
+
+Matt Downing - focused on bounding box drawing and text drawing. Text includes alerts and camera status.
+
+*Sub team: HDMI Driver*  
+Joseph Berman
 
 Tom Doyle
 
-Sam Lambrecht
-
-Joseph Berman
+*Sub team: Stream Tx/Rx*  
 
 Connor Northway
-
-Matt Downing
