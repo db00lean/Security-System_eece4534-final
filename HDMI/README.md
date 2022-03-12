@@ -1,26 +1,56 @@
 # HDMI
 
-## Project Description
-
-We will build a security system which will detect if any person is within a restricted area within a room.
-The overall system will consist of one base station and two or more camera systems. Each camera system will
-interface with a camera that is monitoring a room from different angles, use a computer vision library/algorithm
-to detect and generate bounding boxes for people in the room, and send all this information to the base system.
-The base system will aggregate all this data, make a decision on whether there are any people in the forbidden area,
-and additionally display all video feeds and bounding boxes via HDMI.
-
 ## Diagram
 
 ![Top level diagram](../media/top_level_diagram.jpg)
-
-
-## HDMI Team
 
 ### Responsibilities
 
 - Receive video stream via RTSP/UDP
 - Receive bounding box data
 - Render bounding boxes and camera streams on HDMI
+
+# Sub Modules Descriptions
+**Stream Tx (Camera/HDMI)**  
+⁃ Inputs:  
+  ⁃ Formatted images from Camera Driver  
+  ⁃ Network information from Device Management  
+⁃ Outputs:  
+  ⁃ Packaged stream sent over network to Stream Rx  
+⁃ Functions:  
+  ⁃ Establishes network connection using information from Device Management  
+  ⁃ Converts received images into buffer to be sent over network to Stream Rx  
+
+**Stream Rx (Camera/HDMI)**  
+⁃ Inputs:  
+  ⁃ Packaged stream sent over network from Stream Tx  
+  ⁃ Network information from Device Management  
+⁃ Outputs:  
+  ⁃ Formatted images for Rendering  
+⁃ Functions:  
+  ⁃ Establishes network connection using information from Device Management  
+  ⁃ Receives stream over network and converts to formatted images for Rendering  
+
+**Rendering (HDMI)**  
+⁃ Inputs:  
+  ⁃ Formatted images from Stream Rx  
+  ⁃ Unpacked metadata from Metadata Rx  
+  ⁃ Detection information from Zone Detection  
+⁃ Outputs:  
+  ⁃ Formatted images for HDMI Driver  
+⁃ Functions  
+  ⁃ Compiles received data from all cameras (stream and metadata) and displays it in a GUI  
+  ⁃ Displays detection determination also in GUI  
+  ⁃ Sends GUI images to HDMI Driver  
+
+**HDMI Driver (HDMI)**  
+⁃ Inputs:  
+  ⁃ Formatted images from Rendering  
+⁃ Outputs:  
+  ⁃ Formatted images to HDMI image buffer  
+⁃ Functions:  
+  ⁃ Converts received images from Rendering into format for the HDMI image buffer  
+  ⁃ Pushes buffer to HDMI display  
 
 ### Members
 
