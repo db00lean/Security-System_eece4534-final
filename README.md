@@ -33,6 +33,7 @@ This is the main repo for the entire project. Each team has its own branch:
 - cv/master
 - sysman/master
 - hdmi/master
+
 Each team can make additional branches as necessary for each feature, e.g. camera/stream_tx. As we work on the project,
 we will make pull requests into the main team branch. For full integration, all team main branches will be merged into
 the main project branch.
