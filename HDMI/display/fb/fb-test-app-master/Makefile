@@ -2,8 +2,8 @@ VERSION = 1
 PATCHLEVEL = 0
 SUBLEVEL = 0
 
-TARGET:=initial-test
-SRCS:=initial-test.c
+TARGET:=boundingbox
+SRCS:=boundingbox.c
 OBJS:=$(SRCS:.c=.o)
 
 
@@ -23,6 +23,8 @@ all: $(PROGS)
 .c.o: common.h font.h
 
 fb-test: fb-test.o common.o font_8x8.c
+
+boundingbox: boundingbox.o drawpixel.h common.o font_8x8.c
 
 clean:
 	rm -rf $(OBJS) $(TARGET)
