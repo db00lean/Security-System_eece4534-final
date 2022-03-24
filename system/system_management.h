@@ -1,8 +1,10 @@
 // definitions commonly used in system management code
 // John Craffey
+
 #ifndef SYSTEM_MANAGEMENT_H
 #define SYSTEM_MANAGEMENT_H
 
+#include<stdio.h>
 #define MAX_NUM_CAMERAS 8
 #define MAX_NUM_PEOPLE 64
 
@@ -29,4 +31,25 @@ struct system_status {
 struct system_status securitySystem = {
     .numberOfCameras = 0,
 };
+
+// dump all data for the system
+void barf(){
+    printf("\nSystem info:\n");
+    printf("number of cameras: %d\n", securitySystem.numberOfCameras);
+    printf("\n");
+
+    for(int ii = 0; ii < securitySystem.numberOfCameras; ii++){
+        printf("camera %d\n", ii);
+        printf("sysManPortNumber: %d\n", securitySystem.cameras[ii].sysManPortNumber);
+        printf("metaPortNumber: %d\n", securitySystem.cameras[ii].metaPortNumber);
+        printf("streamPortNumber: %d\n", securitySystem.cameras[ii].streamPortNumber);
+
+        printf("status: %d\n", securitySystem.cameras[ii].status);
+        printf("detection: %d\n", securitySystem.cameras[ii].detection);
+        printf("not printing coordinates till we determine the structure: \n");
+
+        printf("\n");
+    }
+}
+
 #endif

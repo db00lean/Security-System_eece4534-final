@@ -19,6 +19,8 @@ int initialize_camera(int cameraNumber) {
     securitySystem.cameras[cameraNumber].metaPortNumber = ports[cameraNumber];
     securitySystem.cameras[cameraNumber].streamPortNumber = ports[cameraNumber];
 
+    securitySystem.cameras[cameraNumber].status = 1;
+
     return 0;
 }
 
@@ -36,8 +38,10 @@ int main(int argc, char **argv) {
 
     // get metadata and send to data agregator
     // TODO implement something like metadata = getData(securitySystem.cameras[cameraNumber].metaPortNumber);
+    // TODO use CV teams data structure for the metadata
+    // TODO talk to joshua about what the interface would be for something like aggregate_detect(metadata)
     
-
+    barf();
 
     // cleanup
     free(securitySystem.cameras);
