@@ -27,7 +27,7 @@ fb-test: fb-test.o common.o font_8x8.c
 boundingbox: boundingbox.o drawpixel.h common.o font_8x8.c
 
 clean:
-	rm -rf $(OBJS) $(TARGET)
+	rm -rf $(OBJS) $(TARGET) *.o fb-test
 
 
 
