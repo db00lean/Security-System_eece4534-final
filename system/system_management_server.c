@@ -15,6 +15,7 @@ int initialize_camera(int cameraNumber) {
     // TODO ports need to be calculated via some networking code
     int ports[2] = {123, 456};
 
+    securitySystem.cameras[cameraNumber].cameraNumber = cameraNumber;
     securitySystem.cameras[cameraNumber].sysManPortNumber = ports[cameraNumber];
     securitySystem.cameras[cameraNumber].metaPortNumber = ports[cameraNumber];
     securitySystem.cameras[cameraNumber].streamPortNumber = ports[cameraNumber];
@@ -29,19 +30,35 @@ int main(int argc, char **argv) {
     // init the cameras
     // find out how many cams
     enumerate_cameras();
-    // allocate memory for cams
+    // dynamically allocate memory for cams depending on how many we have
     securitySystem.cameras = malloc(securitySystem.numberOfCameras * sizeof(camera_module));
     // init each camera
     for (int ii = 0; ii < securitySystem.numberOfCameras; ii++) {
         initialize_camera(ii);
     }
+    // print for debug
+    print_system_info();
 
     // get metadata and send to data agregator
     // TODO implement something like metadata = getData(securitySystem.cameras[cameraNumber].metaPortNumber);
     // TODO use CV teams data structure for the metadata
-    // TODO talk to joshua about what the interface would be for something like aggregate_detect(metadata)
-    
-    barf();
+    // this is a dummy struct for testing
+    struct cv_data metadata = {
+        .num_bbox = 2,
+        .t = 1020,
+        .box_data[0].x_coord = 5,
+        .box_data[0].y_coord = 5,
+        .box_data[0].x_len = 10,
+        .box_data[0].y_len = 10,
+        .box_data[1].x_coord = 5,
+        .box_data[1].y_coord = 5,
+        .box_data[1].x_len = 10,
+        .box_data[1].y_len = 10,
+    };
+    securitySystem.cameras[0].cvMetadata = metadata;
+
+    // TODO talk to joshua about what the interface would be for something like 
+    aggregate_detect(securitySystem.cameras[0]);
 
     // cleanup
     free(securitySystem.cameras);
