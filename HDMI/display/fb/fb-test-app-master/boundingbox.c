@@ -53,8 +53,8 @@ int main() {
 
     int x_start = 100;
     int y_start = 100;
-    int x_len = 10000;
-    int y_len = 1000;
+    int x_len = 100;
+    int y_len = 100;
 
 /*    //read values x_start, y_start and x_len and y_len from sysfs
     FILE *fp = fopen("/sys/class/axitimer/axitimer0/control/state", "r");
@@ -79,6 +79,8 @@ int main() {
     fclose(fp);
 */
     //draw bounding box
+    fb_open(0, &fb_info);
+
     draw_boundingbox(x_start, y_start, x_len, y_len);
 
 
