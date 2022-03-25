@@ -47,3 +47,7 @@ Muhammad Elarbi will focus on providing the video/image data to the computer vis
 task likely has too many unknowns to make progress, so he will also help with the other tasks / research to understand and
 document the entire pipeline of the video stream.
 
+
+# Instructions for putting Zedboard into USB host mode
+Place the system.dtb file in the `/boot` directory of the Zedboard. Once you reboot, the USB host should be enabled.
+
