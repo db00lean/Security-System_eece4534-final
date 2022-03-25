@@ -1,10 +1,7 @@
-/* 
-Matthew Downing
-Inch Pebble 1
-
-uses drawpixel library to create a rectangle given user input
+/*
+This file can draw a bounding box for a given x,y start and x,y length
+Writes box pixels to frame buffer /dev/fb0
 */
-
 #include <stdio.h>
 #include <linux/fb.h>
 #include <stdint.h>
@@ -13,8 +10,6 @@ uses drawpixel library to create a rectangle given user input
 #include <sys/mman.h>
 
 #include <fcntl.h>
-
-//#include "drawpixel.h"
 
 //static struct fb_info fb_info;
 static struct fb_var_screeninfo var_screeninfo;
@@ -31,8 +26,6 @@ void fb_open(){
     }
 	ioctl(fd, FBIOGET_VSCREENINFO, &var_screeninfo);
 	ioctl(fd, FBIOGET_FSCREENINFO, &fix_screeninfo);
-
-    
     
     fbMemPtr = mmap(0,
 			var_screeninfo.yres_virtual * fix_screeninfo.line_length,
