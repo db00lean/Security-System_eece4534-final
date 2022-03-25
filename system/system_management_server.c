@@ -40,8 +40,6 @@ int main(int argc, char **argv) {
     print_system_info();
 
     // get metadata and send to data agregator
-    // TODO implement something like metadata = getData(securitySystem.cameras[cameraNumber].metaPortNumber);
-    // TODO use CV teams data structure for the metadata
     // this is a dummy struct for testing
     struct cv_data metadata = {
         .num_bbox = 2,
@@ -56,6 +54,15 @@ int main(int argc, char **argv) {
         .box_data[1].y_len = 10,
     };
     securitySystem.cameras[0].cvMetadata = metadata;
+    // TODO implement something like metadata = getData(securitySystem.cameras[cameraNumber].metaPortNumber);
+    // TODO use CV teams data structure for the metadata
+    /*
+    struct packet_struct packet = receive();
+    int type = packet.type;
+    if (type == CV_DATA) {
+        securitySystem.cameras[0].cvMetadata = packet.payload;
+    }
+    */
 
     // TODO talk to joshua about what the interface would be for something like 
     aggregate_detect(securitySystem.cameras[0]);
