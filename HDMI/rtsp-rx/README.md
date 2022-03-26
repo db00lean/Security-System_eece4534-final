@@ -25,3 +25,17 @@ Open it with your favorite image viewer, but it's just a gradient.
 
 ### gstreamer:
 Unimplemented. Libraries link, but no gstreamer calls yet.
+likely difficult, very powerful
+
+### ffmpeg:
+may be easier. has a C library / api too but check this out:
+`ffmpeg -y -rtsp_transport tcp -i rtsp://rtsp.stream/pattern -frames:v 1 out.ppm`
+proof that we can do what we want with it, as long as I can understand the API
+can even do rescaling stuff if we really need using ffmpeg
+
+thank you dave@rtsp.stream !
+
+(though, this has a REALLY slow startup time. would assume it's faster if
+you're persistently connected and just grabbing new frames)
+
+easy RX with `ffplay rtsp://rtsp.stream/pattern`, at least on linux
