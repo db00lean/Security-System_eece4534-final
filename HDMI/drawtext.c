@@ -25,25 +25,25 @@ static struct fb_var_screeninfo var_screeninfo;
 static struct fb_fix_screeninfo fix_screeninfo;
 
 
-static void fb_put_string(int x, int y, char *s, unsigned int maxlen, unsigned int color);
-static void fb_clear_string(int x, int y, int charsToClear);
-static void fb_put_char(int x, int y, char c, unsigned int color);
-static void fb_clear_area(int x, int y, int w, int h);
+static void draw_string(int x, int y, char *s, unsigned int maxlen, unsigned int color);
+static void clear_string(int x, int y, int charsToClear);
+static void draw_char(int x, int y, char c, unsigned int color);
+static void clear_area(int x, int y, int w, int h);
 
 void draw_text(int xPos, int yPos, char* str, unsigned int color)
 {
-    fb_put_string(xPos, yPos, str, strlen(str), color);
+    draw_string(xPos, yPos, str, strlen(str), color);
 }
 
 void clear_text(int xPos, int yPos, int charsToClear)
 {
-    fb_clear_string(xPos, yPos, charsToClear);
+    clear_string(xPos, yPos, charsToClear);
 }
 
 void clear_and_draw_text(int xPos, int yPos, char* str, unsigned int color)
 {
-    fb_clear_string(xPos, yPos, strlen(str));
-    fb_put_string(xPos, yPos, str, strlen(str), color);
+    clear_string(xPos, yPos, strlen(str));
+    draw_string(xPos, yPos, str, strlen(str), color);
 }
 
 
@@ -66,66 +66,77 @@ void fb_open_test(){
 
 }
 
-static void fb_put_string(int x, int y, char *s, unsigned int maxlen, unsigned int color)
+static void draw_string(int x, int y, char *s, unsigned int len, u_int32_t color)
 {
 	int i;
-	int w = 0;
 
-	for (i = 0; i < strlen(s) && i < maxlen; i++) {
-		fb_put_char((x + 8 * i), y, s[i], color);
-		w += 8;
+	// for each char in string
+	for (i = 0; i < len; i++) {
+
+		// draw it (x + 8 * i term is necessary since each char is 8 pixels wide, so rather than moving over 1 pixel for next char, move over 8 pixels)
+		draw_char((x + 8 * i), y, s[i], color);
 	}
-
-    // maybe return this for error checking if we want to validate how many pixels wide the entire write was
-	// return w;
 }
 
-static void fb_clear_string(int x, int y, int charsToClear)
+static void clear_string(int x, int y, int charsToClear)
 {
-    fb_clear_area(x, y, charsToClear * 8, 8);
+    clear_area(x, y, charsToClear * 8, 8);
 }
 
-static void fb_put_char(int x, int y, char c, unsigned int color)
+static void draw_char(int x, int y, char c, u_int32_t color)
 {
-	int i, j, bits, loc;
-	unsigned short *p16;
-	unsigned int *p32;
+	int i, j, bits, pixelLocation;
+	unsigned int *pPixel;
 
-	for (i = 0; i < 8; i++) {
+	// each char is 8 pixels tall
+	for (i = 0; i < 8; i++) 
+	{
+		// gets each horizontal "line" from the 8x8 pixel grid that makes up each character and iterates through it to write each pixel in the line
 		bits = fontdata_8x8[8 * c + i];
-		for (j = 0; j < 8; j++) {
-			loc = (x + j + var_screeninfo.xoffset) * (var_screeninfo.bits_per_pixel / 8)
-				+ (y + i + var_screeninfo.yoffset) * fix_screeninfo.line_length;
-			if (loc >= 0 && loc < fix_screeninfo.smem_len &&
-					((bits >> (7 - j)) & 1)) {
-				switch (var_screeninfo.bits_per_pixel) {
-				case 16:
-                    // replace this with a general call to draw_pixel once we decide how to generalize it
-					p16 = fbMemPtr + loc;
-					*p16 = color;
-					break;
-				case 24: // not sure why 24bpp is not supported, perhaps more reseach necessary
-				case 32:
-                    // replace this with a general call to draw_pixel once we decide how to generalize it
-					p32 = fbMemPtr + loc;
-					*p32 = color;
-					break;
-				}
+
+		// each char is 8 pixels wide
+		for (j = 0; j < 8; j++) 
+		{
+			// first term (x + j ...) aligns pixel to write to the correct x location
+			// second term (y + i ...) aligns pixel to write to the correct y location
+			// assume we are getting 32 bits per pixel from var_screeninfo, if different it will be caught later
+			pixelLocation = (x + j + var_screeninfo.xoffset) * (var_screeninfo.bits_per_pixel / 8)
+						  + (y + i + var_screeninfo.yoffset) * fix_screeninfo.line_length;
+
+			// first check is to make sure location isn't negative (make sure it's within the lower bound of framebuffer memory)
+			// second check makes sure the location is within the upper bound of the framebuffer memory
+			// third check (bitshift) determines if pixel is a 1 in font chart (i.e., is the current pixel part of the char drawing)
+			if (pixelLocation >= 0 && pixelLocation < fix_screeninfo.smem_len && ((bits >> (7 - j)) & 1) && var_screeninfo.bits_per_pixel == 32) 
+			{	
+				// replace this with a general call to draw_pixel once we decide how to generalize it
+				// also assume we use 32 bits per pixel, can be changed later
+				pPixel = fbMemPtr + pixelLocation;
+				*pPixel = color;
+			}
+			// simple check incase we run into situation where we have a different than expected bits per pixel for a monitor
+			else if (var_screeninfo.bits_per_pixel != 32)
+			{
+				printf("Invalid bits per pixel, should be 32, was %d\n", var_screeninfo.bits_per_pixel);
 			}
 		}
 	}
 }
 
-static void fb_clear_area(int x, int y, int w, int h)
+static void clear_area(int x, int y, int w, int h)
 {
-	int i = 0;
-	int loc;
-	char *fbuffer = (char *)fbMemPtr;
+	int i;
+	int pixelLocation;
+	char *fbBuffer = (char *)fbMemPtr;
 
+	// to clear a known rectangular space, go to each row in height h and do a blanket write of width w
 	for (i = 0; i < h; i++) {
-		loc = (x + var_screeninfo.xoffset) * (var_screeninfo.bits_per_pixel / 8)
-			+ (y + i + var_screeninfo.yoffset) * fix_screeninfo.line_length;
-		memset(fbuffer + loc, 0, w * var_screeninfo.bits_per_pixel / 8);
+
+		// like draw_char, first term determines x location of row to right, second determines y location
+		pixelLocation = (x + var_screeninfo.xoffset) * (var_screeninfo.bits_per_pixel / 8)
+					  + (y + i + var_screeninfo.yoffset) * fix_screeninfo.line_length;
+
+		// writes value of 0 (black) to row of framebuffer
+		memset(fbBuffer + pixelLocation, 0, w * var_screeninfo.bits_per_pixel / 8);
 	}
 }
 
@@ -143,7 +154,7 @@ int main(void)
     clear_text(strX, strY, 5);
     draw_text(strX, strY, testTextString, 0xFFFFFF);
 
-    // perform same thing as above with single call and change locations slightly
+    // perform same thing as above with single call but in different location
     clear_and_draw_text(strX, strY + 10, testTextString, 0xFFFFFF);
 
     return 0;
