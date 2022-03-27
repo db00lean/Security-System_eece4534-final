@@ -1,5 +1,12 @@
 # System Management
 
+## Zone Detection:
+Zone detection can be performed by including the header file `aggregate_detect.h` in the c file. 
+
+Call aggregate_detect to update the detection status for a specified camera:
+
+Signature: `void aggregate_detect(struct camera_module cam);`
+
 ## High level functions to the system as a whole
 
 - self discovery of camera modules over the network
