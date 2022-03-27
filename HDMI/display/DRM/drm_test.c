@@ -19,6 +19,7 @@ drmModeRes *res;
 drmModeConnector *conn;
 drmModeModeInfo *mode;
 drmModeEncoder *encode;
+drmModeCrtc *crtc;
 
 
 int drm_open();
@@ -133,7 +134,7 @@ int main(){
     memset(map, 0, crereq.size);
 
 
-    //drmModeSetCrtc(fd, encode->crtc_id, fb, 0,0, &conn->connector_id, 1, mode);
+    
 
     printf("size %d\n", crereq.size);
 
@@ -146,15 +147,21 @@ int main(){
    int i;
    for(i = 0; i < 1000000; i++){
 
-       ((uint32_t *) map)[i] = colors[rand()%3];
+       ((uint32_t *) map)[i] = colors[2];
    }
 
 
+    
+    drmSetMaster(fd);
+
+    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0, NULL, 0, NULL);
+
+    drmModeSetCrtc(fd, crtc->crtc_id, fb, 0,0, &conn->connector_id, 1, mode);
+
+    drmDropMaster(fd);
 
 
-
-
-
+    getchar();
 
     drm_close();
 
@@ -184,6 +191,8 @@ int drm_init(int fd){
         printf("error with encoder and connector IDs");
         return -1;
     }
+
+    crtc = drmModeGetCrtc(fd, encode->crtc_id);
 
 
     mode = conn->modes;
