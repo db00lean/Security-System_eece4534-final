@@ -145,9 +145,23 @@ int main(){
 	uint32_t const colors[] = {red, green, blue};
 
    int i;
-   for(i = 0; i < 1000000; i++){
+   int count = 0;
+   float resolution = mode->vdisplay * mode->hdisplay;
+   for(i = 0; i < (int)resolution; i++){
 
-       ((uint32_t *) map)[i] = colors[2];
+
+       if(count < (resolution /3)){
+        ((uint32_t *) map)[i] = colors[0];
+       }
+
+       else if( count <  ((resolution * 2.0/3.0))){
+       ((uint32_t *) map)[i] = colors[1];
+       }
+       else{
+           ((uint32_t *) map)[i] = colors[2];
+       }
+
+       count = count + 1;
    }
 
 
