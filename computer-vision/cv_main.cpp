@@ -1,15 +1,52 @@
 #include "cv_main.h"
 #include <iostream>
+#include "file.h"
+#include "stdio.h"
+
 // TODO: Rename "cv_main.cpp" and "cv_main.h" later on
 // TODO: Update Makefile with the new name
 // TODO: Remove <iostream> after cout testing is done
 
+// Arbitrary value for now
+#define MAX_IMAGE_SIZE 1000
+
+// TODO: Read from buffer created by Camera team instead of this one
+// image buffer to read from
+char image_buffer[MAX_IMAGE_SIZE];
+
+// Loads an image into the image buffer
 int ImportFrame()
 {
   // TODO: Implement ImportFrame()
   std::cout << "Importing frame\n";
 
+  // Frames will be read from a buffer created by the Camera team.
+  // Since this hasn't been implemented yet, it is simulated here
+  // by opening an image and loading it into a buffer.
+  FILE * fp = 0;
+  fp = fopen("people.jpg", "rb");
+
+  if(fp ==- NULL)
+  {
+    printf("Error opening file\n");
+    return -1;
+  }
+
+  // determine file size
+  fseek(fp, 0, SEEK_END);
+  long int size = ftell(fp);
+
+  if(size > MAX_IMAGE_SIZE)
+  {
+    size = MAX_IMAGE_SIZE;
+  }
+
+  //load image into a buffer
+  fseek(fp, 0, SEEK_SET);
+  fread(&image_buffer, sizeof(uint8_t), size, fp);
+
   // TODO: Add error Handling
+  fclose(fp);
   return 0;
 }
 
@@ -33,6 +70,14 @@ int TransmitStruct(cv_data data_to_send)
 
 int main()
 {
+  int err = 0;
+  err = ImportFrame();
+
+  if(err < 0)
+  {
+    return -1;
+  }
+
   struct cv_data cv_data_current;
   struct coordinate_data box1;
   struct coordinate_data box2;
