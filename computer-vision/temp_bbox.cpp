@@ -53,19 +53,53 @@ cv_data MakeBBoxes(cv::Mat image)
     hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
     int err = 0; // For error handling: use later
     std::vector<cv::Rect> bboxes;
-    // std::vector<int> num_detections;
+    std::vector<double> found_weights; // Accuracy of model -- for internal use for the moment
 
     // Uncalibrated, unscaled hog (Histogram of Oriented Gradients) --> Probably too expensive currently; TODO: REDUCE
-    // detectMultiScale(image, objects, numDetections, scaleFactor, minNeighbors, flags, minSize, maxSize)
-    // detectMultiScale(InputArray, vector<Rect>&, vector<int>&, double, int, int, Size, Size)
-    // hog.detectMultiScale(image, bboxes, num_detections, 1.0, 3, 0, cv::Size(12, 12), cv::Size(96, 96));
-    hog.detectMultiScale(image, bboxes, 1.0, 3, 0, cv::Size(8, 8), cv::Size(64, 64));
+    hog.detectMultiScale(image, bboxes, found_weights, 0.0, cv::Size(8, 8), cv::Size(16, 16), 1.05, 2.0, false);
+    /*
+    detectMultiScale(InputArray img,
+                    std::vector< Rect > & foundLocations,
+                    std::vector< double > & 	foundWeights,
+                    double 	hitThreshold = 0,
+                    Size 	winStride = Size(),
+                    Size 	padding = Size(),
+                    double 	scale = 1.05,
+                    double 	groupThreshold = 2.0,
+                    bool 	useMeanshiftGrouping = false
+                    )		const
+    */
 
     // TODO: Add error Handling
     if (err < 0)
     {
         std::cout << "Unable to generate bounding boxes\n";
     }
+
+    int num_box = 0;
+    for (auto &element : bboxes)
+    {
+        // std::cout << "box " << num_box;
+        // std::cout << "x = " << element.x << " ";
+        // std::cout << "y = " << element.y << " ";
+        // std::cout << "width = " << element.width << " ";
+        // std::cout << "height = " << element.height << "\n";
+
+        cv_data_output.box_data[num_box].x_coord = element.x;
+        cv_data_output.box_data[num_box].y_coord = element.y;
+        cv_data_output.box_data[num_box].x_len = element.width;
+        cv_data_output.box_data[num_box].y_len = element.height;
+
+        num_box++;
+
+        cv_data_output.num_bbox = num_box;
+        if (num_box >= MAX_B_BOXES)
+        {
+            std::cout << "More people detected than MAX_B_BOXES limit\n";
+            break;
+        }
+    }
+
     return cv_data_output;
 }
 
@@ -81,8 +115,8 @@ int SendStruct(cv_data data_to_send)
 int main()
 {
     struct cv_data cv_data_current;
-    struct coordinate_data box1; // Not used
-    struct coordinate_data box2; // Not used
+    // struct coordinate_data box1; // Not used
+    // struct coordinate_data box2; // Not used
     cv::Mat image;
     int err = 0;
     image = LoadImage();
@@ -98,20 +132,29 @@ int main()
 
     // box1/box2 are not used currently
     // Set box 1
-    box1.x_coord = 15;  // x coordinate
-    box1.y_coord = 100; // y coordinate
-    box1.x_len = 20;    // x length
-    box1.y_len = 50;    // y length
-    // Set box 2
-    box2.x_coord = 15;  // x coordinate
-    box2.y_coord = 100; // y coordinate
-    box2.x_len = 20;    // x length
-    box2.y_len = 50;    // y length
+    // box1.x_coord = 15;  // x coordinate
+    // box1.y_coord = 100; // y coordinate
+    // box1.x_len = 20;    // x length
+    // box1.y_len = 50;    // y length
+    // // Set box 2
+    // box2.x_coord = 15;  // x coordinate
+    // box2.y_coord = 100; // y coordinate
+    // box2.x_len = 20;    // x length
+    // box2.y_len = 50;    // y length
 
-    cv_data_current.num_bbox = 2;
-    cv_data_current.box_data[0] = box1;
-    cv_data_current.box_data[1] = box2;
+    // cv_data_current.num_bbox = 2;
+    // cv_data_current.box_data[0] = box1;
+    // cv_data_current.box_data[1] = box2;
 
-    std::cout << cv_data_current.box_data[0].x_coord << std::endl;
+    for (int i = 0; i < cv_data_current.num_bbox; i++)
+    {
+        std::cout << "box " << i;
+        std::cout << "x = " << cv_data_current.box_data[i].x_coord << "    ";
+        std::cout << "y = " << cv_data_current.box_data[i].y_coord << "    ";
+        std::cout << "x_len = " << cv_data_current.box_data[i].x_len << "    ";
+        std::cout << "y_len = " << cv_data_current.box_data[i].y_len << "\n";
+    }
+
+    // std::cout << cv_data_current.box_data[0].x_coord << std::endl;
     return 0;
 }
