@@ -1,11 +1,11 @@
 #include "cv_main.h"
 #include <iostream>
-#include "file.h"
+#include "file.h" // TODO: Port to C++ (file.h is a C library/doesn't compile with C++)
 #include "stdio.h"
 
 // TODO: Rename "cv_main.cpp" and "cv_main.h" later on
 // TODO: Update Makefile with the new name
-// TODO: Remove <iostream> after cout testing is done
+// TODO: Remove <iostream> and "stdio.h" after cout testing is done
 
 // Arbitrary value for now
 #define MAX_IMAGE_SIZE 1000
@@ -15,6 +15,7 @@
 char image_buffer[MAX_IMAGE_SIZE];
 
 // Loads an image into the image buffer
+// TODO: Convert ImportFrame() to C++
 int ImportFrame()
 {
   // TODO: Implement ImportFrame()
@@ -23,10 +24,10 @@ int ImportFrame()
   // Frames will be read from a buffer created by the Camera team.
   // Since this hasn't been implemented yet, it is simulated here
   // by opening an image and loading it into a buffer.
-  FILE * fp = 0;
+  FILE *fp = 0;
   fp = fopen("people.jpg", "rb");
 
-  if(fp == NULL)
+  if (fp == NULL)
   {
     printf("Error opening file\n");
     return -1;
@@ -36,12 +37,12 @@ int ImportFrame()
   fseek(fp, 0, SEEK_END);
   long int size = ftell(fp);
 
-  if(size > MAX_IMAGE_SIZE)
+  if (size > MAX_IMAGE_SIZE)
   {
     size = MAX_IMAGE_SIZE;
   }
 
-  //load image into a buffer
+  // load image into a buffer
   fseek(fp, 0, SEEK_SET);
   fread(&image_buffer, sizeof(uint8_t), size, fp);
 
@@ -73,7 +74,7 @@ int main()
   int err = 0;
   err = ImportFrame();
 
-  if(err < 0)
+  if (err < 0)
   {
     return -1;
   }
