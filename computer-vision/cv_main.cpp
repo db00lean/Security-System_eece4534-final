@@ -26,7 +26,7 @@ int ImportFrame()
   FILE * fp = 0;
   fp = fopen("people.jpg", "rb");
 
-  if(fp ==- NULL)
+  if(fp == NULL)
   {
     printf("Error opening file\n");
     return -1;
