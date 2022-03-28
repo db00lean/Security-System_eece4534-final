@@ -47,7 +47,9 @@ cd ~
 Step 6:
 ```
 pkg-config --modversion opencv
+```
 IF PACKAGE NOT FOUND:
+```
 apt-file search opencv.pc
 ls /usr/local/lib/pkgconfig/
 sudo cp /usr/local/lib/pkgconfig/opencv4.pc  /usr/lib/x86_64-linux-gnu/pkgconfig/opencv.pc
