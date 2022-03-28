@@ -1,5 +1,42 @@
 # Computer Vision
 
+### Responsibilities
+- Retrieve images from camera driver via IPC
+- Process images, detect humans using CV and generate coordinates for boxes around them
+- Transmit coordinates of all bounding boxes to base station via TCP
+
+### Componenets
+*Image Processing*
+- Generate bounding boxes around people/objects detected on each camera
+- Receives images from the Camera
+- Sends images to the Metadata TX component
+
+*Metadata TX*
+- Transmit bounding box metadata from camera to base station
+
+*Metadata RX*
+- Receive bounding box metadata from cameras on the base station
+
+### Inputs
+- Images from camera
+
+### Outputs
+- Coordinates of bounding boxes of detected people/objects
+
+### Members
+John Privitera (leader) - Initial focus on bounding boxes
+
+Jack Horton - Initial focus on base station's metadata receiver
+
+Nicole Johnson - Initial focus on camera's metadata transmitter
+
+### Usage Examples:
+
+```
+export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig/
+g++ test.cpp -o testoutput `pkg-config --cflags --libs opencv`
+```
+
 ### Dependencies and Installation
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -75,32 +112,4 @@ mv opencv4/opencv2/ opencv2
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Steps taken from: http://techawarey.com/programming/install-opencv-c-c-in-ubuntu-18-04-lts-step-by-step-guide/#:~:text=Install%20OpenCV%20C%20C%2B%2B%20in%20Ubuntu%2018.04%20LTS,opencv%201%20%24%20pkg-config%20--modversion%20opencv.%20More%20items
 
-### Responsibilities
-- Retrieve images from camera driver via IPC
-- Process images, detect humans using CV and generate coordinates for boxes around them
-- Transmit coordinates of all bounding boxes to base station via TCP
 
-### Componenets
-*Image Processing*
-- Generate bounding boxes around people/objects detected on each camera
-- Receives images from the Camera
-- Sends images to the Metadata TX component
-
-*Metadata TX*
-- Transmit bounding box metadata from camera to base station
-
-*Metadata RX*
-- Receive bounding box metadata from cameras on the base station
-
-### Inputs
-- Images from camera
-
-### Outputs
-- Coordinates of bounding boxes of detected people/objects
-
-### Members
-John Privitera (leader) - Initial focus on bounding boxes
-
-Jack Horton - Initial focus on base station's metadata receiver
-
-Nicole Johnson - Initial focus on camera's metadata transmitter
