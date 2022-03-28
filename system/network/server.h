@@ -8,14 +8,14 @@
 #define SERVER_H
 
 // Structure containing the information for server connection
-struct 0mq_server {
+struct server {
     void* context;
     void* responder;
     uint32_t port;
-}
+} server;
 
-// Initializes a new 0mq_server connection 
-0mq_server new_server(uint32_t port);
+// Initializes a new server connection 
+server new_server(const char* port);
 
 // Recieves a new request from client connections
-int receive(0mq_server conn);
+int receive(server conn);

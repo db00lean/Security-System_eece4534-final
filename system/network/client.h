@@ -8,14 +8,14 @@
 #define CLIENT_H
 
 // Structure containing the information for 0mq client connection
-struct 0mq_client {
+struct client {
     void* context;
     void* requester;
-    uint32_t port;
-}
+    char port;
+} client;
 
 // Initializes and returns a new client connection
-0mq_client new_client(uint32_t port);
+client new_client(const char* server_port, const char* server_address);
 
 // Sends a new request to the previously initialized 0mq client
-int send(0mq_client conn);
+int send(void* requester, char* buff, uint32_t len);
