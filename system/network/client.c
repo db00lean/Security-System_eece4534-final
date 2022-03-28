@@ -1,4 +1,4 @@
-#include <client.h>
+#include "client.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -6,20 +6,20 @@
 #include <zmq.h>
 
 // Initializes and returns a new client connection
-client new_client(const char* server_port, const char* server_address)
+struct client new_client(const char* server_port, const char* server_address)
 {
     int err;
-    client c;
-    char bind_addr = "tcp://"
-    char semi = ":";
+    struct client c;
+    char* bind_addr = "tcp://";
+    char* semi = ":";
     // Initialize the context and the requester socket
     void* context = zmq_ctx_new();
-    void* requester = zmq_socket(context, ZQM_REQ);
+    void* requester = zmq_socket(context, ZMQ_REQ);
     // Bind requester to socket using the given server information
-    bind_addr = strcat(&bind_addr, server_port);
-    bind_addr = strcat(&bind_addr, &semi);
-    bind_addr = strcat(&bind_addr, server_address);
-    int err = zqm_bind(requester, bind_addr);
+    bind_addr = strcat(bind_addr, server_port);
+    bind_addr = strcat(bind_addr, semi);
+    bind_addr = strcat(bind_addr, server_address);
+    err = zmq_bind(requester, bind_addr);
     assert (err == 0);
     c.context = context;
     c.requester = requester;

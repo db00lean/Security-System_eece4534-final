@@ -1,24 +1,24 @@
 #include <zmq.h>
-#include <server.h>
+#include "server.h"
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
 
 // Initializes a new server connection 
-server new_server(const char* port)
+struct server new_server(const char* port)
 {
     int err;
-    server s;
-    char* bind_addr = "tcp://*:"
+    struct server s;
+    char* bind_addr = "tcp://*:";
     // Initialize the context and the requester socket
     void* context = zmq_ctx_new();
     void* responder = zmq_socket(context, ZMQ_REP);
     // Bind requester to socket using the given server information
-    bind_addr = strcat(&bind_addr, port);
-    int err = zqm_bind(responder, bind_addr);
+    bind_addr = strcat(bind_addr, port);
+    err = zmq_bind(responder, bind_addr);
     assert (err == 0);
     s.context = context;
-    s.requester = requester;
+    s.responder = responder;
     return s;
 }
 

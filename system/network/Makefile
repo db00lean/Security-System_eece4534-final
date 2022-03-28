@@ -1,7 +1,9 @@
 ## makefile to create example client server for testing
 client: client.c 
-	gcc client.c -o client.out
+	gcc -c client.c
 server: server.c
-	gcc server.c -o server.out
+	gcc -c server.c
+conn_test: conn_test.c server.o client.o
+	gcc -o conn_test server.c client.c
 clean:
-	rm -rf *.out
+	rm -rf *.o

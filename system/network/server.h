@@ -15,7 +15,8 @@ struct server {
 } server;
 
 // Initializes a new server connection 
-server new_server(const char* port);
+struct server new_server(const char*);
 
 // Recieves a new request from client connections
-int receive(server conn);
+int receive(void*);
+#endif

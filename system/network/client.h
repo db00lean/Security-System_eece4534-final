@@ -15,7 +15,8 @@ struct client {
 } client;
 
 // Initializes and returns a new client connection
-client new_client(const char* server_port, const char* server_address);
+struct client new_client(const char*, const char*);
 
 // Sends a new request to the previously initialized 0mq client
-int send(void* requester, char* buff, uint32_t len);
+int send(void*, char*, uint32_t);
+#endif
