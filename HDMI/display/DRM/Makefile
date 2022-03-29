@@ -6,10 +6,10 @@ ZED_LIB?= ../libzed-bin/lib
 ZED_INCLUDE?= ../libzed-bin/include
 
 INCLUDE_DIRS:=.. $(ZED_INCLUDE) /usr/include/libdrm
-CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0
+CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 -ldrm
 #LZED:=-lzed -L $(ZED_LIB)
-LZED:=-lzed
-LALSA:= -lasound -lpthread -lrt -ldl -lm
+#LZED:=-lzed
+#LALSA:= -lasound -lpthread -lrt -ldl -lm
 
 #include zed.mk
 .PHONY: clean
@@ -17,10 +17,10 @@ LALSA:= -lasound -lpthread -lrt -ldl -lm
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^ $(LALSA) $(LZED)
+	$(CC) -o $@ $^ 
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $< 
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
