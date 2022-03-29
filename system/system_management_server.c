@@ -17,7 +17,6 @@ int initialize_camera(int cameraNumber) {
 
     securitySystem.cameras[cameraNumber].cameraNumber = cameraNumber;
     securitySystem.cameras[cameraNumber].sysManPortNumber = ports[cameraNumber];
-    securitySystem.cameras[cameraNumber].metaPortNumber = ports[cameraNumber];
     securitySystem.cameras[cameraNumber].streamPortNumber = ports[cameraNumber];
 
     securitySystem.cameras[cameraNumber].status = 1;
