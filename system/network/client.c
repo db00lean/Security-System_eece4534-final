@@ -34,4 +34,5 @@ int send(void* requester, char* buff, uint32_t len)
     zmq_send(requester, buff, len, 0);
     zmq_recv(requester, recv, 10, 0);
     printf("Received %s from server\n", recv);
+    return 0;
 }

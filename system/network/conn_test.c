@@ -8,12 +8,13 @@
 // Simple test function, sends a ping and expects a pong to print back
 int main(void)
 {
-    struct server s = new_server("5500");
-    struct client c = new_client("5500", "localhost");
+    const char* port = "5500";
+    const char* address = "localhost";
+    char* ping = "Ping";
+    struct server s = new_server(port);
+    struct client c = new_client(port, address);
 
-    char ping = "Ping";
-
-    send(c.requester, &ping);
+    send(c.requester, ping, 4);
     receive(s.responder);
     return 0;
 }
