@@ -46,19 +46,25 @@ static ssize_t kbtns_read(struct file* f,
     return ret ? ret : copied;
 }
 
-static unsigned int kbtns_poll(struct file* f,
+static unsigned int kbtns_poll(struct file* filp,
                                poll_table* wait) 
 {
+    unsigned int ret;
+
     if (mutex_lock_interruptible(&kbtns_global.buffer_lock)) 
         return -ERESTARTSYS;
-
-    poll_wait(f, &kbtns_global.waitq, wait);
+    
+    poll_wait(filp, &kbtns_global.waitq, wait);
     if (kfifo_is_empty(&kbtns_global.btns_buffer)) {
-        return 0; 
+        ret = 0; 
     }
+    else {
+        ret = POLLIN | POLLRDNORM;
+    }
+
     mutex_unlock(&kbtns_global.buffer_lock);
 
-    return POLLIN | POLLRDNORM;
+    return ret;
 }
 
 static struct file_operations kbtns_fileops = {
@@ -124,7 +130,7 @@ int init_kbtns_chrdev(void) {
     int err;
     struct device* dev; 
 
-    err = alloc_chrdev_region(&kbtns_global.devno, 0, 1, "zedbtns");
+    err = alloc_chrdev_region(&kbtns_global.devno, 0, 1, ZEDBTNS_CHRDEV_REGION_NAME);
     if (err) {
         printk(KERN_INFO "[ KBtns  ] - ERROR: could not alocate chrdev for zed_btns\n");
     }
@@ -138,13 +144,13 @@ int init_kbtns_chrdev(void) {
         return err; 
     }
 
-    kbtns_class = class_create(THIS_MODULE, "zedbtns_char");
+    kbtns_class = class_create(THIS_MODULE, ZEDBTNS_CLASS_NAME);
     if (IS_ERR(kbtns_class)) {
         printk(KERN_INFO "[ KBtns  ] - ERROR: could not create zedbtns_char class\n");
         return -ENOENT; 
     }
 
-    dev = device_create(kbtns_class, NULL, kbtns_global.devno, NULL, "zedbtns0");
+    dev = device_create(kbtns_class, NULL, kbtns_global.devno, NULL, ZEDBTNS_DEV_NAME);
     if (IS_ERR(dev)) {
         printk(KERN_INFO "[ KBtns  ] - ERROR: could not create zedbtns0 device in /dev\n");
         return -ENOENT;

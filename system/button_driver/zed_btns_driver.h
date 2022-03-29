@@ -6,6 +6,9 @@
 #include <linux/wait.h>
 
 #define MODULE_NAME "KBTNS_DRIVER"
+#define ZEDBTNS_CHRDEV_REGION_NAME "zedbtns"
+#define ZEDBTNS_CLASS_NAME "zedbtns_char"
+#define ZEDBTNS_DEV_NAME "zedbtns0"
 #define BTN_BASE_ADDR 0x41220000
 #define BTN_BASE_GPIO_CHIP 901
 #define BTN_MAX 5
