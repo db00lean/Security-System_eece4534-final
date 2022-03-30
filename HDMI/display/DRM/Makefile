@@ -2,22 +2,18 @@ TARGET:=drm_test
 SRCS:=drm_test.c
 OBJS:=$(SRCS:.c=.o)
 
-ZED_LIB?= ../libzed-bin/lib
-ZED_INCLUDE?= ../libzed-bin/include
+DRM_CFLAGS := $(shell pkg-config --cflags libdrm)
+DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
 
-INCLUDE_DIRS:=.. $(ZED_INCLUDE) /usr/include/libdrm
-CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 -ldrm
-#LZED:=-lzed -L $(ZED_LIB)
-#LZED:=-lzed
-#LALSA:= -lasound -lpthread -lrt -ldl -lm
+INCLUDE_DIRS:=.. $(ZED_INCLUDE)
+CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(DRM_CFLAGS)
 
-#include zed.mk
 .PHONY: clean
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^ 
+	$(CC) -o $@ $(DRM_LDFLAGS) $^
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< 
