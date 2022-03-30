@@ -2,7 +2,7 @@
 // Joshua Erickson
 
 #include <stdio.h>
-#include "system_management.h"
+#include "../system_management.h"
 
 #ifndef AGGREGATE_DETECT_H
 #define AGGREGATE_DETECT_H
