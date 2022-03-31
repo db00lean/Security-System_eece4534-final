@@ -1,7 +1,7 @@
 /**
  * @file zed_btns.h
  * @author Siddharth Chenrayan (chenrayan.s@northeastern.edu)
- * @brief General purpose header file for ZedBoard button interface
+ * @brief General purpose header file for ZedBoard button interface. Used by kernel module and button-listener
  * @version 0.1
  * @date 2022-03-31
  * 

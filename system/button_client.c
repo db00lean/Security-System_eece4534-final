@@ -19,11 +19,10 @@
 #include "button_client.h"
 #include "button_driver/zed_btns.h"
 
+char run_button_listener = 1;
 
-char run_main = 1;
-
-void stop_main(int _sig) {
-    run_main = 0;
+void stop_button_listener(int _sig) {
+    run_button_listener = 0;
     puts("[ Btn Listener ] - Press any button on the ZedBoard to terminate process...");
 }
 
@@ -90,7 +89,7 @@ void* run_button_client(void* thread_args) {
     }
     flush_fd(zedbtns_pfd.fd);
 
-    while(run_main) {
+    while(run_button_listener) {
 #ifdef DEBUG
         printf("[ Btn Listener ] - Going to sleep until button is pressed...\n");
 #endif
@@ -101,7 +100,7 @@ void* run_button_client(void* thread_args) {
         printf("[ Btn Listener ] - Woken up...\n");
 #endif
 
-        if (run_main && CAN_READ_PFD(zedbtns_pfd)) {
+        if (run_button_listener && CAN_READ_PFD(zedbtns_pfd)) {
             bytes_read = read(zedbtns_pfd.fd, btn_val_buffer, BUTTON_BUFFER_MAX_SIZE);
 #ifdef DEBUG
             printf("[ Btn Listener ] - Read button values - bytes_read = %d\n", bytes_read);
@@ -123,7 +122,7 @@ void* run_button_client(void* thread_args) {
 int main(int argc, char** argv) {
     pthread_t btn_listener_thread;
 
-    signal(SIGINT, stop_main);
+    signal(SIGINT, stop_button_listener);
     pthread_create(&btn_listener_thread, NULL, run_button_client, NULL);
 
     puts("Hello from main button listener main!");

@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     // Kick off thread for button presses
     pthread_t btn_listener_thread;
 
-    signal(SIGINT, stop_main);
+    signal(SIGINT, stop_button_listener);
     pthread_create(&btn_listener_thread, NULL, run_button_client, NULL);
 
     // get metadata and send to data agregator

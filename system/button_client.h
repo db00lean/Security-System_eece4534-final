@@ -69,7 +69,14 @@ void exec_action(struct button_actions* actions, button_value btn_val);
  */
 void* run_button_client(void* thread_args);
 
-void stop_main(int _sig);
+/**
+ * @brief Stops execution of the button listener thread in response to SIGINT (or any other signal, really). 
+ *        Make sure to pass this to the signal syscall (see man 2 signal)
+ *        Otherwise, button listener thread will not clean up properly!
+ * 
+ * @param _sig - Signal (as an integer). Unused, hence the prefix with "_" 
+ */
+void stop_button_listener(int _sig);
 
 /* Debug/print functions for a basic set of actions */
 static void print_center(void* _args) {
