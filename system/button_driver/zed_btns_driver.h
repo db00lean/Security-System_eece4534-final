@@ -1,18 +1,30 @@
+/**
+ * @file zed_btns_driver.h
+ * @author Siddharth Chenrayan (chenrayan.s@northeastern.edu)
+ * @brief Driver header file for button_driver.c
+ * @version 0.1
+ * @date 2022-03-31
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #ifndef ZED_BTNS_DRIVER_H
 #define ZED_BTNS_DRIVER_H
 
 #include <linux/kfifo.h>
 #include <linux/mutex.h>
 #include <linux/wait.h>
+#include "zed_btns.h"
 
 #define MODULE_NAME "KBTNS_DRIVER"
 #define ZEDBTNS_CHRDEV_REGION_NAME "zedbtns"
 #define ZEDBTNS_CLASS_NAME "zedbtns_char"
 #define ZEDBTNS_DEV_NAME "zedbtns0"
-#define BTN_BASE_ADDR 0x41220000
+
+#define BTN_BASE_ADDR 0x41220000 // unused
 #define BTN_BASE_GPIO_CHIP 901
-#define BTN_MAX 5
-#define BTN_BUF_SIZE 32
+#define BTN_MAX 5 // unused
 
 #define BTN_DATA_OFFEST (0x0)
 #define BTN_IER_OFFSET (0x128)
@@ -29,7 +41,7 @@ struct kbtns_inst {
     // chardev members
     dev_t devno;
     struct cdev chrdev;
-    DECLARE_KFIFO(btns_buffer, u8, BTN_BUF_SIZE);
+    DECLARE_KFIFO(btns_buffer, u8, BUTTON_BUFFER_MAX_SIZE);
     struct mutex buffer_lock;
     wait_queue_head_t waitq;
 };

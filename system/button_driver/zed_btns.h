@@ -1,3 +1,14 @@
+/**
+ * @file zed_btns.h
+ * @author Siddharth Chenrayan (chenrayan.s@northeastern.edu)
+ * @brief General purpose header file for ZedBoard button interface
+ * @version 0.1
+ * @date 2022-03-31
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #ifndef ZED_BTNS_H
 #define ZED_BTNS_H
 
@@ -8,5 +19,8 @@
 #define BTN_U (1 << 4)
 
 #define IS_PRESSED(btn, btn_val) (btn & btn_val)
+
+#define ZEDBTNS_FILE "/dev/zedbtns0"
+#define BUTTON_BUFFER_MAX_SIZE 32
 
 #endif
