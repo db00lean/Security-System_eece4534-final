@@ -11,15 +11,23 @@
 #include <xf86drmMode.h>
 
 
+#include <drm_fourcc.h>
+//BGRA8888 -- alpha (transparency r g b, 8 bits for each)
+//drmModeAddFB2(drm_fd, width, height, DRM_FORMAT_XRGB8888,
+//    handles, strides, offsets, &fb_id, 0);
+
 //This is the default and only card on the zedboard
 #define cardPath "/dev/dri/card0"
 
 
+//
 drmModeRes *res;
 drmModeConnector *conn;
 drmModeModeInfo *mode;
 drmModeEncoder *encode;
 drmModeCrtc *crtc;
+
+drmModeFB *fb;
 
 
 int drm_open();
@@ -56,6 +64,8 @@ int main(){
     printf("min_height: %d \n", (int)res->min_height);
     printf("max_height: %d \n ", (int)res->max_height);
 
+    printf("connector width %d height %d\n", conn->mmWidth, conn->mmHeight);
+
   
       
 
@@ -75,19 +85,28 @@ int main(){
 
 
 
+    //32 bit memory location to store address of framebuffer
     uint32_t fb;
+    
+    //struct to create dumb buffer
     struct drm_mode_create_dumb crereq;
-    struct drm_mode_destroy_dumb dreq;
+
+    //struct to create memory mapping for dumb buffer
     struct drm_mode_map_dumb mreq;
 
+    //struct to destroy dumb buffer
+    struct drm_mode_destroy_dumb dreq;
+
+    //clear crereq before setting members
     memset(&crereq, 0, sizeof(crereq));
 
+    //set members of crereq based on members of "drmModeModeInfo" obtained in drm_init()
 	crereq.height = mode->vdisplay;
     crereq.width = mode->hdisplay;
 	crereq.bpp = 32;
 
 
-
+    //create dumb DRM based on crereq members -- "handle, pitch, size will be returned", members of crereq
     ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &crereq);   
 
 
@@ -96,22 +115,28 @@ int main(){
         return ret;
 
     }
-
+    //create DRM FB using information within crereq, populated by drmIoctl call above
     ret = drmModeAddFB(fd,  (uint32_t) crereq.width, (uint32_t) crereq.height, 24,
                      crereq.bpp, crereq.pitch, crereq.handle, &fb);
 
                      
     if(ret){
-        printf("Failed to add dumb buffer\n");
+        printf("Failed to create DRM buffer\n");
         printf("ret: %d\n", ret);
         return ret;
     }
 
     printf("fb: %d\n", fb);
+    //wont work because fb is uint32_t in scope, doesn't refer to struct
+    //printf("bits per pixel %d\n",(int)fb->bpp); 
 
-
+    //Clear mreq
     memset(&mreq, 0, sizeof(mreq));
+
+    //Set memory mapping handle equal to the handle of the dumb fb just created
     mreq.handle = crereq.handle;
+    //Map dumb buffer based on mreq.handle
+    //This Ioctl call populates mreq.offset, used in mmap call below
     ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
    
     if (ret) {
@@ -119,7 +144,7 @@ int main(){
         return -1;
     }
      
-
+    //Map memory region for DRM framebuffer using size and mapped offset of dumbbuffer
     map = mmap(0, crereq.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, mreq.offset);
 
 
@@ -136,7 +161,6 @@ int main(){
 
     
 
-    printf("size %d\n", crereq.size);
 
 
     uint32_t const red   = (0xff<<16);
@@ -147,6 +171,10 @@ int main(){
    int i;
    int count = 0;
    float resolution = mode->vdisplay * mode->hdisplay;
+    printf("size %d\n", crereq.size);
+    printf("resolution %d\n", (int)(resolution));
+    printf("calculated bits per pixel %d\n", (int)(crereq.size / resolution));
+
    for(i = 0; i < (int)resolution; i++){
 
 
@@ -183,13 +211,14 @@ int main(){
 }
 
 int drm_init(int fd){
+    //point our "struct drmModeRes" -- contains information about current display configuration
   res = drmModeGetResources(fd);
     
     if(res == NULL){
         printf("Failed to get resources");
         return -1;
     }
-
+    //point our "struct drmModeConnector" based on "connector" member defined within "struct drmModeRes" above
   conn = drmModeGetConnector(fd, res->connectors[0]);
     
     if(conn == NULL){
@@ -198,17 +227,17 @@ int drm_init(int fd){
         return -1;
        
     }
-
+    //point our "struct drmModeEncoder" encoder information based on "encoder" member defined within "struct drmModeRes" above
     encode = drmModeGetEncoder(fd, res->encoders[0]);
 
     if(encode->encoder_id != conn->encoder_id){
         printf("error with encoder and connector IDs");
         return -1;
     }
-
+    //point our "struct drmModeCrtc" information based on "CRTC_id" member defined within "struct drmModeEncoder" above
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
 
-
+    //set "struct drmModeModeInfo" to the "struct drmModeModeInfo" member contained within "drmModeConnector"
     mode = conn->modes;
 
 
