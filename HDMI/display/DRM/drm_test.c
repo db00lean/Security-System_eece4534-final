@@ -206,6 +206,7 @@ int main(){
     
     drmSetMaster(fd);
 
+    //clear crtc
     drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0, NULL, 0, NULL);
 
     drmModeSetCrtc(fd, crtc->crtc_id, fb, 0,0, &conn->connector_id, 1, mode);
