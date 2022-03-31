@@ -183,6 +183,7 @@ int main(){
     printf("size %d\n", crereq.size);
     printf("resolution %d\n", resolution);
     printf("calculated resolution %d\n", mode->vdisplay * mode->hdisplay);
+    printf("test\n");
     //printf("calculated bits per pixel %d\n", crereq.size / resolution);
 
 //    for(i = 0; i < (int)resolution; i++){
@@ -213,6 +214,16 @@ int main(){
     drmModeSetCrtc(fd, crtc->crtc_id, fb, 0,0, &conn->connector_id, 1, mode);
 
     drmDropMaster(fd);
+
+    drmSetClientCap(fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+
+    drmModePlaneRes *planes = drmModeGetPlaneResources(fd);
+    printf("num planes %d\n", planes->count_planes);
+
+    // for (uint32_t i = 0; i < planes->count_planes; i++) {
+    //     uint32_t plane_id = planes->planes[i];
+    //     drmModePlane *plane = drmModeGetPlane(drm_fd, plane_id);
+    // }
 
 
     getchar();
