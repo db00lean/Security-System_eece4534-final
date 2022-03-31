@@ -1,63 +1,92 @@
-#include "cv_main.h"
 #include <iostream>
-#include "file.h" // TODO: Port to C++ (file.h is a C library/doesn't compile with C++)
-#include "stdio.h"
+#include "cv_main.h"
 
 // TODO: Rename "cv_main.cpp" and "cv_main.h" later on
 // TODO: Update Makefile with the new name
 // TODO: Remove <iostream> and "stdio.h" after cout testing is done
 
-// Arbitrary value for now
-#define MAX_IMAGE_SIZE 1000
-
-// TODO: Read from buffer created by Camera team instead of this one
-// image buffer to read from
-char image_buffer[MAX_IMAGE_SIZE];
-
 // Loads an image into the image buffer
 // TODO: Convert ImportFrame() to C++
-int ImportFrame()
+cv::Mat ImportFrame()
 {
   // TODO: Implement ImportFrame()
   std::cout << "Importing frame\n";
 
-  // Frames will be read from a buffer created by the Camera team.
-  // Since this hasn't been implemented yet, it is simulated here
-  // by opening an image and loading it into a buffer.
-  FILE *fp = 0;
-  fp = fopen("people.jpg", "rb");
+  // Read the image file as
+  // imread("default.jpg");
+  cv::Mat image = cv::imread("people.jpg", cv::IMREAD_GRAYSCALE);
 
-  if (fp == NULL)
+  // Error Handling
+  // TODO: Fix error handling on merge with cv_main
+  if (image.empty())
   {
-    printf("Error opening file\n");
-    return -1;
+    std::cout << "Invalid Image\n";
   }
 
-  // determine file size
-  fseek(fp, 0, SEEK_END);
-  long int size = ftell(fp);
-
-  if (size > MAX_IMAGE_SIZE)
-  {
-    size = MAX_IMAGE_SIZE;
-  }
-
-  // load image into a buffer
-  fseek(fp, 0, SEEK_SET);
-  fread(&image_buffer, sizeof(uint8_t), size, fp);
-
-  // TODO: Add error Handling
-  fclose(fp);
-  return 0;
+  return image;
 }
 
-int GenerateBBoxes(int frame)
+cv_data GenerateBBoxes(cv::Mat image)
 {
-  // TODO: Implement GenerateBBoxes()
-  std::cout << "Generate bounding boxes\n";
+  // https://docs.opencv.org/3.4/d1/de5/classcv_1_1CascadeClassifier.html#a90fe1b7778bed4a27aa8482e1eecc116
+  struct cv_data cv_data_output;
+
+  // UPDATE: hog is not really working
+  // hog (Histogram of Oriented Gradients) should deal with detection
+  // Might swap to boundingRect(thresh) --> Need to look into accuracy/resource usage of both
+  cv::HOGDescriptor hog;
+  // hog = cv::HOGDescriptor::HOGDescriptor();
+  hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
+  int err = 0; // For error handling: use later
+  std::vector<cv::Rect> bboxes;
+  std::vector<double> found_weights; // Accuracy of model -- for internal use for the moment
+
+  // Uncalibrated, unscaled hog (Histogram of Oriented Gradients) --> Probably too expensive currently; TODO: REDUCE
+  hog.detectMultiScale(image, bboxes, found_weights, 0.0, cv::Size(8, 8), cv::Size(16, 16), 1.05, 2.0, false);
+  /*
+  detectMultiScale(InputArray img,
+                  std::vector< Rect > & foundLocations,
+                  std::vector< double > & 	foundWeights,
+                  double 	hitThreshold = 0,
+                  Size 	winStride = Size(),
+                  Size 	padding = Size(),
+                  double 	scale = 1.05,
+                  double 	groupThreshold = 2.0,
+                  bool 	useMeanshiftGrouping = false
+                  )		const
+  */
 
   // TODO: Add error Handling
-  return 0;
+  if (err < 0)
+  {
+    std::cout << "Unable to generate bounding boxes\n";
+  }
+
+  int num_box = 0;
+  for (auto &element : bboxes)
+  {
+    // std::cout << "box " << num_box;
+    // std::cout << "x = " << element.x << " ";
+    // std::cout << "y = " << element.y << " ";
+    // std::cout << "width = " << element.width << " ";
+    // std::cout << "height = " << element.height << "\n";
+
+    cv_data_output.box_data[num_box].x_coord = element.x;
+    cv_data_output.box_data[num_box].y_coord = element.y;
+    cv_data_output.box_data[num_box].x_len = element.width;
+    cv_data_output.box_data[num_box].y_len = element.height;
+
+    num_box++;
+
+    cv_data_output.num_bbox = num_box;
+    if (num_box >= MAX_B_BOXES)
+    {
+      std::cout << "More people detected than MAX_B_BOXES limit\n";
+      break;
+    }
+  }
+
+  return cv_data_output;
 }
 
 int TransmitStruct(cv_data data_to_send)
@@ -71,32 +100,25 @@ int TransmitStruct(cv_data data_to_send)
 
 int main()
 {
-  int err = 0;
-  err = ImportFrame();
+  struct cv_data cv_data_current;
+  cv::Mat image;
+  image = ImportFrame();
 
-  if (err < 0)
+  if (image.empty())
   {
     return -1;
   }
 
-  struct cv_data cv_data_current;
-  struct coordinate_data box1;
-  struct coordinate_data box2;
-  // Set box 1
-  box1.x_coord = 15;  // x coordinate
-  box1.y_coord = 100; // y coordinate
-  box1.x_len = 20;    // x length
-  box1.y_len = 50;    // y length
-  // Set box 2
-  box2.x_coord = 15;  // x coordinate
-  box2.y_coord = 100; // y coordinate
-  box2.x_len = 20;    // x length
-  box2.y_len = 50;    // y length
+  cv_data_current = GenerateBBoxes(image);
 
-  cv_data_current.num_bbox = 2;
-  cv_data_current.box_data[0] = box1;
-  cv_data_current.box_data[1] = box2;
+  for (int i = 0; i < cv_data_current.num_bbox; i++)
+  {
+    std::cout << "box " << i << ": ";
+    std::cout << "x = " << cv_data_current.box_data[i].x_coord << "    ";
+    std::cout << "y = " << cv_data_current.box_data[i].y_coord << "    ";
+    std::cout << "x_len = " << cv_data_current.box_data[i].x_len << "    ";
+    std::cout << "y_len = " << cv_data_current.box_data[i].y_len << "\n";
+  }
 
-  std::cout << cv_data_current.box_data[0].x_coord << std::endl;
   return 0;
 }

@@ -12,7 +12,7 @@
 - Sends bounding box data to HDMI
 
 ### Inputs
-- Images from camera
+- Frames/Images from camera
 
 ### Outputs
 - Coordinates of bounding boxes of detected people/objects

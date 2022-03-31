@@ -2,17 +2,13 @@ CFLAGS = `pkg-config --cflags opencv`
 LIBS = `pkg-config --libs opencv`
 
 cv_main: cv_main.cpp 
-	g++ -g -Wall -o computer_vision.o cv_main.cpp
+	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
 
-test: test.cpp
-	g++ $(CFLAGS) $(LIBS) -o $@ $<
-# g++ -g -Wall -o test.o cv_test.cpp
-
-bbox: temp_bbox.cpp 
-	g++ -g -Wall -o bbox.o temp_bbox.cpp `pkg-config --cflags --libs opencv`
+# test: test.cpp
+	# g++ $(CFLAGS) $(LIBS) -o $@ $<
 
 clean: 
-	$(RM) computer_vision.o test.o bbox.o
+	$(RM) computer_vision.o
 
 # OLD MAKEFILE BELOW: Leaving as a reference for when we migrate to zedboard stuff.
 # Need to fix cv_main.cpp compiling first before the bottom half can be reimplemented
