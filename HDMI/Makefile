@@ -21,9 +21,9 @@ LALSA:= -lasound -lpthread -lrt -ldl -lm
 all: $(PROGS)
 
 
-boundingbox: test_draw_bounding_boxes.o draw_bounding_box.h
+test_draw_bounding_boxes: test_draw_bounding_boxes.o draw_bounding_box.c
 
-drawimage: test_draw_image.o draw_bounding_box.h
+test_draw_image: test_draw_image.o imagelib.c draw_bounding_box.c
 
 clean:
 	rm -rf $(OBJS) $(TARGET) *.o

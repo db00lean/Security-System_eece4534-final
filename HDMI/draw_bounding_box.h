@@ -7,7 +7,7 @@ This is the header file for drawing bounding boxes on the HDMI display
 
 #include <stdint.h>
 
-//static struct fb_info fb_info;
+
 static struct fb_var_screeninfo var_screeninfo;
 static struct fb_fix_screeninfo fix_screeninfo;
 
@@ -28,7 +28,7 @@ int y: the value of the y coordinate on the screen
 uint32_t color: the value of the color in R,G,B format (with each color being one byte)
 No return
 */
-static void draw_pixel(int x, int y, uint32_t color);
+void draw_pixel(int x, int y, uint32_t color);
 
 /*
 This function draws a bounding box at a given x,y coordinate starting location for a given x,y length with a given color

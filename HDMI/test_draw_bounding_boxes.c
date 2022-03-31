@@ -20,16 +20,18 @@ int main() {
     for (int i = 0; i<MAX_B_BOXES; i++) {
         cvdata1.num_bbox++; //increase number of boxes
         //fill in coordinates
-        cvdata1.box_data->x_coord = 100 + i * 200;
-        cvdata1.box_data->y_coord = 100 + i * 200;
-        cvdata1.box_data->x_len = 100;
-        cvdata1.box_data->y_len = 100;
+        cvdata1.box_data[i].x_coord = 40 + (i * 60);
+        cvdata1.box_data[i].y_coord = 40;
+        cvdata1.box_data[i].x_len = 50;
+        cvdata1.box_data[i].y_len = 50;
     }
 
+    fb_open();
     //for each box, draw a rectangle bounding box
     for (int i = 0; i<cvdata1.num_bbox; i++) {
-        unsigned int color = 0xFFFF00;
-        draw_boundingbox(cvdata1.box_data->x_coord, cvdata1.box_data->y_coord, cvdata1.box_data->x_len, cvdata1.box_data->y_len, color);
+        unsigned int color = 0xFF00FF;
+        //printf("draw pixel %d %d %d %d %x\n", cvdata1.box_data->x_coord, cvdata1.box_data->y_coord, cvdata1.box_data->x_len, cvdata1.box_data->y_len, color);
+        draw_boundingbox(cvdata1.box_data[i].x_coord, cvdata1.box_data[i].y_coord, cvdata1.box_data[i].x_len, cvdata1.box_data[i].y_len, color);
     }
 
 }

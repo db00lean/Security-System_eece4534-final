@@ -5,6 +5,9 @@ under project-security-system/HDMI/rtsp-rx/imagelib.h
 
 #include <stdint.h>
 
+#ifndef __IMAGELIB__
+#define __IMAGELIB__
+
 // not quite a PPM but lol, it totally is
 struct image {
   int width;
@@ -22,3 +25,5 @@ struct image * read_ppm(char *filepath);
 struct image * create_image(int width, int height);
 
 void free_image(struct image *img);
+
+#endif

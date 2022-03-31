@@ -29,11 +29,11 @@ void fb_open(){
 
 }
 
-static void draw_pixel(int x, int y, uint32_t color)
+void draw_pixel(int x, int y, uint32_t color)
 {
     uint32_t *pixelPtr;
     pixelPtr = fbMemPtr;
-    pixelPtr += fix_screeninfo.line_length * y;
+    pixelPtr += (fix_screeninfo.line_length / 4) * y;
     pixelPtr += x;
 
     *pixelPtr = color;

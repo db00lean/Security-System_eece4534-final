@@ -13,9 +13,11 @@ Read in data from Connor's image struct and output to screen
 #include <sys/mman.h>
 #include <fcntl.h>
 
+#define PIXEL(x,y) ((y * IMG_W * 3) + (x * 3))
+
+
 int main()
 {
-
     // Using image struct from imagelib.h and fill with data for now
     int IMG_W = 1920;
     int IMG_H = 1080;
@@ -36,12 +38,14 @@ int main()
         }
     }
 
-
+    fb_open();
     //draw image to screen using draw pixel
     // for each box, draw a rectangle bounding box
     for (int x = 0; x < img->width; x++) {
         for (int y = 0; y < img->height; y++) {
-            unsigned int color = (img->buf[x*y] << 16) | (img->buf[x*y + 1] << 8) | (img->buf[x*y + 2] << 0);
+            //unsigned int color = (img->buf[x + fix_screeninfo] << 16) | (img->buf[x*y + 1] << 8) | (img->buf[x*y + 2] << 0);
+            unsigned int color = img->buf[x+y];
+            printf("color %d\n", color);
             draw_pixel(x,y,color);
         }
     }
