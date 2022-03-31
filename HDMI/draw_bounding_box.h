@@ -8,8 +8,8 @@ This is the header file for drawing bounding boxes on the HDMI display
 #include <stdint.h>
 
 
-static struct fb_var_screeninfo var_screeninfo;
-static struct fb_fix_screeninfo fix_screeninfo;
+//static struct fb_var_screeninfo var_screeninfo;
+//static struct fb_fix_screeninfo fix_screeninfo;
 
 static void *fbMemPtr; 
 
