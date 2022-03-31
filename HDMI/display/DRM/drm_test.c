@@ -182,7 +182,8 @@ int main(){
    int resolution = mode->vdisplay * mode->hdisplay;
     printf("size %d\n", crereq.size);
     printf("resolution %d\n", resolution);
-    printf("calculated bits per pixel %d\n", crereq.size / resolution);
+    printf("calculated resolution %d\n", mode->vdisplay * mode->hdisplay);
+    //printf("calculated bits per pixel %d\n", crereq.size / resolution);
 
 //    for(i = 0; i < (int)resolution; i++){
 
@@ -291,17 +292,32 @@ void draw_pixel(void *map, int x, int y, uint32_t ARGB){
     *pixelPtr = ARGB;
 }
 void demo(void* map, int resolution){
-    int i;
-    for(i = 0; i < (int)resolution; i++){
-       if(i < (resolution /3)){
-        ((uint32_t *) map)[i] = colors[0];
-       }
-
-       else if( i <  ((resolution * 2.0/3.0))){
-       ((uint32_t *) map)[i] = colors[1];
-       }
-       else{
-           ((uint32_t *) map)[i] = colors[2];
-       }
-   }
+    int y, x;
+    for(y = 0; y < mode->vdisplay; y++){
+        for (x  = 0; x < mode->hdisplay; x++) {
+            if ( y < (mode->vdisplay/3)) {
+                draw_pixel(map, x, y, colors[0]);
+            }
+            else if (y < (mode->vdisplay * 2/3)) {
+                draw_pixel(map, x, y, colors[1]);
+            }
+            else {
+                draw_pixel(map, x, y, colors[2]);
+            }
+        }
+    }
 }
+
+    // for(i = 0; i < (int)resolution; i++){
+    //    if(i < (resolution /3)){
+    //     ((uint32_t *) map)[i] = colors[0];
+    //    }
+
+    //    else if( i <  ((resolution * 2.0/3.0))){
+    //    ((uint32_t *) map)[i] = colors[1];
+    //    }
+    //    else{
+    //        ((uint32_t *) map)[i] = colors[2];
+    //    }
+  // }
+//}
