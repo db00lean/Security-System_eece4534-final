@@ -33,6 +33,14 @@ drmModeFB *fb;
 int drm_open();
 int drm_init(int fd);
 int drm_close();
+void draw_pixel(void *map, int x, int y, uint32_t ARGB);
+void demo(void* map, int resolution);
+
+
+uint32_t const red   = (0xff<<16);
+uint32_t const green = (0xff<<8);
+uint32_t const blue  = (0xff);
+uint32_t const colors[] = {red, green, blue};
 
 int main(){
     
@@ -163,34 +171,36 @@ int main(){
 
 
 
-    uint32_t const red   = (0xff<<16);
-	uint32_t const green = (0xff<<8);
-	uint32_t const blue  = (0xff);
-	uint32_t const colors[] = {red, green, blue};
+    // uint32_t const red   = (0xff<<16);
+	// uint32_t const green = (0xff<<8);
+	// uint32_t const blue  = (0xff);
+	// uint32_t const colors[] = {red, green, blue};
 
    int i;
    int count = 0;
-   float resolution = mode->vdisplay * mode->hdisplay;
+   //float resolution = mode->vdisplay * mode->hdisplay;
+   int resolution = mode->vdisplay * mode->hdisplay;
     printf("size %d\n", crereq.size);
-    printf("resolution %d\n", (int)(resolution));
-    printf("calculated bits per pixel %d\n", (int)(crereq.size / resolution));
+    printf("resolution %d\n", resolution);
+    printf("calculated bits per pixel %d\n", crereq.size / resolution);
 
-   for(i = 0; i < (int)resolution; i++){
+//    for(i = 0; i < (int)resolution; i++){
 
 
-       if(count < (resolution /3)){
-        ((uint32_t *) map)[i] = colors[0];
-       }
+//        if(count < (resolution /3)){
+//         ((uint32_t *) map)[i] = colors[0];
+//        }
 
-       else if( count <  ((resolution * 2.0/3.0))){
-       ((uint32_t *) map)[i] = colors[1];
-       }
-       else{
-           ((uint32_t *) map)[i] = colors[2];
-       }
+//        else if( count <  ((resolution * 2.0/3.0))){
+//        ((uint32_t *) map)[i] = colors[1];
+//        }
+//        else{
+//            ((uint32_t *) map)[i] = colors[2];
+//        }
 
-       count = count + 1;
-   }
+//        count = count + 1;
+//    }
+    demo(map, resolution);
 
 
     
@@ -270,4 +280,27 @@ int drm_open(){
     }
 
     return fd;
+}
+void draw_pixel(void *map, int x, int y, uint32_t ARGB){
+    uint32_t *pixelPtr;
+    pixelPtr = map;
+    pixelPtr += mode->hdisplay * y;
+    pixelPtr += x;
+
+    *pixelPtr = ARGB;
+}
+void demo(void* map, int resolution){
+    int i;
+    for(i = 0; i < (int)resolution; i++){
+       if(i < (resolution /3)){
+        ((uint32_t *) map)[i] = colors[0];
+       }
+
+       else if( i <  ((resolution * 2.0/3.0))){
+       ((uint32_t *) map)[i] = colors[1];
+       }
+       else{
+           ((uint32_t *) map)[i] = colors[2];
+       }
+   }
 }
