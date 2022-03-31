@@ -15,7 +15,8 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <stdint.h>
-#include "../button_driver/zed_btns.h"
+#include <stdio.h>
+#include "button_driver/zed_btns.h"
 
 #define CAN_READ_PFD(pfd) (pfd.revents & POLLIN)
 
@@ -67,6 +68,8 @@ void exec_action(struct button_actions* actions, button_value btn_val);
  * - Anything else useful? 
  */
 void* run_button_client(void* thread_args);
+
+void stop_main(int _sig);
 
 /* Debug/print functions for a basic set of actions */
 static void print_center(void* _args) {

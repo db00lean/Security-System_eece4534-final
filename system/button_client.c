@@ -17,7 +17,8 @@
 #include <pthread.h>
 
 #include "button_client.h"
-#include "../button_driver/zed_btns.h"
+#include "button_driver/zed_btns.h"
+
 
 char run_main = 1;
 
@@ -118,6 +119,7 @@ void* run_button_client(void* thread_args) {
     return NULL;
 }
 
+#ifdef BUTTON_CLIENT_MAIN
 int main(int argc, char** argv) {
     pthread_t btn_listener_thread;
 
@@ -130,3 +132,4 @@ int main(int argc, char** argv) {
     pthread_join(btn_listener_thread, NULL); 
     return 0; 
 }
+#endif

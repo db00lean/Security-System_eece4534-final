@@ -2,8 +2,12 @@
 // John Craffey
 
 #include <stdlib.h>
+#include<pthread.h>
+#include<signal.h>
+#include<stdio.h>
 #include "system_management.h"
 #include "aggregate_detect.h"
+#include "button_client.h"
 
 // global variable to track the system charateristics
 struct system_status securitySystem = {
@@ -27,6 +31,8 @@ void print_system_info(){
         printf("\n");
     }
 }
+
+
 
 // check if there is a camera that is unitialized
 void enumerate_cameras() {
@@ -62,6 +68,12 @@ int main(int argc, char **argv) {
     // print for debug
     print_system_info();
 
+    // Kick off thread for button presses
+    pthread_t btn_listener_thread;
+
+    signal(SIGINT, stop_main);
+    pthread_create(&btn_listener_thread, NULL, run_button_client, NULL);
+
     // get metadata and send to data agregator
     // this is a dummy struct for testing
     struct cv_data metadata = {
@@ -92,6 +104,7 @@ int main(int argc, char **argv) {
 
     // cleanup
     free(securitySystem.cameras);
+    pthread_join(btn_listener_thread, NULL); 
 
     return 0;
 }
