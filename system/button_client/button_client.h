@@ -89,12 +89,4 @@ static void print_right(void* _args) {
     puts("Right button pressed!");
 }
 
-struct button_actions debug_actions = {
-    .on_center = print_center,
-    .on_down = print_down,
-    .on_up = print_up,
-    .on_left = print_left,
-    .on_right = print_right
-};
-
 #endif

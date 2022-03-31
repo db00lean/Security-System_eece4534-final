@@ -26,6 +26,14 @@ void stop_main(int _sig) {
     puts("[ Btn Listener ] - Press any button on the ZedBoard to terminate process...");
 }
 
+struct button_actions debug_actions = {
+    .on_center = print_center,
+    .on_down = print_down,
+    .on_up = print_up,
+    .on_left = print_left,
+    .on_right = print_right
+};
+
 int init_zedbtn_pollfd(struct pollfd* pfd) {
     int zedbtns_fd = open(ZEDBTNS_FILE, O_RDONLY);
     if (zedbtns_fd == -1) {
