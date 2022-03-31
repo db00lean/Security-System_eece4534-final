@@ -50,31 +50,4 @@ struct system_status {
     struct camera_module *cameras;
 } system_status;
 
-// global variable to track the system charateristics
-struct system_status securitySystem = {
-    .numberOfCameras = 0,
-};
-
-// TODO make this just a declaration and
-// joshua is going to implement this in his own file
-// void aggregate_detect(struct camera_module cam);
-
-// dump all data for the system
-void print_system_info(){
-    printf("\nSystem info:\n");
-    printf("number of cameras: %d\n", securitySystem.numberOfCameras);
-    printf("\n");
-
-    for(int ii = 0; ii < securitySystem.numberOfCameras; ii++){
-        printf("camera %d\n", ii);
-        printf("sysManPortNumber: %d\n", securitySystem.cameras[ii].sysManPortNumber);
-        printf("streamPortNumber: %d\n", securitySystem.cameras[ii].streamPortNumber);
-
-        printf("status: %d\n", securitySystem.cameras[ii].status);
-        printf("detection: %d\n", securitySystem.cameras[ii].detection);
-
-        printf("\n");
-    }
-}
-
 #endif

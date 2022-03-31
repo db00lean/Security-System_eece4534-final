@@ -1,5 +1,7 @@
+// Joshua Erickson
+
 #include "aggregate_detect.h"
-#include "../system_management.h"
+#include "system_management.h"
 #include <stdio.h>
 
 int detect(struct coordinate_data rzone_data, struct coordinate_data box_data) {
@@ -44,21 +46,24 @@ void aggregate_detect(struct camera_module cam) {
 }
 
 // Main for testing purposes
-int main(int argc, char **argv) {
-    struct camera_module cam;
-    struct cv_data metadata = {
-        .num_bbox = 2,
-        .t = 1020,
-        .box_data[0].x_coord = 5,
-        .box_data[0].y_coord = 5,
-        .box_data[0].x_len = 10,
-        .box_data[0].y_len = 10,
-        .box_data[1].x_coord = 0,
-        .box_data[1].y_coord = 16,
-        .box_data[1].x_len = 20,
-        .box_data[1].y_len = 10,
-    };
-    cam.cvMetadata = metadata;
+#ifdef DEBUG
+// int main(int argc, char **argv) {
+//     struct camera_module cam;
+//     struct cv_data metadata = {
+//         .num_bbox = 2,
+//         .t = 1020,
+//         .box_data[0].x_coord = 5,
+//         .box_data[0].y_coord = 5,
+//         .box_data[0].x_len = 10,
+//         .box_data[0].y_len = 10,
+//         .box_data[1].x_coord = 0,
+//         .box_data[1].y_coord = 16,
+//         .box_data[1].x_len = 20,
+//         .box_data[1].y_len = 10,
+//     };
+//     cam.cvMetadata = metadata;
 
-    aggregate_detect(cam);
-}
+//     aggregate_detect(cam);
+// }
+
+#endif

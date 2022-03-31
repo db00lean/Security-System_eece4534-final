@@ -3,6 +3,30 @@
 
 #include <stdlib.h>
 #include "system_management.h"
+#include "aggregate_detect.h"
+
+// global variable to track the system charateristics
+struct system_status securitySystem = {
+    .numberOfCameras = 0,
+};
+
+// dump all data for the system
+void print_system_info(){
+    printf("\nSystem info:\n");
+    printf("number of cameras: %d\n", securitySystem.numberOfCameras);
+    printf("\n");
+
+    for(int ii = 0; ii < securitySystem.numberOfCameras; ii++){
+        printf("camera %d\n", ii);
+        printf("sysManPortNumber: %d\n", securitySystem.cameras[ii].sysManPortNumber);
+        printf("streamPortNumber: %d\n", securitySystem.cameras[ii].streamPortNumber);
+
+        printf("status: %d\n", securitySystem.cameras[ii].status);
+        printf("detection: %d\n", securitySystem.cameras[ii].detection);
+
+        printf("\n");
+    }
+}
 
 // check if there is a camera that is unitialized
 void enumerate_cameras() {
@@ -63,7 +87,7 @@ int main(int argc, char **argv) {
     }
     */
 
-    // TODO talk to joshua about what the interface would be for something like 
+    // Perform a detection of whether or not a person is in the FZ on camera n 
     aggregate_detect(securitySystem.cameras[0]);
 
     // cleanup
