@@ -2,8 +2,8 @@ VERSION = 1
 PATCHLEVEL = 0
 SUBLEVEL = 0
 
-TARGET:=test_draw_bounding_boxes
-SRCS:=test_draw_bounding_boxes.c
+TARGET:=test_draw_image
+SRCS:=test_draw_image.c
 OBJS:=$(SRCS:.c=.o)
 
 

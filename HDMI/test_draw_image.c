@@ -27,6 +27,7 @@ int main()
     // _very_ quick and dirty example
     // don't replicate this
     // it's just to get an image.
+    /*
     for (int ii = 0; ii < IMG_H; ii++)
     { // rows
         for (int jj = 0; jj < IMG_W; jj++)
@@ -37,15 +38,25 @@ int main()
             img->buf[PIXEL(jj, ii) + 2] = 255 * ii / IMG_H;
         }
     }
+    */
+   for (int i = 0; i<IMG_H; i++) {
+       for (int j = 0; j<IMG_W; j++) {
+           img->buf[i + j + 0] = i % 255;
+           img->buf[i + j + 1] = 50;
+           img->buf[i + j + 2] = j % 255;
+       }   
+    }
+
+
 
     fb_open();
     //draw image to screen using draw pixel
     // for each box, draw a rectangle bounding box
-    for (int x = 0; x < img->width; x++) {
-        for (int y = 0; y < img->height; y++) {
-            //unsigned int color = (img->buf[x + fix_screeninfo] << 16) | (img->buf[x*y + 1] << 8) | (img->buf[x*y + 2] << 0);
-            unsigned int color = img->buf[x+y];
-            printf("color %d\n", color);
+    for (int x = 0; x < IMG_W; x++) {
+        for (int y = 0; y < IMG_H; y++) {
+            unsigned int color = (img->buf[x + y] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
+            printf("color %x ", color);
+            printf("%d %d %d\n", img->buf[x + y] << 16), (img->buf[x + y + 1] << 8), (img->buf[x + y + 2] << 0);
             draw_pixel(x,y,color);
         }
     }
