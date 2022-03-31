@@ -20,11 +20,11 @@ LALSA:= -lasound -lpthread -lrt -ldl -lm
 
 all: $(PROGS)
 
-.c.o: common.h font.h
+#.c.o: font.h
 
-#fb-test: fb-test.o common.o font_8x8.c
+#fb-drawtext-test: fb-test.o font_8x8.c
 
-drawtext: drawtext.o common.o font_8x8.c
+drawtext: drawtext.o font_8x8.c
 
 clean:
 	rm -rf $(OBJS) $(TARGET) *.o drawtext
