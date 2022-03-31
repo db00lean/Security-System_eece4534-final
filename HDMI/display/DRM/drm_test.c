@@ -29,12 +29,15 @@ drmModeCrtc *crtc;
 
 drmModeFB *fb;
 
+void *map;
+
+
 
 int drm_open();
 int drm_init(int fd);
 int drm_close();
-void draw_pixel(void *map, int x, int y, uint32_t ARGB);
-void demo(void* map, int resolution);
+void draw_pixel(int x, int y, uint32_t ARGB);
+void demo(int resolution);
 
 
 uint32_t const red   = (0xff<<16);
@@ -44,7 +47,6 @@ uint32_t const colors[] = {red, green, blue};
 
 int main(){
     
-    void *map;
     int ret;
     int fd = drm_open();
     
@@ -202,7 +204,7 @@ int main(){
 
 //        count = count + 1;
 //    }
-    demo(map, resolution);
+    demo(resolution);
 
 
     
@@ -294,7 +296,7 @@ int drm_open(){
 
     return fd;
 }
-void draw_pixel(void *map, int x, int y, uint32_t ARGB){
+void draw_pixel(int x, int y, uint32_t ARGB){
     uint32_t *pixelPtr;
     pixelPtr = map;
     pixelPtr += mode->hdisplay * y;
@@ -302,18 +304,18 @@ void draw_pixel(void *map, int x, int y, uint32_t ARGB){
 
     *pixelPtr = ARGB;
 }
-void demo(void* map, int resolution){
+void demo(int resolution){
     int y, x;
     for(y = 0; y < mode->vdisplay; y++){
         for (x  = 0; x < mode->hdisplay; x++) {
             if ( y < (mode->vdisplay/3)) {
-                draw_pixel(map, x, y, colors[0]);
+                draw_pixel(x, y, colors[0]);
             }
             else if (y < (mode->vdisplay * 2/3)) {
-                draw_pixel(map, x, y, colors[1]);
+                draw_pixel(x, y, colors[1]);
             }
             else {
-                draw_pixel(map, x, y, colors[2]);
+                draw_pixel(x, y, colors[2]);
             }
         }
     }
