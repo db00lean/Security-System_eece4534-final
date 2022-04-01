@@ -2,8 +2,8 @@ VERSION = 1
 PATCHLEVEL = 0
 SUBLEVEL = 0
 
-TARGET:=boundingbox
-SRCS:=boundingbox.c
+TARGET:=test_draw_image
+SRCS:=test_draw_image.c
 OBJS:=$(SRCS:.c=.o)
 
 
@@ -20,20 +20,10 @@ LALSA:= -lasound -lpthread -lrt -ldl -lm
 
 all: $(PROGS)
 
-.c.o: common.h font.h
 
-fb-test: fb-test.o common.o font_8x8.c
+test_draw_bounding_boxes: test_draw_bounding_boxes.o draw_bounding_box.c
 
-boundingbox: boundingbox.o drawpixel.h common.o font_8x8.c
+test_draw_image: test_draw_image.o imagelib.c draw_bounding_box.c
 
 clean:
-	rm -rf $(OBJS) $(TARGET) *.o fb-test
-
-
-
-
-
-
-
-
-
+	rm -rf $(OBJS) $(TARGET) *.o
