@@ -1,5 +1,5 @@
-TARGET:=get_image_test
-SRCS:=get_image_test.c
+TARGET:=capture
+SRCS:=capture.c
 OBJS:=$(SRCS:.c=.o)
 
 
