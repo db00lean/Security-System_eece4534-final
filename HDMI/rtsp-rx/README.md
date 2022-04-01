@@ -27,6 +27,21 @@ Open it with your favorite image viewer, but it's just a gradient.
 Unimplemented. Libraries link, but no gstreamer calls yet.
 likely difficult, very powerful
 
+commandline incantation that works:
+`gst-launch-1.0 videotestsrc pattern=0 ! videoconvert ! avenc_ppm ! filesink location=pattern.ppm`
+
+let's make it work for rtsp::
+....getting there....
+`gst-launch-1.0 rtspsrc location=rtsp://rtsp.stream/pattern protocols=tcp ! rtph264depay ! h264parse ! decodebin ! videoconvert ! avenc_ppm ! filesink location=pattern.ppm`
+
+note: both of these will keep appending new frames to the end of the 'ppm' file.
+be careful, you may end up with 500M of ""ppm image"" if you let it keep going!
+
+use `identity error-after=2` to bail after the first frame.
+`gst-launch-1.0 rtspsrc location=rtsp://rtsp.stream/pattern protocols=tcp !
+rtph264depay ! h264parse ! decodebin ! videoconvert ! avenc_ppm ! identity
+error-after=2 ! filesink location=pattern.ppm`
+
 ### ffmpeg:
 may be easier. has a C library / api too but check this out:
 `ffmpeg -y -rtsp_transport tcp -i rtsp://rtsp.stream/pattern -frames:v 1 out.ppm`
