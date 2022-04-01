@@ -55,7 +55,7 @@ void clear_and_draw_text(int xPos, int yPos, char* str, uint32_t color)
 }
 
 
-// only for testing in main
+//only for testing in main
 void fb_open_test(){
     int fd;
 	fd = open("/dev/fb0", O_RDWR);
