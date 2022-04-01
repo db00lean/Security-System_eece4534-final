@@ -13,3 +13,6 @@ https://docs.nvidia.com/jetson/l4t-multimedia/group__direct__rendering__manager.
 
 ## libdrm struct info
 https://01.org/linuxgraphics/gfx-docs/drm/drm-kms-properties.html
+
+## Debian Man Page
+https://manpages.debian.org/testing/libdrm-dev/drm.7.en.html
