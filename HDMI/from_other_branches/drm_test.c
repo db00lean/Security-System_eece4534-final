@@ -12,6 +12,10 @@
 
 
 #include <drm_fourcc.h>
+
+#include "cv_structs.h"
+#include "../inc/draw_bounding_box.h"
+
 //BGRA8888 -- alpha (transparency r g b, 8 bits for each)
 //drmModeAddFB2(drm_fd, width, height, DRM_FORMAT_XRGB8888,
 //    handles, strides, offsets, &fb_id, 0);
