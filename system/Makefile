@@ -13,6 +13,9 @@ CFLAGS := -O
 sysman_server: management_server.o agg_detect.o button_client.o
 	$(CC) -o sysman_server system_management_server.o aggregate_detect.o button_client.o $(LIBS)
 
+sysman_client: client_zedboard/system_management_client.cpp
+	(cd client_zedboard && g++ system_management_client.cpp -o sysman_client)
+
 button_listener: button_client_standalone.o
 	$(CC) -o $@ button_client_standalone.o $(LIBS)
 
@@ -30,3 +33,4 @@ button_client_standalone.o: button_client.c button_client.h
 
 clean:
 	rm -rf sysman_server button_listener *.o *.h.gch
+	(cd client_zedboard && rm -rf sysman_client)
