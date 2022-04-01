@@ -26,14 +26,21 @@ static struct fb_var_screeninfo var_screeninfo;
 static struct fb_fix_screeninfo fix_screeninfo;
 
 static void draw_pixel(int x, int y, uint32_t color);
-static void draw_string(int x, int y, char *s, unsigned int maxlen, uint32_t color);
+static void draw_string(int x, int y, char *s, unsigned int len, uint32_t color);
+static void draw_string_scale(int x, int y, char *s, unsigned int len, uint32_t color, int scale);
 static void clear_string(int x, int y, int charsToClear);
 static void draw_char(int x, int y, char c, uint32_t color);
+static void draw_char_scale(int x, int y, char c, uint32_t color, int scale);
 static void clear_area(int x, int y, int w, int h);
 
 void draw_text(int xPos, int yPos, char* str, uint32_t color)
 {
     draw_string(xPos, yPos, str, strlen(str), color);
+}
+
+void draw_text_scale(int xPos, int yPos, char* str, uint32_t color, int scale)
+{
+	draw_string_scale(xPos, yPos, str, strlen(str), color, scale);
 }
 
 void clear_text(int xPos, int yPos, int charsToClear)
@@ -72,7 +79,8 @@ static void draw_pixel(int x, int y, uint32_t color)
 {
     uint32_t *pixelPtr;
     pixelPtr = fbMemPtr;
-    pixelPtr += fix_screeninfo.line_length * y;
+	//line length is is bytes, so divide by 4 so we can treat it as pixels
+    pixelPtr += (fix_screeninfo.line_length / 4) * y;
     pixelPtr += x;
 
     // printf("fbMemPtr: 0x%x\n", fbMemPtr);
@@ -94,6 +102,19 @@ static void draw_string(int x, int y, char *s, unsigned int len, uint32_t color)
 	}
 }
 
+static void draw_string_scale(int x, int y, char *s, unsigned int len, uint32_t color, int scale)
+{
+	int i;
+
+	// for each char in string
+	for (i = 0; i < len; i++) {
+
+		// draw it (x + 8 * i * scale term is necessary since each char is 8 pixels wide, 
+		// so rather than moving over 1 pixel for next char, move over 8 * scale pixels)
+		draw_char_scale((x + 8 * i * scale), y, s[i], color, scale);
+	}
+}
+
 static void clear_string(int x, int y, int charsToClear)
 {
     clear_area(x, y, charsToClear * 8, 8);
@@ -109,12 +130,12 @@ static void draw_char(int x, int y, char c, uint32_t color)
 		// gets each horizontal "line" of 8 pixels from the 8x8 pixel grid that makes up each character
 		bits = fontdata_8x8[8 * c + i];
 
-		// each char is 8 pixels wide
+		// each char is 8 pixels wide (by default)
 		for (j = 0; j < 8; j++) 
 		{
 			// pixelX takes into account desired string position, char width, and bpp to determine x coord of current pixel
-			// assume we are getting 32 bits per pixel from var_screeninfo, if different it will be caught later
-			pixelX = (x + j + var_screeninfo.xoffset) * (var_screeninfo.bits_per_pixel / 8);
+			// no need to multiply x-value by a constant representing bits per pixel since each write is 4 bytes
+			pixelX = (x + j + var_screeninfo.xoffset);
 
 			// pixelY takes into account desired string position and char height to determine y coord of current pixel in 2-D screen plane
 			pixelY = (y + i + var_screeninfo.yoffset);
@@ -126,6 +147,47 @@ static void draw_char(int x, int y, char c, uint32_t color)
 			// second check makes sure the location is within the upper bound of the framebuffer memory
 			// third check (bitshift) determines if pixel is a 1 in font chart (i.e., is the current pixel part of the char drawing)
 			if (pixelLocation >= 0 && pixelLocation < fix_screeninfo.smem_len && ((bits >> (7 - j)) & 1) && var_screeninfo.bits_per_pixel == 32) 
+			{	
+				// if everything checks out, draw the current pixel onto the screen
+				draw_pixel(pixelX, pixelY, color);
+			}
+			// simple check incase we run into situation where we have a different than expected number of bits per pixel
+			else if (var_screeninfo.bits_per_pixel != 32)
+			{
+				printf("Invalid bits per pixel, should be 32, was %d\n", var_screeninfo.bits_per_pixel);
+			}
+		}
+	}
+}
+
+static void draw_char_scale(int x, int y, char c, uint32_t color, int scale)
+{
+	int i, j, bits, pixelX, pixelY, pixelLocation;
+
+	// each char is 8 pixels tall, so multiply by scale for new character height
+	for (i = 0; i < 8 * scale; i++) 
+	{
+		// gets each horizontal "line" of 8 pixels from the 8x8 pixel grid that makes up each character
+		bits = fontdata_8x8[8 * c + (i / scale)];
+
+		// each char is 8 pixels wide (by default)
+		// multiply by scale for new char width
+		for (j = 0; j < 8 * scale; j++) 
+		{
+			// pixelX takes into account desired string position, char width, and bpp to determine x coord of current pixel
+			// no need to multiply x-value by a constant representing bits per pixel since each write is 4 bytes
+			pixelX = (x + j + var_screeninfo.xoffset);
+
+			// pixelY takes into account desired string position and char height to determine y coord of current pixel in 2-D screen plane
+			pixelY = (y + i + var_screeninfo.yoffset);
+
+			// pixelLocation is location in framebuffer of the current pixel, will need in order to verify validity of location
+			pixelLocation = pixelX + (pixelY * fix_screeninfo.line_length);
+
+			// first check is to make sure absolute location isn't negative (make sure it's within the lower bound of framebuffer memory)
+			// second check makes sure the location is within the upper bound of the framebuffer memory
+			// third check (bitshift) determines if pixel is a 1 in font chart (i.e., is the current pixel part of the char drawing)
+			if (pixelLocation >= 0 && pixelLocation < fix_screeninfo.smem_len && ((bits >> (7 - (j / scale))) & 1) && var_screeninfo.bits_per_pixel == 32) 
 			{	
 				// if everything checks out, draw the current pixel onto the screen
 				draw_pixel(pixelX, pixelY, color);
@@ -165,15 +227,20 @@ int main(void)
 
     char testTextString[] = "Bomba";
 
-    int strX = 50;
-    int strY = 50;
+    int strX = 100;
+    int strY = 100;
 
     // clear arbitrary amount of space at least as large as string to write
-    clear_text(strX, strY, 5);
-    draw_text(strX, strY, testTextString, 0xFFFFFFFF);
+    //clear_text(strX, strY, 5);
+    //draw_text(strX, strY, testTextString, 0xFFFFFFFF);
 
     // perform same thing as above with single call but in different location
-    clear_and_draw_text(strX, strY + 10, testTextString, 0xFFFFFFFF);
+    //clear_and_draw_text(strX, strY + 10, testTextString, 0xFFFFFFFF);
+
+	draw_text(70, 70, "scale1", 0xFFFFFFFF);
+	draw_text_scale(100, 100, "scale2", 0xFFFFFFFF, 2);
+	draw_text_scale(170, 170, "scale3", 0xFFFFFFFF, 3);
+
 
     return 0;
 }
