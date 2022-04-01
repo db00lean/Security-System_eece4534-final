@@ -1,5 +1,5 @@
 TARGET:=drm_test
-SRCS:=drm_test.c
+SRCS:=drm_test.c ../src/draw_bounding_box.c imagelib.c
 OBJS:=$(SRCS:.c=.o)
 
 DRM_CFLAGS := $(shell pkg-config --cflags libdrm)
@@ -17,9 +17,6 @@ $(TARGET): $(OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< 
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
 
 clean:
 	rm -rf $(OBJS) $(TARGET)
