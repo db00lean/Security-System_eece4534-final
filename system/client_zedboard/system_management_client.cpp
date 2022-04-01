@@ -22,6 +22,17 @@
 // struct cv_data queue
 std::queue<struct cv_data> cv_data_q;
 
+// camera thread main function
+void* camera(void* thread_args){
+
+    return NULL;
+}
+// stream thread main function
+void* stream(void* thread_args){
+
+    return NULL;
+}
+// computer vision main function
 void* cv(void* thread_args){
     struct cv_data metadata1 = {
         .num_bbox = 1,
