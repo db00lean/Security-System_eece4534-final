@@ -29,6 +29,7 @@ drmModeCrtc *crtc;
 
 drmModeFB *fb;
 
+
 void *map;
 
 
@@ -38,6 +39,8 @@ int drm_init(int fd);
 int drm_close();
 void draw_pixel(int x, int y, uint32_t ARGB);
 void demo(int resolution);
+
+void draw_boundingbox(int x_start, int y_start, int x_len, int y_len, unsigned int color);
 
 
 uint32_t const red   = (0xff<<16);
@@ -206,6 +209,7 @@ int main(){
 //    }
     demo(resolution);
 
+    draw_boundingbox(600,600,300,300, 0x00FFFF00);
 
     
     drmSetMaster(fd);
@@ -320,6 +324,41 @@ void demo(int resolution){
         }
     }
 }
+
+void draw_boundingbox(int x_start, int y_start, int x_len, int y_len, unsigned int color) {
+    //origin is top left of rectangle (x_start, y_start)
+    int x, y;
+
+    //draw top line
+    x = x_start;
+    y = y_start;
+    for (x = x_start; x < x_len + x_start; x++) {
+        draw_pixel(x, y, color);
+    }
+
+    //draw bottom line
+    x = x_start;
+    y = y_start + y_len;
+    for (x = x_start; x < x_len + x_start; x++) {
+        draw_pixel(x, y, color);
+    }
+
+    //draw left line
+    x = x_start;
+    y = y_start;
+    for (y = y_start; y < y_len + y_start; y++) {
+        draw_pixel(x, y, color);
+    }
+
+    //draw right line
+    x = x_start + x_len;
+    y = y_start;
+    for (y = y_start; y < y_len + y_start; y++) {
+        draw_pixel(x, y, color);
+    }
+
+}
+
 
     // for(i = 0; i < (int)resolution; i++){
     //    if(i < (resolution /3)){
