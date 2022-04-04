@@ -14,7 +14,6 @@ struct client* new_client(const char* server_port, const char* server_address)
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://%s:%s", server_address, server_port);
     printf("Client bind address is %s\n", bind_addr);
-    void* context = zmq_ctx_new();
     zsock_t* requester = zsock_new_req(bind_addr);
     // Bind requester to socket using the given server information
 
@@ -22,9 +21,7 @@ struct client* new_client(const char* server_port, const char* server_address)
         fprintf(stderr, "Error connecting to socket: %s\n", strerror(errno));    
     }
     assert(requester);
-    c->context = context;
     c->requester = requester;
-    //strcpy(c->port, server_port);
     return c;
 }
 

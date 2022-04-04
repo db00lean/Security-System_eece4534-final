@@ -9,9 +9,7 @@
 
 // Structure containing the information for 0mq client connection
 struct client {
-    void* context;
     zsock_t* requester;
-    char* port;
 } client;
 
 // Initializes and returns a new client connection
