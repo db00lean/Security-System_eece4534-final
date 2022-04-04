@@ -89,13 +89,15 @@ cv_data GenerateBBoxes(cv::Mat image)
   return cv_data_output;
 }
 
-int TransmitStruct(cv_data data_to_send)
+// TODO: Make this accept gstream as an input
+// Gets the newest frame from a stream  // TOOO: Make "gstream camera_stream" an input
+// Creates/returns coordinates of bounding boxes of people detected in the frame
+cv_data GetBBoxesFromFrame()
 {
-  // TODO: Implement TransmitStruct()
-  std::cout << "Sending cv_data out\n";
+  cv::Mat frame; // Could consolidate this into one mega-line, but this looks cleaner
 
-  // TODO: Add error Handling
-  return 0;
+  frame = ImportFrame(); // TODO: Update ImportFrame() to get frame from gstream; accepts "gstream camera_stream" as argument
+  return GenerateBBoxes(frame);
 }
 
 int main()

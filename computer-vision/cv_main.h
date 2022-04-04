@@ -6,11 +6,8 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include <opencv2/core/mat.hpp>
 
-// TODO: Rename "cv_main.cpp" and "cv_main.h" later on
-// Having a header for functions seems like it could be nice, but is it needed?
-
 cv::Mat ImportFrame();
 cv_data GenerateBBoxes(cv::Mat image); // Change datatype from int to whatever the frame is
-int TransmitStruct(cv_data data_to_send);
+cv_data GetBBoxesFromFrame();
 
 #endif
