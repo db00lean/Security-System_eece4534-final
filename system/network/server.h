@@ -1,5 +1,5 @@
 // Server header file using 0MQ
-#include <zmq.h>
+#include <czmq.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -10,13 +10,13 @@
 // Structure containing the information for server connection
 struct server {
     void* context;
-    void* responder;
+    zsock_t* responder;
     uint32_t port;
 } server;
 
 // Initializes a new server connection 
-struct server new_server(const char*);
+struct server* new_server(const char*);
 
 // Recieves a new request from client connections
-int receive(void*);
+int receive_msg(zsock_t*);
 #endif
