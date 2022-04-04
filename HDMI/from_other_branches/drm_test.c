@@ -17,30 +17,29 @@
 
 #define PIXEL(x, y) ((y * IMG_W * 3) + (x * 3))
 
-// BGRA8888 -- alpha (transparency r g b, 8 bits for each)
-// drmModeAddFB2(drm_fd, width, height, DRM_FORMAT_XRGB8888,
-//     handles, strides, offsets, &fb_id, 0);
 
 // This is the default and only card on the zedboard
 #define cardPath "/dev/dri/card0"
 
-//
+//Structs from libdrm that contain information about DRM objects
 drmModeRes *res;
 drmModeConnector *conn;
 drmModeModeInfo *mode;
 drmModeEncoder *encode;
 drmModeCrtc *crtc;
-
 drmModeFB *fb;
 
+//Pointer to memory mapped region for writing to card
 void *map;
 
+//Function prototypes
 int drm_open();
 int drm_init(int fd);
 int drm_close();
 void draw_pixel(int x, int y, uint32_t ARGB);
 void demo(int resolution);
 
+//Defining constants for colors according to default pixel format -- 32 bit word with transparency, red, green, and blue values
 uint32_t const red = (0xff << 16);
 uint32_t const green = (0xff << 8);
 uint32_t const blue = (0xff);
@@ -50,6 +49,8 @@ int main()
 {
 
     int ret;
+
+    //Open /dev/dri/card0
     int fd = drm_open();
 
     if (fd == -1)
@@ -58,12 +59,14 @@ int main()
         return -1;
     }
 
+    //Initialize drm and error check
     if (drm_init(fd) == -1)
     {
         printf("Error with init DRM");
         return -1;
     }
 
+    //Printing information from libdrm structs, filled in drm_init()
     printf("######## RESOURCE ########\n");
     printf("count_fbs: %d \n", (int)res->count_fbs);
     printf("count_connectors: %d \n", (int)res->count_connectors);
@@ -129,7 +132,7 @@ int main()
         return ret;
     }
 
-    printf("fb: %d\n", fb);
+    //printf("fb: %d\n", fb);
     // wont work because fb is uint32_t in scope, doesn't refer to struct
     // printf("bits per pixel %d\n",(int)fb->bpp);
 
@@ -159,10 +162,6 @@ int main()
 
     memset(map, 0, crereq.size);
 
-    // uint32_t const red   = (0xff<<16);
-    // uint32_t const green = (0xff<<8);
-    // uint32_t const blue  = (0xff);
-    // uint32_t const colors[] = {red, green, blue};
 
     int i;
     int count = 0;
@@ -172,23 +171,6 @@ int main()
     printf("resolution %d\n", resolution);
     printf("calculated resolution %d\n", mode->vdisplay * mode->hdisplay);
     printf("test\n");
-    // printf("calculated bits per pixel %d\n", crereq.size / resolution);
-
-    //    for(i = 0; i < (int)resolution; i++){
-
-    //        if(count < (resolution /3)){
-    //         ((uint32_t *) map)[i] = colors[0];
-    //        }
-
-    //        else if( count <  ((resolution * 2.0/3.0))){
-    //        ((uint32_t *) map)[i] = colors[1];
-    //        }
-    //        else{
-    //            ((uint32_t *) map)[i] = colors[2];
-    //        }
-
-    //        count = count + 1;
-    //    }
     demo(resolution);
 
     printf("draw image start\n");
@@ -253,16 +235,12 @@ int main()
 
     drmDropMaster(fd);
 
+    //Get plane information
     drmSetClientCap(fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
-
     drmModePlaneRes *planes = drmModeGetPlaneResources(fd);
     printf("num planes %d\n", planes->count_planes);
 
-    // for (uint32_t i = 0; i < planes->count_planes; i++) {
-    //     uint32_t plane_id = planes->planes[i];
-    //     drmModePlane *plane = drmModeGetPlane(drm_fd, plane_id);
-    // }
-
+    //Hang until user presses a key
     getchar();
 
     drm_close();
@@ -331,30 +309,41 @@ int drm_open()
 
     return fd;
 }
+//Draw a pixel at (x, y) on screen with pixel information contained in 32-bit word ARGB
 void draw_pixel(int x, int y, uint32_t ARGB)
 {
+    //Local pointer to point to memory mapped display region
     uint32_t *pixelPtr;
-    pixelPtr = map;
+    pixelPtr = (uint32_t *)(map);
+
+    //Advance pixelPtr to correct row
     pixelPtr += mode->hdisplay * y;
+    //Advance pixelPtr to correct column
     pixelPtr += x;
 
     *pixelPtr = ARGB;
 }
+//Demo function to fill the screen with 3 rectangles
 void demo(int resolution)
 {
     int y, x;
+    //Loop to iterate through rows
     for (y = 0; y < mode->vdisplay; y++)
     {
+        //Loop to iterate through columns
         for (x = 0; x < mode->hdisplay; x++)
         {
+            //Draw top 3rd of screen red
             if (y < (mode->vdisplay / 3))
             {
                 draw_pixel(x, y, colors[0]);
             }
+            //Draw middle 3rd of screen blue
             else if (y < (mode->vdisplay * 2 / 3))
             {
                 draw_pixel(x, y, colors[1]);
             }
+            //Draw bottom 3rd of screen green
             else
             {
                 draw_pixel(x, y, colors[2]);
@@ -362,17 +351,3 @@ void demo(int resolution)
         }
     }
 }
-
-// for(i = 0; i < (int)resolution; i++){
-//    if(i < (resolution /3)){
-//     ((uint32_t *) map)[i] = colors[0];
-//    }
-
-//    else if( i <  ((resolution * 2.0/3.0))){
-//    ((uint32_t *) map)[i] = colors[1];
-//    }
-//    else{
-//        ((uint32_t *) map)[i] = colors[2];
-//    }
-// }
-//}
