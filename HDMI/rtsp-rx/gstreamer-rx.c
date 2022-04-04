@@ -14,8 +14,9 @@ main (int argc, char *argv[])
   /* Initialize GStreamer */
   gst_init (&argc, &argv);
 
-// works, buuut PGM. has a header
-  pipeline = gst_parse_launch("-e -v rtspsrc location=\"rtsp://rtsp.stream/pattern\" ! rtph264depay ! h264parse !  decodebin ! videoconvert ! avenc_ppm ! appsink name=sink", NULL);
+  // nice
+  // if we want RGB, just change the format!
+  pipeline = gst_parse_launch("rtspsrc location=\"rtsp://rtsp.stream/pattern\" ! rtph264depay ! h264parse ! decodebin ! videoconvert ! video/x-raw,format=ARGB,width=320,height=240 ! appsink name=sink", NULL);
 
   gst_element_set_state(pipeline, GST_STATE_PLAYING);
 
@@ -56,11 +57,13 @@ main (int argc, char *argv[])
   gst_buffer_map(buffer, &map, GST_MAP_READ);
 
   // Allocate appropriate buffer to store compressed image
-  char *pRet = malloc(map.size);
+  char *some_memory = malloc(map.size);
   // Copy image
-  memmove(pRet, map.data, map.size);
+  memcpy(some_memory, map.data, map.size);
+  // free because we're nice
+  free(some_memory);
 
-  free(pRet);
+  // TODO: put this into one of our nice structs
 
 //  /* Wait until error or EOS */
 //  bus = gst_element_get_bus (pipeline);
