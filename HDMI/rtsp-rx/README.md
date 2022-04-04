@@ -32,7 +32,7 @@ copies it to a data pointer. the program currently exits immediately. I used
 `gdb` to debug it and ensure the data arrived in the pointer.
 
 ### other notes about gstreamer:
-easy debugging with `GSTREAMER_DEBUG=1` env variable
+easy debugging with `GST_DEBUG=1` env variable
 
 ### gstreamer commandline examples:
 These aren't necessary anymore, but keeping them around because it's decent
