@@ -26,7 +26,7 @@ drmModeConnector *conn;
 drmModeModeInfo *mode;
 drmModeEncoder *encode;
 drmModeCrtc *crtc;
-
+drmModePlaneRes *planes;
 drmModeFB *fb;
 
 
@@ -41,7 +41,7 @@ void draw_pixel(int x, int y, uint32_t ARGB);
 void demo(int resolution);
 
 void draw_boundingbox(int x_start, int y_start, int x_len, int y_len, unsigned int color);
-
+void draw_order();
 
 uint32_t const red   = (0xff<<16);
 uint32_t const green = (0xff<<8);
@@ -96,7 +96,9 @@ int main(){
     printf("vdisplay: %d\n", mode->vdisplay);
     printf("vrefresh: %d\n", mode->vrefresh);
 
-
+    printf("######## PLANES ########\n");
+    printf("Plane count: %d\n", planes->count_planes);
+  
 
     //32 bit memory location to store address of framebuffer
     uint32_t fb;
@@ -128,9 +130,13 @@ int main(){
         return ret;
 
     }
+
+
     //create DRM FB using information within crereq, populated by drmIoctl call above
     ret = drmModeAddFB(fd,  (uint32_t) crereq.width, (uint32_t) crereq.height, 24,
                      crereq.bpp, crereq.pitch, crereq.handle, &fb);
+
+
 
                      
     if(ret){
@@ -139,11 +145,13 @@ int main(){
         return ret;
     }
 
+
     printf("fb: %d\n", fb);
     //wont work because fb is uint32_t in scope, doesn't refer to struct
     //printf("bits per pixel %d\n",(int)fb->bpp); 
 
-    //Clear mreq
+
+
     memset(&mreq, 0, sizeof(mreq));
 
     //Set memory mapping handle equal to the handle of the dumb fb just created
@@ -207,11 +215,11 @@ int main(){
 
 //        count = count + 1;
 //    }
-    demo(resolution);
 
-    draw_boundingbox(600,600,100,100, 0x00FFFF00);
+    draw_order();
+   
 
-    
+
     drmSetMaster(fd);
 
     //clear crtc
@@ -220,11 +228,16 @@ int main(){
     drmModeSetCrtc(fd, crtc->crtc_id, fb, 0,0, &conn->connector_id, 1, mode);
 
     drmDropMaster(fd);
+    
+
 
     drmSetClientCap(fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 
-    drmModePlaneRes *planes = drmModeGetPlaneResources(fd);
-    printf("num planes %d\n", planes->count_planes);
+
+    printf("######## PLANES ########\n");
+    printf("Plane count: %d\n", planes->count_planes);
+    
+    
 
     // for (uint32_t i = 0; i < planes->count_planes; i++) {
     //     uint32_t plane_id = planes->planes[i];
@@ -256,6 +269,8 @@ int drm_init(int fd){
         return -1;
        
     }
+    
+    
     //point our "struct drmModeEncoder" encoder information based on "encoder" member defined within "struct drmModeRes" above
     encode = drmModeGetEncoder(fd, res->encoders[0]);
 
@@ -263,13 +278,17 @@ int drm_init(int fd){
         printf("error with encoder and connector IDs");
         return -1;
     }
+
+    
     //point our "struct drmModeCrtc" information based on "CRTC_id" member defined within "struct drmModeEncoder" above
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
-
+   
     //set "struct drmModeModeInfo" to the "struct drmModeModeInfo" member contained within "drmModeConnector"
     mode = conn->modes;
+    
+    
 
-
+    planes = drmModeGetPlaneResources(fd);
 
 
 
@@ -332,20 +351,20 @@ void draw_boundingbox(int x_start, int y_start, int x_len, int y_len, unsigned i
     //draw top line
     x = x_start;
     y = y_start;
-   printf("Test1\n"); 
+
    for (x = x_start; x < x_len + x_start; x++) {
         draw_pixel(x, y, color);
     }
 
 
-	printf("test2\n"); 
+
     //draw bottom line
     x = x_start;
     y = y_start + y_len;
     for (x = x_start; x < x_len + x_start; x++) {
         draw_pixel(x, y, color);
     }
- printf("test3");
+
 
     //draw left line
     x = x_start;
@@ -353,7 +372,7 @@ void draw_boundingbox(int x_start, int y_start, int x_len, int y_len, unsigned i
     for (y = y_start; y < y_len + y_start; y++) {
         draw_pixel(x, y, color);
     }
- printf("test4");
+
 
     //draw right line
     x = x_start + x_len;
@@ -361,6 +380,15 @@ void draw_boundingbox(int x_start, int y_start, int x_len, int y_len, unsigned i
     for (y = y_start; y < y_len + y_start; y++) {
         draw_pixel(x, y, color);
     }
+
+}
+
+void draw_order(){
+  
+    demo( mode->vdisplay * mode->hdisplay);
+
+    draw_boundingbox(600,600,100,100, 0x00FFFF00);
+
 
 }
 
