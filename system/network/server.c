@@ -22,14 +22,18 @@ struct server* new_server(const char* port)
     return s;
 }
 
-// Recieves a new request from client connections
+// Recieves a new request from client connections, this is currently a BLOCKING call
+// This will be changed in a future issue
 int receive_msg(zsock_t* responder)
 {
     int size;
     int max = 256;
     zmq_msg_t msg;
-    char buffer[max];
     int rc = zmq_msg_init(&msg);
+    if (rc == -1) 
+    {
+        fprintf(stderr, "Error initializing message structure\n");
+    }
     printf("Before receive call\n");
     size = zmq_msg_recv(&msg, responder, 0);
     if (size == -1)
@@ -37,9 +41,8 @@ int receive_msg(zsock_t* responder)
         fprintf(stderr, "Error receiving messages: %s\n", strerror(errno));
         return -1;
     }
-    buffer[size < max ? size : max - 1] = '\0';
-    printf("Received %s from client\n", buffer);
+    printf("Received %s from client\n", (char*)zmq_msg_data(&msg));
     sleep(1);
-    size = zmq_send(responder, "ACK", 3, 0);     
+    size = zmq_send(responder, "ACK", 3, 0);
     return size;
 }

@@ -6,14 +6,12 @@
 #include "client.h"
 #include "server.h"
 
+// Creates a simple server and receives a single message from a client 
 int main(void)
 {
-    int i;
     const char* port = "55000";
     struct server* s = new_server(port);
-    while (1)
-    {
-        receive_msg(s->responder);
-    }
+    receive_msg(s->responder);
+    free(s);
     return 0;
 }

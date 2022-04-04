@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <czmq.h>
 #define REQUEST_TIMEOUT 2500 //milliseconds
+
 // Initializes and returns a new client connection
 struct client* new_client(const char* server_port, const char* server_address)
 {
@@ -31,10 +32,10 @@ struct client* new_client(const char* server_port, const char* server_address)
     return c;
 }
 
-// Sends a new request to the previously initialized 0mq client
+// Sends a new request to the previously initialized 0mq client, this currently polls periodically for an acknowledgement 
+// from the server and exits once received, tiemout will be adjusted upon discussing with other sysman members
 int send_msg(zsock_t* requester, char* buff, uint32_t len)
 {
-    //zmq_msg_t msg;
     char recv[256];
     int wait_reply = 1;
     zmq_msg_t msg;
