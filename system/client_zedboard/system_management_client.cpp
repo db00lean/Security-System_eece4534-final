@@ -9,6 +9,7 @@
 #ifndef __CV_STRUCT_H__
 #include "../system_management.h"
 #else
+#include "../../computer-vision/cv_main.h"
 #include "cv_structs.h"
 #endif
 
@@ -51,6 +52,17 @@ void* cv(void* thread_args){
     out = cv_data_q.front();
     cv_data_q.pop();
     printf("meta2 should be 22? %d\n", out.num_bbox);
+
+    #ifdef __CV_STRUCT_H__
+    // Code for when sysman has access to CV code
+    // TODO: Delete the #ifdef/#endif after CV is integrated to allow this code to run
+    bool do_run_cv = true;
+    while (do_run_cv)
+    {
+        // TODO: Add "gstream camera_stream" as argument to GetBBoxesFromFrame (or whatever the gstream type is)
+        cv_data_q.push(GetBBoxesFromFrame());
+    }
+    #endif
 
     return NULL;
 }
