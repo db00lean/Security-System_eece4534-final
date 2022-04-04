@@ -1,6 +1,6 @@
 # gstreamer frame receiver
 
-### image library
+## image library
 Trying to standardize on raw byte-based images. (Like PPM)
 
 See imagelib.h for functions.
@@ -9,45 +9,46 @@ Ability to allocate and free 'images'. You get a pointer to the
 'image' struct. Do whatever you want with it, but the important
 part is that the raw image data is in the `buf` member.
 
-This can be accessed by any code that wants to read the image.
+Images can be encoded in different formats, the type of which is in the
+`enc` member.
 
-Data is formatted as a series of pixels, `R, G, B` one byte each.
-They are arranged from top left to bottom right, in rows.
 See
-[http://davis.lbl.gov/Manuals/NETPBM/doc/ppm.html](http://davis.lbl.gov/Manuals/NETPBM/doc/ppm.html).
+[http://davis.lbl.gov/Manuals/NETPBM/doc/ppm.html](http://davis.lbl.gov/Manuals/NETPBM/doc/ppm.html)
+for notes on the PPM format, which uses a 1-byte RGB layout.
 
 
 ### test program:
-Allocates and creates an image, writes a gradient to it, and
-writes the image data to a file for viewing.
+Allocates and creates an image (RGB), writes a gradient to it, and writes the
+image data to a file for viewing. Open it with your favorite image viewer, but
+it's just a gradient.
 
-Open it with your favorite image viewer, but it's just a gradient.
+## GStreamer
 
-## notes about RTSP RX / gstreamer
-### gstreamer:
-note: both of these will keep appending new frames to the end of the 'ppm' file.
-be careful, you may end up with 500M of ""ppm image"" if you let it keep going!
+gstreamer testing program provided in repository `gstreamer-rx.c`.
+the things I've been playing with are mostly commented.
 
+it sets up the pipeline, grabs one frame using the `appsink` element, and
+copies it to a data pointer. the program currently exits immediately. I used
+`gdb` to debug it and ensure the data arrived in the pointer.
+
+### other notes about gstreamer:
+easy debugging with `GSTREAMER_DEBUG=1` env variable
+
+### gstreamer commandline examples:
+These aren't necessary anymore, but keeping them around because it's decent
+examples of creating pipelines
 Use `identity eos-after=2` to only save one frame of the stream. Without this
 gstreamer will continue writing 'ppm frames' to the end of the file!
 
 `gst-launch-1.0 videotestsrc pattern=0 ! videoconvert ! avenc_ppm ! identity
 eos-after=2 filesink location=pattern.ppm`
 
-
 `gst-launch-1.0 rtspsrc location=rtsp://rtsp.stream/pattern protocols=tcp !
 rtph264depay ! h264parse ! decodebin ! videoconvert ! avenc_ppm ! identity
 eos-after=2 ! filesink location=pattern.ppm`
 
-### ffmpeg:
-may be easier. has a C library / api too but check this out:
-`ffmpeg -y -rtsp_transport tcp -i rtsp://rtsp.stream/pattern -frames:v 1 out.ppm`
-proof that we can do what we want with it, as long as I can understand the API
-can even do rescaling stuff if we really need using ffmpeg
+ffmpeg too, easy RX with `ffplay rtsp://rtsp.stream/pattern`, at least on linux
 
+
+#### Acknowledgements
 thank you dave@rtsp.stream !
-
-(though, this has a REALLY slow startup time. would assume it's faster if
-you're persistently connected and just grabbing new frames)
-
-easy RX with `ffplay rtsp://rtsp.stream/pattern`, at least on linux
