@@ -9,19 +9,25 @@
 // Initializes and returns a new client connection
 struct client* new_client(const char* server_port, const char* server_address)
 {
+    int err; 
     struct client* c = malloc(sizeof(client));
     char bind_addr[20];
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://%s:%s", server_address, server_port);
     printf("Client bind address is %s\n", bind_addr);
-    zsock_t* requester = zsock_new_req(bind_addr);
+    c->context = zmq_ctx_new();
     // Bind requester to socket using the given server information
-
-    if (!requester) {
-        fprintf(stderr, "Error connecting to socket: %s\n", strerror(errno));    
+    c->requester = zmq_socket(c->context, ZMQ_REQ);
+    if (!c->requester) {
+        fprintf(stderr, "Error creating socket: %s\n", strerror(errno));    
     }
-    assert(requester);
-    c->requester = requester;
+    assert(c->requester != 0);
+    err = zmq_connect(c->requester, bind_addr);
+    if (err == -1)
+    {
+        fprintf(stderr, "Error connecting to server: %s\n", strerror(errno)); 
+    }
+    assert(err == 0);
     return c;
 }
 
@@ -37,7 +43,7 @@ int send_msg(zsock_t* requester, char* buff, uint32_t len)
     assert(rc == 0);
     memcpy(zmq_msg_data(&msg), buff, len);
     printf("Sending %s to server\n", buff);
-    rc = zmq_msg_send(&msg, requester, 0);
+    rc = zmq_msg_send(&msg, (void*)requester, ZMQ_DONTWAIT);
     if (rc == -1)
     {
         fprintf(stderr, "Error sending message to server: %s\n", strerror(errno));    

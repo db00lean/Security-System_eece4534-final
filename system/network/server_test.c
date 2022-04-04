@@ -9,7 +9,7 @@
 int main(void)
 {
     int i;
-    const char* port = "5500";
+    const char* port = "55000";
     struct server* s = new_server(port);
     while (1)
     {

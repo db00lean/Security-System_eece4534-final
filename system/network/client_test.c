@@ -9,7 +9,7 @@
 int main(void)
 {
     int i;
-    const char* port = "5500";
+    const char* port = "55000";
     const char* address = "127.0.0.1";
     struct client* c = new_client(port, address);
     char* ping = "Ping";

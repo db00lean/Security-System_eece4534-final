@@ -10,17 +10,15 @@ struct server* new_server(const char* port)
 {
     int err;
     struct server* s = malloc(sizeof(server));
-    char bind_addr[13];
+    char bind_addr[19];
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://*:%s", port);
     printf("Server bind address is %s\n", bind_addr);
-    void* context = zmq_ctx_new();
-    zsock_t* responder = zmq_socket(context, ZMQ_REP);
+    s->context = zmq_ctx_new();
+    s->responder = zmq_socket(s->context, ZMQ_REP);
     // Bind requester to socket using the given server information
-    err = zmq_bind(responder, bind_addr);
+    err = zmq_bind(s->responder, bind_addr);
     assert (err == 0);
-    s->context = context;
-    s->responder = responder;
     return s;
 }
 
@@ -33,7 +31,7 @@ int receive_msg(zsock_t* responder)
     char buffer[max];
     int rc = zmq_msg_init(&msg);
     printf("Before receive call\n");
-    size = zmq_msg_recv(&msg, responder, ZMQ_DONTWAIT);
+    size = zmq_msg_recv(&msg, responder, 0);
     if (size == -1)
     {
         fprintf(stderr, "Error receiving messages: %s\n", strerror(errno));
