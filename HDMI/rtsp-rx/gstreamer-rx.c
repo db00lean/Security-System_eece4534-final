@@ -16,7 +16,9 @@ main (int argc, char *argv[])
 
   // nice
   // if we want RGB, just change the format!
-  pipeline = gst_parse_launch("rtspsrc location=\"rtsp://rtsp.stream/pattern\" ! rtph264depay ! h264parse ! decodebin ! videoconvert ! video/x-raw,format=ARGB,width=320,height=240 ! appsink name=sink", NULL);
+  //pipeline = gst_parse_launch("rtspsrc location=\"rtsp://rtsp.stream/pattern\" ! rtph264depay ! h264parse ! decodebin ! videoconvert ! video/x-raw,format=ARGB,width=320,height=240 ! appsink name=sink", NULL);
+  // alternative in case you don't have network or dave decides he's had enough: (or maybe you just want faster development)
+  pipeline = gst_parse_launch("videotestsrc ! videoconvert ! video/x-raw,format=ARGB,width=320,height=240 ! appsink name=sink", NULL);
 
   gst_element_set_state(pipeline, GST_STATE_PLAYING);
 
@@ -66,7 +68,6 @@ main (int argc, char *argv[])
   // TODO: put this into one of our nice structs
 
 //  /* Wait until error or EOS */
-//  bus = gst_element_get_bus (pipeline);
 //  msg =
 //      gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE,
 //      GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
