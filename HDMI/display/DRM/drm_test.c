@@ -209,7 +209,7 @@ int main(){
 //    }
     demo(resolution);
 
-    draw_boundingbox(600,600,300,300, 0x00FFFF00);
+    draw_boundingbox(600,600,100,100, 0x00FFFF00);
 
     
     drmSetMaster(fd);
@@ -302,7 +302,7 @@ int drm_open(){
 }
 void draw_pixel(int x, int y, uint32_t ARGB){
     uint32_t *pixelPtr;
-    pixelPtr = map;
+    pixelPtr = (uint32_t*)   map;
     pixelPtr += mode->hdisplay * y;
     pixelPtr += x;
 
@@ -332,16 +332,20 @@ void draw_boundingbox(int x_start, int y_start, int x_len, int y_len, unsigned i
     //draw top line
     x = x_start;
     y = y_start;
-    for (x = x_start; x < x_len + x_start; x++) {
+   printf("Test1\n"); 
+   for (x = x_start; x < x_len + x_start; x++) {
         draw_pixel(x, y, color);
     }
 
+
+	printf("test2\n"); 
     //draw bottom line
     x = x_start;
     y = y_start + y_len;
     for (x = x_start; x < x_len + x_start; x++) {
         draw_pixel(x, y, color);
     }
+ printf("test3");
 
     //draw left line
     x = x_start;
@@ -349,6 +353,7 @@ void draw_boundingbox(int x_start, int y_start, int x_len, int y_len, unsigned i
     for (y = y_start; y < y_len + y_start; y++) {
         draw_pixel(x, y, color);
     }
+ printf("test4");
 
     //draw right line
     x = x_start + x_len;
