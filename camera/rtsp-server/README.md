@@ -27,7 +27,7 @@ installation instructions and make sure you also install `gstreamer-rtsp-server-
 # Running test launch on zedboard
 
 Install gstreamer libraries on zedboard before running. On zedboard or in qemu (must have internet connection):
-`dnf install gstreamer1.0-dev libgstrtsp-1.0 gstreamer1.0-rtsp-server gstreamer1.0-plugins-good`
+`dnf install gstreamer1.0-dev libgstrtsp-1.0 gstreamer1.0-rtsp-server gstreamer1.0-plugins-good gstreamer1.0-plugins-base gstreamer1.0-plugins-ugly-x264`
 
 If above command does not work, you must edit `/etc/yum.repos.d/oe-remote-repo-~esl-EECE4534-rpm.repo`
 to remove the tilde (~) characters, so that the file looks like
