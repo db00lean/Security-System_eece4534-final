@@ -14,13 +14,12 @@ struct image {
   char *buf;
 };
 
-
 int bytes_per_pixel(enum img_enc enc);
 
 int write_ppm(char *filepath, struct image *img);
 
-struct image * read_ppm(char *filepath);
+struct image *read_ppm(char *filepath);
 
-struct image * create_image(enum img_enc enc, int width, int height);
+struct image *create_image(enum img_enc enc, int width, int height);
 
 void free_image(struct image *img);

@@ -1,19 +1,19 @@
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "imagelib.h"
 
 int bytes_per_pixel(enum img_enc enc) {
   switch (enc) {
-    case IMGENC_RGB:
-      return 3;
-      break;
-    case IMGENC_ARGB:
-      return 4;
-      break;
-    default:
-      return -1;
+  case IMGENC_RGB:
+    return 3;
+    break;
+  case IMGENC_ARGB:
+    return 4;
+    break;
+  default:
+    return -1;
   }
 }
 
@@ -46,7 +46,7 @@ int write_ppm(char *filepath, struct image *img) {
   return 0;
 }
 
-struct image * read_ppm(char *filepath) {
+struct image *read_ppm(char *filepath) {
   // read a ppm from a file
 
   // unimplemented!
@@ -54,15 +54,16 @@ struct image * read_ppm(char *filepath) {
   return NULL; // hope you check your return values
 }
 
-struct image * create_image(enum img_enc enc, int width, int height) {
+struct image *create_image(enum img_enc enc, int width, int height) {
   int bpp = bytes_per_pixel(enc); // naming?
   if (bpp == -1) {
     return NULL;
   }
-  char *buf = malloc(width*height*bpp);
+  char *buf = malloc(width * height * bpp);
   struct image *img = malloc(sizeof(struct image));
 
-  *img = (struct image) {.enc = enc, .time = 0, .width = width, .height = height, .buf = buf};
+  *img = (struct image){
+      .enc = enc, .time = 0, .width = width, .height = height, .buf = buf};
 
   return img;
 }
