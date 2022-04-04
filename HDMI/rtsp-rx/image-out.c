@@ -9,7 +9,7 @@
 #define PIXEL(x,y) ((y * IMG_W * 3) + (x * 3))
 
 int main(int argc, char** argv) {
-  struct image *img = create_image(IMG_W, IMG_H);
+  struct image *img = create_image(IMGENC_RGB, IMG_W, IMG_H);
 
   // _very_ quick and dirty example
   // don't replicate this
