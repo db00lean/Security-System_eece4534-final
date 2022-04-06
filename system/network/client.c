@@ -38,7 +38,7 @@ struct client* new_client(const char* server_port, const char* server_address)
 // from the server and exits once received, tiemout will be adjusted upon discussing with other sysman members.
 void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint32_t len)
 {
-    void* response = malloc(SERVER_RESPONSE_LENGTH);
+    char* response = malloc(SERVER_RESPONSE_LENGTH);
     int wait_reply = 1;
     int msg_len;
     packet_header* p;

@@ -10,7 +10,7 @@ typedef enum PacketType {
 typedef struct packet_header {
     int cam_id;
     PacketType type;
-    static int len;
+    int len;
 } packet_header;
 
 // Returns the packet header data from the zmq message

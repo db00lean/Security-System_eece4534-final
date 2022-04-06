@@ -1,4 +1,5 @@
 // Client header file using 0MQ
+#include "packet.h"
 #include <czmq.h>
 #include <stdio.h>
 #include <unistd.h>

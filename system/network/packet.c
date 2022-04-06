@@ -1,5 +1,6 @@
 #include "packet.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 // Returns the packet header data from the zmq message
 packet_header * parse_packet_header(zmq_msg_t* msg) {
@@ -7,9 +8,9 @@ packet_header * parse_packet_header(zmq_msg_t* msg) {
     struct packet_header * ph;
     packet_data = zmq_msg_data(msg);
     ph = malloc(sizeof(packet_header));
-    ph->cam_id = *packet_data;
-    ph->type = *(packet_data + sizeof(int));
-    ph->len = *(packet_data + sizeof(int) + sizeof(PacketType));
+    ph->cam_id = *(int*)packet_data;
+    ph->type = *(PacketType*)(packet_data + sizeof(int));
+    ph->len = *(int*)(packet_data + sizeof(int) + sizeof(PacketType));
     return ph;
 }
 
@@ -23,9 +24,9 @@ void * parse_packet_data(zmq_msg_t* msg) {
 }
 
 // Creates a packet with the provided details
-packet_header * build_packet(int cam_id, PacketType type, int data_len);
-    struct packet * p;
-    p = malloc(sizeof(packet));
+packet_header * build_packet(int cam_id, PacketType type, int data_len) {
+    struct packet_header* p;
+    p = malloc(sizeof(packet_header));
     p->cam_id = cam_id;
     p->type = type;
     p->len = data_len;
@@ -33,6 +34,7 @@ packet_header * build_packet(int cam_id, PacketType type, int data_len);
 }
 
 // Frees the memory in a packet
-int free_packet(packet* p) {
+int free_packet(packet_header* p) {
     free(p);
+    return 0;
 }
