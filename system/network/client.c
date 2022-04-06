@@ -39,8 +39,11 @@ void* send_msg(zsock_t* requester, void* buff, uint32_t len)
 {
     void* response = malloc(SERVER_RESPONSE_LENGTH);
     int wait_reply = 1;
+    int msg_len;
+    packet_header* p;
     zmq_msg_t msg;
 
+    // calculate total message length
     int rc = zmq_msg_init_size(&msg, len);
     assert(rc == 0);
     memcpy(zmq_msg_data(&msg), buff, len);
