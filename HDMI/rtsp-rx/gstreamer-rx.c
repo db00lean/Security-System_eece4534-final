@@ -19,7 +19,9 @@ int main(int argc, char *argv[]) {
   // (or maybe you just want faster development)
   GstElement *pipeline = gst_parse_launch(
       "videotestsrc ! videoconvert ! "
-      "video/x-raw,format=ARGB,width=320,height=240 ! appsink name=sink",
+      "video/x-raw,format=ARGB,width=320,height=240 ! "
+      "queue leaky=downstream max-size-time=250000000 ! " //.25 second queue
+      "appsink name=sink",
       NULL);
 
   gst_element_set_state(pipeline, GST_STATE_PLAYING);
