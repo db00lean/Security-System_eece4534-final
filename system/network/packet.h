@@ -14,7 +14,10 @@ typedef struct packet_header {
 } packet_header;
 
 // Returns the packet header data from the zmq message
-packet_header * parse_packet(zmq_msg_t* msg);
+packet_header * parse_packet_header(zmq_msg_t* msg);
+
+// Returns the data from the zmq message
+void * parse_packet_data(zmq_msg_t* msg);
 
 // Creates a packet with the provided details
 packet_header * build_packet(int cam_id, PacketType type, int data_len);
