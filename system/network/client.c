@@ -1,4 +1,5 @@
 #include "client.h"
+#include "packet.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -35,7 +36,7 @@ struct client* new_client(const char* server_port, const char* server_address)
 
 // Sends a new request to the previously initialized 0mq client, this currently polls periodically for an acknowledgement 
 // from the server and exits once received, tiemout will be adjusted upon discussing with other sysman members.
-void* send_msg(zsock_t* requester, void* buff, uint32_t len)
+void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint32_t len)
 {
     void* response = malloc(SERVER_RESPONSE_LENGTH);
     int wait_reply = 1;
@@ -44,16 +45,25 @@ void* send_msg(zsock_t* requester, void* buff, uint32_t len)
     zmq_msg_t msg;
 
     // calculate total message length
-    int rc = zmq_msg_init_size(&msg, len);
+    msg_len = sizeof(packet_header)+len;
+    int rc = zmq_msg_init_size(&msg, msg_len);
+    // Ensure message size was initialized properly
     assert(rc == 0);
-    memcpy(zmq_msg_data(&msg), buff, len);
-    printf("Sending %s to server\n", buff);
+    // Get packet header
+    p = build_packet(cam_id, type, len);
+    // Copy header into message
+    memcpy(zmq_msg_data(&msg), p, sizeof(packet_header));
+    // Copy data into message
+    memcpy(zmq_msg_data(&msg)+sizeof(packet_header), buff, len);
+    // Send message to server
+    printf("Sending message to server\n");
     rc = zmq_msg_send(&msg, (void*)requester, ZMQ_DONTWAIT);
     if (rc == -1)
     {
         fprintf(stderr, "Error sending message to server: %s\n", strerror(errno));    
     }
-    assert(rc == len);
+    assert(rc == msg_len);
+    // Wait for an ACK from the server
     while(wait_reply)
     {
         printf("Waiting for reply from server\n");
@@ -81,7 +91,7 @@ void* send_msg(zsock_t* requester, void* buff, uint32_t len)
             }
             // We have received a reply from the server and want to break out of the loop and return the pointer to its response.
             wait_reply = 0;
-            //printf("Received %s from server\n", response);
+            printf("Received %s from server\n", response);
         }
     }
     return response;

@@ -18,5 +18,5 @@ struct client* new_client(const char*, const char*);
 
 // Sends a new message using the given client connection, returns the server's response
 // TODO: Currently does not handle chunked messages
-void* send_msg(zsock_t*, void*, uint32_t);
+void* send_msg(zsock_t*, int, PacketType, void*, uint32_t);
 #endif
