@@ -1,29 +1,25 @@
+#include <czmq.h>
+
 #ifndef PACKET_H
 #define PACKET_H
 
-enum PacketType {CV_DATA, COORD_DATA};
+typedef enum PacketType {
+    CV_DATA
+} PacketType;
 
-typedef struct packet {
+typedef struct packet_header {
     int cam_id;
     PacketType type;
-    int len;
-    void * data;
-} packet;
+    static int len;
+} packet_header;
 
-// Returns type of packet data
-PacketType get_packet_type(packet p);
-
-// Returns camera ID from packet
-int get_cam_id(packet p);
-
-// Returns the data in the form of a void *
-// ** The data is copied into a separate memory space so the packet can be free**
-void * get_packet_data(packet p); //memcpy
+// Returns the packet header data from the zmq message
+packet_header * parse_packet(zmq_msg_t msg);
 
 // Creates a packet with the provided details
-packet * build_packet(int cam_id, int data_len, void * data);
+packet_header * build_packet(int cam_id, PacketType type, int data_len);
 
-// Frees the memory in a packet
-int free_packet(packet* p);
+// Frees the packet memory
+int free_packet(packet_header* p);
 
 #endif
