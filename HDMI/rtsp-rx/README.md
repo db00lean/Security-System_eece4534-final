@@ -1,3 +1,7 @@
+note: branch merged for reorganization around this commit.
+if you are reading this on `main`, you may be seeing old code.
+look for the `HDMI` branch.
+
 # gstreamer frame receiver
 
 ## image library
