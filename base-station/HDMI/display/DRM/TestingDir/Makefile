@@ -1,11 +1,11 @@
-TARGET:=drm_test_new
-SRCS:=drm_test_new.c DRM_user.c #../src/draw_bounding_box.c imagelib.c
+TARGET:=main_drm_test
+SRCS:=main_drm_test.c DRM_user_test.c 
 OBJS:=$(SRCS:.c=.o)
 
 DRM_CFLAGS := $(shell pkg-config --cflags libdrm)
 DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
 
-INCLUDE_DIRS:=.. $(ZED_INCLUDE) 
+INCLUDE_DIRS:=. .. $(ZED_INCLUDE)
 CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(DRM_CFLAGS)
 
 .PHONY: clean
