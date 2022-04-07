@@ -27,9 +27,61 @@
  * 
  */
 void show_background() {
+    //top name
+    draw_text_scale(50, 50, "Security System", 0xff00ff, 4);
+    //camera frame border
+    draw_boundingbox(100, 100, 800, 600, 0xffffff);
+
+    //zone status block
+    draw_boundingbox(1000, 100, 200, 50, 0xcccccc);
+    draw_text_scale(1000, 75, "Zone Status", 0xff00ff, 2);
+    draw_text_scale(1025, 112, "Vacant", 0x00ff00, 3);
+
+    //people count block
+    draw_boundingbox(1000, 300, 200, 50, 0xcccccc);
+    draw_text_scale(1000, 275, "Number of People", 0xff00ff, 2);
+    draw_text_scale(1025, 312, "3", 0x00ff00, 3);
+    
+    //shown box and people status block
+    draw_boundingbox(1000, 500, 350, 100, 0xcccccc);
+    draw_text_scale(1020, 512, "Show Boxes: Yes", 0x0ff00, 2);
+    draw_text_scale(1020, 550, "Show Person #: Yes", 0x00ff00, 2);
+    
     //camera status boxes
-    draw_text(100, 100, "test123success", 0xffffff);
-    draw_boundingbox(100, 300, 50, 50, 0x123123);
+    draw_boundingbox(100, 750, 150, 150, 0xff0000);
+    draw_text_scale(175, 825, "1", 0x00ffff, 10);
+    draw_text_scale(100, 750, "O", 0xff0000, 3);
+
+    draw_boundingbox(300, 750, 150, 150, 0xff0000);
+    draw_text_scale(375, 825, "2", 0x00ffff, 10);
+    draw_text_scale(300, 750, "O", 0xff0000, 3);
+
+    draw_boundingbox(500, 750, 150, 150, 0xff0000);
+    draw_text_scale(575, 825, "3", 0x00ffff, 10);
+    draw_text_scale(500, 750, "O", 0x00ff00, 3);
+
+/*
+    //temp testing of draw image - delete later
+    // Using image struct from imagelib.h and fill with data for now
+    int IMG_W = 1920;
+    int IMG_H = 1080;
+    struct image *img = create_image(IMGENC_RGB, IMG_W, IMG_H);
+    for (int i = 0; i<IMG_H; i++) {
+       for (int j = 0; j<IMG_W; j++) {
+           img->buf[i + j + 0] = i % 255;
+           img->buf[i + j + 1] = 50;
+           img->buf[i + j + 2] = j % 255;
+       }   
+    }
+    //draw image to screen using draw pixel
+    // for each box, draw a rectangle bounding box
+    for (int x = 0; x < IMG_W; x++) {
+        for (int y = 0; y < IMG_H; y++) {
+            unsigned int color = (img->buf[x + y] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
+            draw_pixel(x,y,color);
+        }
+    }
+*/
     
 }
 
