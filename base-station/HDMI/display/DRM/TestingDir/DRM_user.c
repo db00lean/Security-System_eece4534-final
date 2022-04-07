@@ -12,7 +12,7 @@
 #include <drm_fourcc.h>
 
 //#include "cv_structs.h"
-#include "draw_bounding_box.h"
+//#include "draw_bounding_box.h"
 //#include "imagelib.h"
 
 
