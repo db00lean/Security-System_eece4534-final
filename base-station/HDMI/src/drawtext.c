@@ -12,13 +12,7 @@
 #include <getopt.h>
 #include <time.h>
 
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-
-#include <linux/fb.h>
-
-#include "drawtext.h"
+#include "../inc/drawtext.h"
 
 //static void *fbMemPtr;
 

@@ -15,6 +15,8 @@
 #include "inc/draw_bounding_box.h"
 #include "inc/drawtext.h"
 #include "rtsp-rx/imagelib.h"
+#include "inc/DRM_user.h"
+
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
 // #include "rendering.h"
@@ -25,8 +27,9 @@
  * 
  */
 void show_background() {
-    // TODO: draw shape/text functions for static elements of the GUI
-
+    //camera status boxes
+    draw_text(100, 100, "test123success", 0xffffff);
+    draw_boundingbox(100, 300, 50, 50, 0x123123);
     
 }
 
@@ -121,14 +124,21 @@ void show_camera_options(struct system_status * system) {
  */
 void render(struct system_status * system) {
     // TODO: figure out how to get pointer to system management struct
+    //init DRM
+    int fd, ret;
+    fd = drm_open();
+    drm_init(fd);
+    map = drm_map(fd);
+
+    print_info();
     while (1) {
 
         // draw GUI elements
         show_background();
-        show_camera_frame(system);
-        show_bounding_box(system);
-        show_camera_info(system);
-        show_camera_options(system);
+      //  show_camera_frame(system);
+      //  show_bounding_box(system);
+      //  show_camera_info(system);
+      //  show_camera_options(system);
     }
 }
 
