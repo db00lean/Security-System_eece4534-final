@@ -40,7 +40,9 @@ gpgcheck=0
 
 Run test launch:
 
-`./test-launch "( videotestsrc ! x264enc ! rtph264pay name=pay0 pt=96 )"`
+`./test-launch`
+
+Currently this program is hardcoded to create the following pipeline: `v4l2src ! jpegenc ! rtpjpegpay name=pay0`
 
 Currently this runs on the zedboard but a client is not able to connect, but this seems to be a network issue.
 
