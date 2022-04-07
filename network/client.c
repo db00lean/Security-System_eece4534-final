@@ -1,4 +1,8 @@
 #include "client.h"
+<<<<<<< HEAD
+=======
+#include "packet.h"
+>>>>>>> packet_structure
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -6,6 +10,10 @@
 #include <assert.h>
 #include <czmq.h>
 #define REQUEST_TIMEOUT 2500 //milliseconds
+<<<<<<< HEAD
+=======
+#define SERVER_RESPONSE_LENGTH 255
+>>>>>>> packet_structure
 
 // Initializes and returns a new client connection
 struct client* new_client(const char* server_port, const char* server_address)
@@ -33,23 +41,35 @@ struct client* new_client(const char* server_port, const char* server_address)
 }
 
 // Sends a new request to the previously initialized 0mq client, this currently polls periodically for an acknowledgement 
-// from the server and exits once received, tiemout will be adjusted upon discussing with other sysman members
-int send_msg(zsock_t* requester, char* buff, uint32_t len)
+// from the server and exits once received, tiemout will be adjusted upon discussing with other sysman members.
+void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint32_t len)
 {
-    char recv[256];
+    char* response = malloc(SERVER_RESPONSE_LENGTH);
     int wait_reply = 1;
+    int msg_len;
+    packet_header* p;
     zmq_msg_t msg;
 
-    int rc = zmq_msg_init_size(&msg, len);
+    // calculate total message length
+    msg_len = sizeof(packet_header)+len;
+    int rc = zmq_msg_init_size(&msg, msg_len);
+    // Ensure message size was initialized properly
     assert(rc == 0);
-    memcpy(zmq_msg_data(&msg), buff, len);
-    printf("Sending %s to server\n", buff);
+    // Get packet header
+    p = build_packet(cam_id, type, len);
+    // Copy header into message
+    memcpy(zmq_msg_data(&msg), p, sizeof(packet_header));
+    // Copy data into message
+    memcpy(zmq_msg_data(&msg)+sizeof(packet_header), buff, len);
+    // Send message to server
+    printf("Sending message to server\n");
     rc = zmq_msg_send(&msg, (void*)requester, ZMQ_DONTWAIT);
     if (rc == -1)
     {
         fprintf(stderr, "Error sending message to server: %s\n", strerror(errno));    
     }
-    assert(rc == len);
+    assert(rc == msg_len);
+    // Wait for an ACK from the server
     while(wait_reply)
     {
         printf("Waiting for reply from server\n");
@@ -63,19 +83,22 @@ int send_msg(zsock_t* requester, char* buff, uint32_t len)
         }
         if(items[0].revents & ZMQ_POLLIN)
         {
-            int size = zmq_recv(requester, recv, 255, 0);
+            int size = zmq_recv(requester, response, SERVER_RESPONSE_LENGTH, 0);
             if (size == -1)
             {
                 printf("Received nothing from server\n");
-                break;
+                return NULL;
             }
-            if (size > 255)
+            // TODO: this was placed as a bounds check to prevent overflows in memory. Must confer with other members to figure out what the 
+            // max length of the server response should be. 
+            if (size > SERVER_RESPONSE_LENGTH)
             {
-                size = 255;
+                size = SERVER_RESPONSE_LENGTH;
             }
-            recv[size] = '\0';
-            printf("Received %s from server\n", recv);
+            // We have received a reply from the server and want to break out of the loop and return the pointer to its response.
+            wait_reply = 0;
+            printf("Received %s from server\n", response);
         }
     }
-    return 0;
+    return response;
 }

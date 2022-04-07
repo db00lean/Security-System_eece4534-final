@@ -24,25 +24,47 @@ struct server* new_server(const char* port)
 
 // Recieves a new request from client connections, this is currently a BLOCKING call
 // This will be changed in a future issue
-int receive_msg(zsock_t* responder)
+received_message* receive_msg(zsock_t* responder)
 {
     int size;
+    // TODO: Will need to implement a maximum packet size if data becomes too large
     int max = 256;
-    zmq_msg_t msg;
-    int rc = zmq_msg_init(&msg);
+    // The zeromq message to store bytes read off socket in
+    zmq_msg_t zmsg;
+    // The message structure to store the data parsed in and return to the caller
+    received_message* msg = malloc(sizeof(received_message));
+    // Stores the packet header data
+    packet_header* header;
+    // Stores the packet data
+    void* data;
+
+    int rc = zmq_msg_init(&zmsg);
     if (rc == -1) 
     {
         fprintf(stderr, "Error initializing message structure\n");
     }
     printf("Before receive call\n");
-    size = zmq_msg_recv(&msg, responder, 0);
+    size = zmq_msg_recv(&zmsg, responder, 0);
     if (size == -1)
     {
+        // TODO: Check error code and see if a retry is necessary 
         fprintf(stderr, "Error receiving messages: %s\n", strerror(errno));
-        return -1;
+        return NULL;
     }
-    printf("Received %s from client\n", (char*)zmq_msg_data(&msg));
-    sleep(1);
+    printf("Received message from client\n");
+    // Parse out header and data, store in received_message structure to return to caller
+    header = parse_packet_header(&zmsg);
+    data = parse_packet_data(&zmsg);
+    msg->cam_id = header->cam_id;
+    msg->type = header->type;
+    msg->len = header->len;
+    // Copy data to new buffer to return to caller
+    msg->data = malloc(header->len);
+    memcpy(msg->data, data, header->len);
+    // TODO: send an ack to the client (probably to change in the future)
     size = zmq_send(responder, "ACK", 3, 0);
-    return size;
+    // Free memory
+    free_packet(header);
+    // Return message
+    return msg;
 }
