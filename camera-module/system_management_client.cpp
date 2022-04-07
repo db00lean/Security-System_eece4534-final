@@ -27,7 +27,7 @@ void *camera(void *thread_args) { return NULL; }
 // stream thread main function
 void *stream(void *thread_args) { return NULL; }
 // computer vision main function
-void *cv(void *thread_args) {
+void *cv_t(void *thread_args) {
   struct cv_data metadata1 = {
       .num_bbox = 1,
   };
@@ -50,12 +50,12 @@ void *cv(void *thread_args) {
   // Code for when sysman has access to CV code
   // TODO: Delete the #ifdef/#endif after CV is integrated to allow this code to
   // run
-  bool do_run_cv = true;
+  /*bool do_run_cv = true;
   while (do_run_cv) {
     // TODO: Add "gstream camera_stream" as argument to GetBBoxesFromFrame (or
     // whatever the gstream type is)
     cv_data_q.push(GetBBoxesFromFrame());
-  }
+  }*/
 #endif
 
   return NULL;
@@ -73,7 +73,7 @@ int main() {
 
   // CV
   pthread_t cv_main_thread;
-  pthread_create(&cv_main_thread, NULL, cv, NULL);
+  pthread_create(&cv_main_thread, NULL, cv_t, NULL);
 
   // ### cleanup ###
   pthread_join(cv_main_thread, NULL);
