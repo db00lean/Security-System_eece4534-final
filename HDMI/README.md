@@ -4,6 +4,10 @@
 
 ![Top level diagram](../media/top_level_diagram.jpg)
 
+## GUI Mockup
+
+![GUI Mockup](images/GUI_Mockup.svg)
+
 ### Responsibilities
 
 - Receive video stream via RTSP/UDP
