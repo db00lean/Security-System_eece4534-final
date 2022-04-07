@@ -11,8 +11,9 @@
 
 #include <drm_fourcc.h>
 
-#include "../inc/draw_bounding_box.h"
-#include "../rtsp-rx/imagelib.h"
+//#include "cv_structs.h"
+//#include "draw_bounding_box.h"
+//#include "imagelib.h"
 
 
 
@@ -33,6 +34,13 @@ drmModeFB *fb;
 //Pointer to memory mapped region for writing to card
 void *map;
 
+struct drm_mode_create_dumb crereq;
+
+// struct to create memory mapping for dumb buffer
+struct drm_mode_map_dumb mreq;
+
+// struct to destroy dumb buffer
+struct drm_mode_destroy_dumb dreq;
 //Defining constants for colors according to default pixel format -- 32 bit word with transparency, red, green, and blue values
 uint32_t const red = (0xff << 16);
 uint32_t const green = (0xff << 8);
@@ -89,19 +97,14 @@ int drm_init(int fd)
 
     return 0;
 }
-void *drm_map()
+void *drm_map(int fd)
 {
     // 32 bit memory location to store address of framebuffer
     uint32_t fb;
 
+    int ret;
     // struct to create dumb buffer
-    struct drm_mode_create_dumb crereq;
 
-    // struct to create memory mapping for dumb buffer
-    struct drm_mode_map_dumb mreq;
-
-    // struct to destroy dumb buffer
-    struct drm_mode_destroy_dumb dreq;
 
     // clear crereq before setting members
     memset(&crereq, 0, sizeof(crereq));
