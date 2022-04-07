@@ -42,3 +42,15 @@ void draw_boundingbox(int x_start, int y_start, int x_len, int y_len, unsigned i
     }
 
 }
+
+void draw_circle_outline(int x_center, int y_center, int radius, unsigned int color) {
+
+}
+
+void draw_circle_filled(int x_center, int y_center, int radius, unsigned int color) {
+
+}
+
+void draw_rectangle_filled(int x_start, int y_start, int x_len, int y_len, unsigned int color) {
+    
+}
