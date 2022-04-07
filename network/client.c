@@ -1,8 +1,5 @@
 #include "client.h"
-<<<<<<< HEAD
-=======
 #include "packet.h"
->>>>>>> packet_structure
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -10,10 +7,7 @@
 #include <assert.h>
 #include <czmq.h>
 #define REQUEST_TIMEOUT 2500 //milliseconds
-<<<<<<< HEAD
-=======
 #define SERVER_RESPONSE_LENGTH 255
->>>>>>> packet_structure
 
 // Initializes and returns a new client connection
 struct client* new_client(const char* server_port, const char* server_address)

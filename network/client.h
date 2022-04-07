@@ -1,4 +1,5 @@
 // Client header file using 0MQ
+#include "packet.h"
 #include <czmq.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -16,6 +17,7 @@ struct client {
 // Initializes and returns a new client connection
 struct client* new_client(const char*, const char*);
 
-// Sends a new request to the previously initialized 0mq client
-int send_msg(zsock_t*, char*, uint32_t);
+// Sends a new message using the given client connection, returns the server's response
+// TODO: Currently does not handle chunked messages
+void* send_msg(zsock_t*, int, PacketType, void*, uint32_t);
 #endif
