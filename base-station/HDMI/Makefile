@@ -1,5 +1,5 @@
 TARGET:=main
-SRCS:=main.c src/draw_bounding_box.c src/DRM_user.c
+SRCS:=main.c src/draw_bounding_box.c src/DRM_user.c src/drawtext.c src/font_8x8.c 
 OBJS:=$(SRCS:.c=.o)
 
 DRM_CFLAGS := $(shell pkg-config --cflags libdrm)
