@@ -5,13 +5,14 @@
 SRCS := $(wildcard *.c)
 OBJS := $(SRCS:.c=.o)
 HDRS := $(wildcard *.h)
-LIBS := -lpthread
+LIBS := -lpthread -lczmq -lzmq
 CFLAGS := -O
 
 .PHONY: sysman_server button_listener clean
 
 sysman_server: management_server.o agg_detect.o button_client.o
-	$(CC) -o sysman_server system_management_server.o aggregate_detect.o button_client.o $(LIBS)
+	(cd ../network && make server.o)
+	$(CC) -o sysman_server system_management_server.o aggregate_detect.o button_client.o ../network/server.o ../network/client.o ../network/packet.o $(LIBS)
 
 button_listener: button_client_standalone.o
 	$(CC) -o $@ button_client_standalone.o $(LIBS)
@@ -29,5 +30,6 @@ button_client_standalone.o: button_client.c button_client.h
 	$(CC) $(CFLAGS) -o button_client_standalone.o -c button_client.c -DBUTTON_CLIENT_MAIN
 
 clean:
+	(cd ../network && make clean)
 	rm -rf sysman_server button_listener *.o *.h.gch
 

@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
-#include "../../common_headers/cv_structs.h"
+#include "../common_headers/cv_structs.h"
 #include "client.h"
 #include "server.h"
 

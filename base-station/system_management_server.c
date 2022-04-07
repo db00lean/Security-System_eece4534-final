@@ -8,6 +8,9 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <czmq.h>
+#include "../network/client.h"
+#include "../network/server.h"
 
 // global variable to track the system charateristics
 struct system_status securitySystem = {
@@ -56,6 +59,10 @@ int initialize_camera(int cameraNumber) {
 
 int main(int argc, char **argv) {
 
+  // init metadata network
+  received_message* msg;
+  const char* port = "55000";
+  struct server* networkServer = new_server(port);
   // init the cameras
   // find out how many cams
   enumerate_cameras();
@@ -75,31 +82,13 @@ int main(int argc, char **argv) {
   signal(SIGINT, stop_button_listener);
   pthread_create(&btn_listener_thread, NULL, run_button_client, NULL);
 
-  // get metadata and send to data agregator
-  // this is a dummy struct for testing
-  struct cv_data metadata = {
-      .num_bbox = 2,
-      //.t = 1020,
-      .box_data[0].x_coord = 5,
-      .box_data[0].y_coord = 5,
-      .box_data[0].x_len = 10,
-      .box_data[0].y_len = 10,
-      .box_data[1].x_coord = 5,
-      .box_data[1].y_coord = 5,
-      .box_data[1].x_len = 10,
-      .box_data[1].y_len = 10,
-  };
-  securitySystem.cameras[0].cvMetadata = metadata;
-  // TODO implement something like metadata =
-  // getData(securitySystem.cameras[cameraNumber].metaPortNumber);
-  // TODO use CV teams data structure for the metadata
-  /*
-  struct packet_struct packet = receive();
-  int type = packet.type;
-  if (type == CV_DATA) {
-      securitySystem.cameras[0].cvMetadata = packet.payload;
-  }
-  */
+  // get metadata from the network
+  msg = receive_msg(networkServer->responder);
+  securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
+  printf("Received message\n");
+  printf("Camera id: %i\n", msg->cam_id);
+  printf("Data type: %i\n", msg->type);
+  printf("Data length: %i\n", msg->len);
 
   // Perform a detection of whether or not a person is in the FZ on camera n
   aggregate_detect(securitySystem.cameras[0]);
@@ -107,6 +96,7 @@ int main(int argc, char **argv) {
   // cleanup
   free(securitySystem.cameras);
   pthread_join(btn_listener_thread, NULL);
+  free(networkServer);
 
   return 0;
 }
