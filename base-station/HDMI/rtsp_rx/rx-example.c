@@ -5,7 +5,6 @@
 #include "imagelib.h"
 
 int main(int argc, char *argv[]) {
-
   struct camera_rx *cam = init_rx_camera("rtsp.stream/pattern");
 
 
@@ -21,6 +20,8 @@ int main(int argc, char *argv[]) {
   sleep(1);
   img = get_frame(cam, IMGENC_ARGB);
   free_image(img);
+
+  void free_rx_camera(struct camera_rx* cam);
 
   printf("done\n");
   return 0;
