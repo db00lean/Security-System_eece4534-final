@@ -1,29 +1,23 @@
-VERSION = 1
-PATCHLEVEL = 0
-SUBLEVEL = 0
-
-TARGET:=test_draw_image
-SRCS:=test_draw_image.c
+TARGET:=main
+SRCS:=main.c src/draw_bounding_box.c src/DRM_user.c
 OBJS:=$(SRCS:.c=.o)
 
+DRM_CFLAGS := $(shell pkg-config --cflags libdrm)
+DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
 
-override CFLAGS += -DVERSION=$(VERSION)
-override CFLAGS += -DPATCHLEVEL=$(PATCHLEVEL)
-override CFLAGS += -DSUBLEVEL=$(SUBLEVEL)
-override CFLAGS += -DVERSION_NAME=\"$(NAME)\"
-
-INCLUDE_DIRS:=.. $(ZED_INCLUDE)
-CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0
+INCLUDE_DIRS:=.. $(ZED_INCLUDE) /inc
+CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(DRM_CFLAGS)
 LALSA:= -lasound -lpthread -lrt -ldl -lm
 
 .PHONY: clean
 
-all: $(PROGS)
+all: $(TARGET)
 
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $(DRM_LDFLAGS) $^
 
-test_draw_bounding_boxes: test_draw_bounding_boxes.o draw_bounding_box.c
-
-test_draw_image: test_draw_image.o imagelib.c draw_bounding_box.c
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -c $< 
 
 clean:
 	rm -rf $(OBJS) $(TARGET) *.o

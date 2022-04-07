@@ -10,8 +10,11 @@
  */
 
 // includes are placeholders, header files are currently located in separate branches
-#include "system_management.h"
-#include "cv_structs.h"
+#include "../common_headers/system_management.h"
+#include "../common_headers/cv_structs.h"
+#include "inc/draw_bounding_box.h"
+#include "inc/drawtext.h"
+#include "rtsp-rx/imagelib.h"
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
 // #include "rendering.h"
@@ -23,6 +26,8 @@
  */
 void show_background() {
     // TODO: draw shape/text functions for static elements of the GUI
+
+    
 }
 
 /**
@@ -30,18 +35,18 @@ void show_background() {
  * 
  * @param system Struct holding system information
  */
-void show_camera_frame(system_status * system) {
-    // get the index of the active camera from the guistate
-    int active_camera_no = system->guiState;
+void show_camera_frame(struct system_status * system) {
+    // // get the index of the active camera from the guistate
+    // int active_camera_no = system->guiState;
 
-    // pass the camera number to get the frame corresponding to the active camera number
-    char * frame = get_frame(active_camera_no);
+    // // pass the camera number to get the frame corresponding to the active camera number
+    // char * frame = get_frame(active_camera_no);
 
-    // draw the image
-    draw_image(frame);
+    // // draw the image
+    // draw_image(frame);
 
-    // free the memory space of the frame
-    free(frame)
+    // // free the memory space of the frame
+    // free(frame);
 }
 
 /**
@@ -49,20 +54,21 @@ void show_camera_frame(system_status * system) {
  * 
  * @param system Struct holding system information
  */
-void show_bounding_box(system_status * system) {
+void show_bounding_box(struct system_status * system) {
     // get the current camera information and the metadata of that camera
-    camera_module * active_camera = system->cameras[system->guiState];
-    cv_data * camera_metadata = active_camera->cvMetadata;
+    struct camera_module * active_camera = &system->cameras[system->guiState];
+    struct cv_data * camera_metadata = &active_camera->cvMetadata;
 
     // loop through each bounding box and draw
     int b;
     for (b = 0; b < camera_metadata->num_bbox; b ++) {
-        coordinate_data * box_data = camera_metadata->coordinate_data;
-        draw_bounding_box(box_data->x_coord,
+        struct coordinate_data * box_data = &camera_metadata->box_data[b];
+        draw_boundingbox(box_data->x_coord,
                           box_data->y_coord,
                           box_data->x_len,
                           box_data->y_len,
-                          bounding_box_colors[b]);
+                          0xffffff //bounding_box_colors[b]
+                          );
     }
 }
 
@@ -71,9 +77,9 @@ void show_bounding_box(system_status * system) {
  * 
  * @param system Struct holding system information
  */
-void show_camera_info(system_status * system) {
+void show_camera_info(struct system_status * system) {
     // get the current camera information from the struct
-    camera_module * active_camera = system->cameras[system->guiState];
+    struct camera_module * active_camera = &system->cameras[system->guiState];
 
     if (active_camera->detection) {
         // draw "ZONE OCCUPIED"
@@ -89,12 +95,12 @@ void show_camera_info(system_status * system) {
 
     // draw the forbidden zone as an overlay on the camera
     // TODO: coordinate translation between camera coordinates and HDMI coordinates
-    coordinate_data * zone_data = active_camera->forbiddenZone;
-    draw_bounding_box(zone_data->x_coord,
+    struct coordinate_data * zone_data = &active_camera->forbiddenZone;
+    draw_boundingbox(zone_data->x_coord,
                       zone_data->y_coord,
                       zone_data->x_len,
                       zone_data->y_len,
-                      grey);
+                      0xcccccc);
 
     // could draw other information, like number of people here
 }
@@ -104,7 +110,7 @@ void show_camera_info(system_status * system) {
  * 
  * @param system Struct holding system information
  */
-void show_camera_options(system_status * system) {
+void show_camera_options(struct system_status * system) {
     // TODO: no toggling options are included in the system struct, current mockup includes them.
     //       There would have to be elemetns added to the system_status struct
 }
@@ -113,21 +119,23 @@ void show_camera_options(system_status * system) {
  * @brief renders the GUI and outputs to HDMI
  * 
  */
-void render() {
+void render(struct system_status * system) {
     // TODO: figure out how to get pointer to system management struct
-    system_status * system;
+    while (1) {
 
-    // draw GUI elements
-    show_background();
-    show_camera_frame(system);
-    show_bounding_box(system);
-    show_camera_info(system);
-    show_camera_options(system);
+        // draw GUI elements
+        show_background();
+        show_camera_frame(system);
+        show_bounding_box(system);
+        show_camera_info(system);
+        show_camera_options(system);
+    }
 }
 
 int main() {
     // run indefinitely
-    while (1) {
-        render();
-    }
+    struct system_status * system;
+
+    render(system);
+    
 }
