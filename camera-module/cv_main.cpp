@@ -7,7 +7,8 @@
 
 // Loads an image into the image buffer
 // TODO: Convert ImportFrame() to C++
-cv::Mat ImportFrame() {
+cv::Mat ImportFrame()
+{
   // TODO: Implement ImportFrame()
   std::cout << "Importing frame\n";
 
@@ -17,33 +18,31 @@ cv::Mat ImportFrame() {
 
   // Error Handling
   // TODO: Fix error handling on merge with cv_main
-  if (image.empty()) {
+  if (image.empty())
+  {
     std::cout << "Invalid Image\n";
   }
 
   return image;
 }
 
-cv_data GenerateBBoxes(cv::Mat image) {
+cv_data GenerateBBoxes(cv::Mat image)
+{
   // https://docs.opencv.org/3.4/d1/de5/classcv_1_1CascadeClassifier.html#a90fe1b7778bed4a27aa8482e1eecc116
   struct cv_data cv_data_output;
 
   // UPDATE: hog is not really working
   // hog (Histogram of Oriented Gradients) should deal with detection
-  // Might swap to boundingRect(thresh) --> Need to look into accuracy/resource
-  // usage of both
+  // Might swap to boundingRect(thresh) --> Need to look into accuracy/resource usage of both
   cv::HOGDescriptor hog;
   // hog = cv::HOGDescriptor::HOGDescriptor();
   hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
   int err = 0; // For error handling: use later
   std::vector<cv::Rect> bboxes;
-  std::vector<double>
-      found_weights; // Accuracy of model -- for internal use for the moment
+  std::vector<double> found_weights; // Accuracy of model -- for internal use for the moment
 
-  // Uncalibrated, unscaled hog (Histogram of Oriented Gradients) --> Probably
-  // too expensive currently; TODO: REDUCE
-  hog.detectMultiScale(image, bboxes, found_weights, 0.0, cv::Size(8, 8),
-                       cv::Size(16, 16), 1.05, 2.0, false);
+  // Uncalibrated, unscaled hog (Histogram of Oriented Gradients) --> Probably too expensive currently; TODO: REDUCE
+  hog.detectMultiScale(image, bboxes, found_weights, 0.0, cv::Size(8, 8), cv::Size(16, 16), 1.05, 2.0, false);
   /*
   detectMultiScale(InputArray img,
                   std::vector< Rect > & foundLocations,
@@ -58,12 +57,14 @@ cv_data GenerateBBoxes(cv::Mat image) {
   */
 
   // TODO: Add error Handling
-  if (err < 0) {
+  if (err < 0)
+  {
     std::cout << "Unable to generate bounding boxes\n";
   }
 
   int num_box = 0;
-  for (auto &element : bboxes) {
+  for (auto &element : bboxes)
+  {
     // std::cout << "box " << num_box;
     // std::cout << "x = " << element.x << " ";
     // std::cout << "y = " << element.y << " ";
@@ -78,7 +79,8 @@ cv_data GenerateBBoxes(cv::Mat image) {
     num_box++;
 
     cv_data_output.num_bbox = num_box;
-    if (num_box >= MAX_B_BOXES) {
+    if (num_box >= MAX_B_BOXES)
+    {
       std::cout << "More people detected than MAX_B_BOXES limit\n";
       break;
     }
@@ -87,26 +89,32 @@ cv_data GenerateBBoxes(cv::Mat image) {
   return cv_data_output;
 }
 
-int TransmitStruct(cv_data data_to_send) {
-  // TODO: Implement TransmitStruct()
-  std::cout << "Sending cv_data out\n";
+// TODO: Make this accept gstream as an input
+// Gets the newest frame from a stream  // TOOO: Make "gstream camera_stream" an input
+// Creates/returns coordinates of bounding boxes of people detected in the frame
+cv_data GetBBoxesFromFrame()
+{
+  cv::Mat frame; // Could consolidate this into one mega-line, but this looks cleaner
 
-  // TODO: Add error Handling
-  return 0;
+  frame = ImportFrame(); // TODO: Update ImportFrame() to get frame from gstream; accepts "gstream camera_stream" as argument
+  return GenerateBBoxes(frame);
 }
 
-int main() {
+int main()
+{
   struct cv_data cv_data_current;
   cv::Mat image;
   image = ImportFrame();
 
-  if (image.empty()) {
+  if (image.empty())
+  {
     return -1;
   }
 
   cv_data_current = GenerateBBoxes(image);
 
-  for (int i = 0; i < cv_data_current.num_bbox; i++) {
+  for (int i = 0; i < cv_data_current.num_bbox; i++)
+  {
     std::cout << "box " << i << ": ";
     std::cout << "x = " << cv_data_current.box_data[i].x_coord << "    ";
     std::cout << "y = " << cv_data_current.box_data[i].y_coord << "    ";
