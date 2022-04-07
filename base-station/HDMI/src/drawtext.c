@@ -1,5 +1,5 @@
 // This file is used to write a string to the framebuffer and display it.
-// Additional inputs include location ("top-left" coordinates) and color.
+// Additional inputs include location (center coordinates) and color.
 // Additional functions to clear an area and clear an area and write a string.
 
 #include <stdio.h>
@@ -86,26 +86,51 @@ void draw_text_scale(int xPos, int yPos, char* str, uint32_t color, int scale)
 
 static void draw_string(int x, int y, char *s, unsigned int len, uint32_t color)
 {
-	int i;
+	int i, topLeftX, topLeftY;
+
+	topLeftX = x - (4 * len);
+	topLeftY = y - 4;
+
+	if (topLeftX < 0)
+	{
+		topLeftX = 0;
+	}
+	if (topLeftY < 0)
+	{
+		topLeftY = 0;
+	}
 
 	// for each char in string
 	for (i = 0; i < len; i++) {
 
 		// draw it (x + 8 * i term is necessary since each char is 8 pixels wide, so rather than moving over 1 pixel for next char, move over 8 pixels)
-		draw_char((x + 8 * i), y, s[i], color);
+		draw_char((topLeftX + 8 * i), topLeftY, s[i], color);
 	}
 }
 
 static void draw_string_scale(int x, int y, char *s, unsigned int len, uint32_t color, int scale)
 {
-	int i;
+	int i, topLeftX, topLeftY;
+
+	topLeftX = x - (4 * len * scale);
+	topLeftY = y - (4 * scale);
+
+	if (topLeftX < 0)
+	{
+		topLeftX = 0;
+	}
+	if (topLeftY < 0)
+	{
+		topLeftY = 0;
+	}
+
 
 	// for each char in string
 	for (i = 0; i < len; i++) {
 
 		// draw it (x + 8 * i * scale term is necessary since each char is 8 pixels wide, 
 		// so rather than moving over 1 pixel for next char, move over 8 * scale pixels)
-		draw_char_scale((x + 8 * i * scale), y, s[i], color, scale);
+		draw_char_scale((topLeftX + 8 * i * scale), topLeftY, s[i], color, scale);
 	}
 }
 
@@ -160,7 +185,7 @@ static void draw_char(int x, int y, char c, uint32_t color)
 
 static void draw_char_scale(int x, int y, char c, uint32_t color, int scale)
 {
-	int i, j, bits, pixelX, pixelY, pixelLocation;
+	int i, j, bits, pixelX, pixelY; //, pixelLocation;
 
 	// each char is 8 pixels tall, so multiply by scale for new character height
 	for (i = 0; i < 8 * scale; i++) 
