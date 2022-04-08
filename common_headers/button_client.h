@@ -16,13 +16,33 @@
 #include <poll.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "button_driver/zed_btns.h"
+
+#include "../base-station/button_driver/zed_btns.h"
+#include "system_management.h"
 
 #define CAN_READ_PFD(pfd) (pfd.revents & POLLIN)
 
-typedef void (*button_action)(void* args);
+#define ENFORCE_RANGE(val, min, max) \
+do { \
+    if (val < min) \
+        val = min; \
+    else if (val > max) \
+        val = max; \
+} while(0);
+
+typedef void (*button_action)(struct system_status* args);
 typedef uint8_t button_value;
 
+/**
+ * struct button_actions - holds callbacks to button actions
+ * 
+ * Members: 
+ * @on_center - Callback fired when center button is pressed
+ * @on_left - Callback fired when left button is pressed
+ * @on_right - Callback fired when right button is pressed
+ * @on_up - Callback fired when up button is pressed
+ * @on_down - Callback fired when down button pressed
+ */
 struct button_actions {
     button_action on_center; 
     button_action on_left; 
@@ -54,8 +74,9 @@ void flush_fd(int fd);
  * @param actions - pointer to a single set of actions to execute,
  * @param btn_val - the current button values to interpret. 
  *                  Refer to zed_btns.h and the IS_PRESSED macro to interpret this value 
+ * @param system - pointer to the system_status struct, passed as an argument to the button action.
  */
-void exec_action(struct button_actions* actions, button_value btn_val);
+void exec_action(struct button_actions* actions, button_value btn_val, struct system_status* system);
 
 /**
  * @brief Button press listener. Meant to be used as a thread function (argument to pthread_create)
@@ -78,24 +99,34 @@ void* run_button_client(void* thread_args);
  */
 void stop_button_listener(int _sig);
 
+void increment_fz_x(system_status* system); 
+
+void decrement_fz_x(system_status* system);
+
+void increment_fz_y(system_status* system);
+
+void decrement_fz_y(system_status* system);
+
+void increment_active_camera(system_status* system);
+
 /* Debug/print functions for a basic set of actions */
-static void print_center(void* _args) {
+static void print_center(struct system_status* _args) {
     puts("Center button pressed!");
 }
 
-static void print_up(void* _args) {
+static void print_up(struct system_status* _args) {
     puts("Up button pressed!");
 }
 
-static void print_down(void* _args) {
+static void print_down(struct system_status* _args) {
     puts("Down button pressed!");
 }
 
-static void print_left(void* _args) {
+static void print_left(struct system_status* _args) {
     puts("Left button pressed!");
 }
 
-static void print_right(void* _args) {
+static void print_right(struct system_status* _args) {
     puts("Right button pressed!");
 }
 

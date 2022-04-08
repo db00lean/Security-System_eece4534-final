@@ -2,16 +2,17 @@
 // John Craffey
 
 #include "../common_headers/system_management.h"
+#include "../common_headers/button_client.h"
 #include "aggregate_detect.h"
-#include "button_client.h"
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 // global variable to track the system charateristics
-struct system_status securitySystem = {
+system_status securitySystem = {
     .numberOfCameras = 0,
+    .menuMode = 0
 };
 
 // dump all data for the system
@@ -55,6 +56,10 @@ int initialize_camera(int cameraNumber) {
 }
 
 int main(int argc, char **argv) {
+  // Kick off thread for button presses
+  pthread_t btn_listener_thread;
+  pthread_mutex_init(&securitySystem.lock, 0);
+  signal(SIGINT, stop_button_listener);
 
   // init the cameras
   // find out how many cams
@@ -69,11 +74,8 @@ int main(int argc, char **argv) {
   // print for debug
   print_system_info();
 
-  // Kick off thread for button presses
-  pthread_t btn_listener_thread;
-
-  signal(SIGINT, stop_button_listener);
-  pthread_create(&btn_listener_thread, NULL, run_button_client, NULL);
+  // launching button thread
+  pthread_create(&btn_listener_thread, NULL, run_button_client, &securitySystem);
 
   // get metadata and send to data agregator
   // this is a dummy struct for testing
@@ -105,6 +107,7 @@ int main(int argc, char **argv) {
   aggregate_detect(securitySystem.cameras[0]);
 
   // cleanup
+  pthread_mutex_destroy(&securitySystem.lock);
   free(securitySystem.cameras);
   pthread_join(btn_listener_thread, NULL);
 
