@@ -14,7 +14,7 @@ LALSA:= -lasound -lpthread -lrt -ldl -lm
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(DRM_LDFLAGS) $^
+	$(CC) -o $@ $(DRM_LDFLAGS) $^ -lm
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< 

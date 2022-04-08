@@ -13,13 +13,14 @@
 #include <time.h>
 
 #include "../inc/drawtext.h"
+#include "../inc/DRM_user.h"
 
 //static void *fbMemPtr;
 
 //static struct fb_var_screeninfo var_screeninfo;
 //static struct fb_fix_screeninfo fix_screeninfo;
 
-static void draw_pixel(int x, int y, uint32_t color);
+// static void draw_pixel(int x, int y, uint32_t color);
 static void draw_string(int x, int y, char *s, unsigned int len, uint32_t color);
 static void draw_string_scale(int x, int y, char *s, unsigned int len, uint32_t color, int scale);
 //static void clear_string(int x, int y, int charsToClear);
