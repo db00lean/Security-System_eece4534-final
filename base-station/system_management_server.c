@@ -12,6 +12,7 @@
 // global variable to track the system charateristics
 struct system_status securitySystem = {
     .numberOfCameras = 0,
+    .lock = NULL, 
 };
 
 // dump all data for the system
@@ -55,6 +56,7 @@ int initialize_camera(int cameraNumber) {
 }
 
 int main(int argc, char **argv) {
+  pthread_mutex_init(&securitySystem.lock, 0);
 
   // init the cameras
   // find out how many cams
@@ -105,6 +107,7 @@ int main(int argc, char **argv) {
   aggregate_detect(securitySystem.cameras[0]);
 
   // cleanup
+  pthread_mutex_destroy(&securitySystem.lock);
   free(securitySystem.cameras);
   pthread_join(btn_listener_thread, NULL);
 

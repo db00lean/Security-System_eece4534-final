@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
+#include <pthread.h>
 
 #define MAX_NUM_CAMERAS 8
 #define MAX_NUM_PEOPLE 64
@@ -32,6 +33,7 @@ typedef struct system_status {
   int numberOfCameras;
   int guiState; // which camera the GUI is supposed to be viewing
   struct camera_module *cameras;
+  pthread_mutex_t lock;
 } system_status;
 
 #endif
