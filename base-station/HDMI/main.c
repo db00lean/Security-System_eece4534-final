@@ -50,15 +50,18 @@ void show_background() {
     //camera status boxes
     draw_boundingbox(100, 750, 150, 150, 0xff0000);
     draw_text_scale(175, 825, "1", 0x00ffff, 10);
-    draw_text_scale(100, 750, "O", 0xff0000, 3);
+    draw_circle_filled(100, 750, 10, 0xff0000);
+
 
     draw_boundingbox(300, 750, 150, 150, 0xff0000);
     draw_text_scale(375, 825, "2", 0x00ffff, 10);
-    draw_text_scale(300, 750, "O", 0xff0000, 3);
+    draw_circle_filled(300, 750, 10, 0xff0000);
+
 
     draw_boundingbox(500, 750, 150, 150, 0xff0000);
     draw_text_scale(575, 825, "3", 0x00ffff, 10);
-    draw_text_scale(500, 750, "O", 0x00ff00, 3);
+    draw_circle_filled(500, 750, 10, 0x00ff00);
+
 
 /*
     //temp testing of draw image - delete later
@@ -82,6 +85,12 @@ void show_background() {
         }
     }
 */
+
+    // //shape testing
+    // draw_circle_filled(1300, 300, 200, 0xff00ff);
+    // draw_circle_outline(300, 300, 200, 0xffff00);
+    // draw_circle_outline(300, 300, 10, 0xffff00);
+    // draw_rectangle_filled(1500, 700, 200, 200, 0xffff00);
     
 }
 
