@@ -14,7 +14,7 @@
 #include "../common_headers/cv_structs.h"
 #include "inc/draw_bounding_box.h"
 #include "inc/drawtext.h"
-#include "rtsp-rx/imagelib.h"
+#include "inc/imagelib.h"
 #include "inc/DRM_user.h"
 
 
@@ -63,7 +63,7 @@ void show_background() {
     draw_circle_filled(500, 750, 10, 0x00ff00);
 
 
-/*
+
     //temp testing of draw image - delete later
     // Using image struct from imagelib.h and fill with data for now
     int IMG_W = 1920;
@@ -78,13 +78,15 @@ void show_background() {
     }
     //draw image to screen using draw pixel
     // for each box, draw a rectangle bounding box
-    for (int x = 0; x < IMG_W; x++) {
-        for (int y = 0; y < IMG_H; y++) {
+    for (int x = 100; x < 900; x++) {
+        for (int y = 100; y < 700; y++) {
             unsigned int color = (img->buf[x + y] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
             draw_pixel(x,y,color);
         }
     }
-*/
+
+    //draw bounding boxes
+    draw_boundingbox(300, 300, 100, 200, 0xff0000);
 
     // //shape testing
     // draw_circle_filled(1300, 300, 200, 0xff00ff);
