@@ -103,6 +103,11 @@ cd /usr/include/
 mv opencv4/opencv2/ opencv2
 ```
 
+IF STILL DOESN'T WORK TRY:
+```
+pkg-config --modversion opencv4
+```
+
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Steps taken from: http://techawarey.com/programming/install-opencv-c-c-in-ubuntu-18-04-lts-step-by-step-guide/#:~:text=Install%20OpenCV%20C%20C%2B%2B%20in%20Ubuntu%2018.04%20LTS,opencv%201%20%24%20pkg-config%20--modversion%20opencv.%20More%20items
 
