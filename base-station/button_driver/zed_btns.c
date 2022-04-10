@@ -69,9 +69,9 @@ static struct class* kbtns_class;
 /////////////////////////////
 
 static void clear_kfifo() {
-    mutex_lock_interruptible(&ktbns_global.buffer_lock);
+    mutex_lock_interruptible(&kbtns_global.buffer_lock);
     kfifo_reset(&kbtns_global.btns_buffer);
-    mutex_unlock(&ktbns_global.buffer_lock)
+    mutex_unlock(&kbtns_global.buffer_lock);
 }
 
 static int kbtns_open(
