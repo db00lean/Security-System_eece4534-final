@@ -15,6 +15,22 @@ system_status securitySystem = {
     .menuMode = 0
 };
 
+struct coordinate_data get_forbidden_zone(system_status* system) {
+  struct coordinate_data fz;
+  pthread_mutex_lock(&system->lock);
+  fz = system->cameras[system->guiState].forbiddenZone;
+  pthread_mutex_unlock(&system->lock);
+  return fz; 
+}
+
+camera_module* get_active_camera(system_status* system) {
+  camera_module* cam;
+  pthread_mutex_lock(&system->lock);
+  cam = &(system->cameras[system->guiState]);
+  pthread_mutex_unlock(&system->lock);
+  return cam;
+}
+
 // dump all data for the system
 void print_system_info() {
   printf("\nSystem info:\n");

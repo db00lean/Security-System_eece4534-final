@@ -36,4 +36,21 @@ typedef struct system_status {
   pthread_mutex_t lock; // protects this structure.
 } system_status;
 
+/**
+ * @brief Gets the forbidden zone of the currently active camera. Uses system_status's 
+ *        lock for synchronization.
+ * 
+ * @param system - the system_status struct containing the forbidden zone 
+ * @return struct coordinate_data - read-only copy of the forbidden zone
+ */
+struct coordinate_data get_forbidden_zone(system_status* system);
+
+/**
+ * @brief Get the active camera object. Uses system_status's lock for synchronization
+ * 
+ * @param system - the system_status struct containing all the camera modules
+ * @return camera_module* - pointer to the currently active camera
+ */
+camera_module* get_active_camera(system_status* system);
+
 #endif
