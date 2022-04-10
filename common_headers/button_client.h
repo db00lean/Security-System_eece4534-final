@@ -20,6 +20,9 @@
 #include "../base-station/button_driver/zed_btns.h"
 #include "system_management.h"
 
+#define FZ_INC_DELTA (1)
+#define FZ_DEC_DELTA (-1)
+
 #define CAN_READ_PFD(pfd) (pfd.revents & POLLIN)
 
 #define ENFORCE_RANGE(val, min, max) \
@@ -62,21 +65,15 @@ struct button_actions {
 int init_zedbtn_pollfd(struct pollfd* pfd);
 
 /**
- * @brief Flushes the current contents of the given fd, with logging. 
- * 
- * @param fd - file descriptor of the file to flush
- */
-void flush_fd(int fd);
-
-/**
  * @brief Executes actions from the given set of button_actions, corresponding to what button(s) have been pressed. 
  * 
  * @param actions - pointer to a single set of actions to execute,
+ * @param n_actions - number of actions in the given list of actions, used for bounds checking
  * @param btn_val - the current button values to interpret. 
  *                  Refer to zed_btns.h and the IS_PRESSED macro to interpret this value 
  * @param system - pointer to the system_status struct, passed as an argument to the button action.
  */
-void exec_action(struct button_actions* actions, button_value btn_val, struct system_status* system);
+void exec_action(struct button_actions* actions, int n_actions, button_value btn_val, struct system_status* system);
 
 /**
  * @brief Button press listener. Meant to be used as a thread function (argument to pthread_create)

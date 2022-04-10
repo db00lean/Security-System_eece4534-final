@@ -32,7 +32,7 @@ typedef struct system_status {
   int numberOfCameras;
   int guiState; // which camera the GUI is supposed to be viewing. 0-indexed, indexes into list of cameras.
   camera_module *cameras;
-  int menuMode; // determines which set of button actions to execute
+  uint8_t menuMode; // determines which set of button actions to execute
   pthread_mutex_t lock; // protects this structure.
 } system_status;
 

@@ -52,7 +52,7 @@ void change_fz_y(system_status* system, int8_t delta) {
 
     pthread_mutex_unlock(&system->lock);
 #ifdef DEBUG
-    printf("[ Menu ] - Change forbidden zone x-coord; Delta: %d, New value: %u\n", delta, zone->y_coord);
+    printf("[ Menu ] - Change forbidden zone y-coord; Delta: %d, New value: %u\n", delta, zone->y_coord);
 #endif
 }
 
@@ -73,19 +73,19 @@ void increment_active_camera(system_status* system) {
 }
 
 void increment_fz_x(system_status* system) {
-    change_fz_x(system, 1);
+    change_fz_x(system, FZ_INC_DELTA);
 }
 
 void decrement_fz_x(system_status* system) {
-    change_fz_x(system, -1);
+    change_fz_x(system, FZ_DEC_DELTA);
 }
 
 void increment_fz_y(system_status* system) {
-    change_fz_y(system, 1); 
+    change_fz_y(system, FZ_INC_DELTA); 
 }
 
 void decrement_fz_y(system_status* system) {
-    change_fz_y(system, -1); 
+    change_fz_y(system, FZ_DEC_DELTA); 
 }
 
 /* Button action Structs */
@@ -119,41 +119,31 @@ int init_zedbtn_pollfd(struct pollfd* pfd) {
     return 0;
 }
 
-void flush_fd(int fd) {
-    char buf[BUTTON_BUFFER_MAX_SIZE];
-    ssize_t bytes_read;
-
-    puts("[ Btn Listener ] - Flushing file contents...");
-    bytes_read = read(fd, buf, BUTTON_BUFFER_MAX_SIZE);
-    printf("[ Btn Listener ] - Flushed %d bytes from file.\n", bytes_read);
-}
-
-void exec_action(struct button_actions* actions, button_value btn_val, struct system_status* system) {
+void exec_action(struct button_actions* actions, int n_actions, button_value btn_val, struct system_status* system) {
     struct button_actions actions_to_exec;
+    uint8_t mode = system->menuMode;
 
-    if (actions == NULL || system == NULL) {
+    if (actions == NULL || system == NULL || mode >= n_actions) {
+#ifdef DEBUG
+        puts("[ Btn Listener ] - Err when executing action: invalid args");
+#endif
         return; 
     }
 
-    // TODO: bounds checking. make sure menuMode falls within actions list
-    actions_to_exec = actions[system->menuMode];
+    actions_to_exec = actions[mode];
 
     if (IS_PRESSED(BTN_C, btn_val)) {
         actions_to_exec.on_center(system);
     }
-
     if (IS_PRESSED(BTN_D, btn_val)) {
         actions_to_exec.on_down(system);
     }
-
     if (IS_PRESSED(BTN_U, btn_val)) {
         actions_to_exec.on_up(system);
     }
-
     if (IS_PRESSED(BTN_L, btn_val)) {
         actions_to_exec.on_left(system);
     }
-
     if (IS_PRESSED(BTN_R, btn_val)) {
         actions_to_exec.on_right(system);
     }
@@ -171,7 +161,6 @@ void* run_button_client(void* thread_args) {
         puts("[ Btn Listener ] - Could not open zedbtn character device file.\n");
         return NULL;
     }
-    flush_fd(zedbtns_pfd.fd);
 
     while(run_button_listener) {
 #ifdef DEBUG
@@ -192,15 +181,14 @@ void* run_button_client(void* thread_args) {
 
             for (i = 0; i < BUTTON_BUFFER_MAX_SIZE && btn_val_buffer[i] != 0; i++) {
 #ifndef BUTTON_CLIENT_MAIN
-                exec_action(&basic_menu_actions, btn_val_buffer[i], system);
+                exec_action(&basic_menu_actions, 1, btn_val_buffer[i], system);
 #else
-                exec_action(&debug_actions, btn_val_buffer[i], system);
+                exec_action(&debug_actions, 1, btn_val_buffer[i], system);
 #endif
             }
         }
     }
 
-    flush_fd(zedbtns_pfd.fd);
     close(zedbtns_pfd.fd);
     puts("[ Btn Listener ] - Exiting button listener thread.");
     return NULL;
