@@ -96,35 +96,26 @@ void* run_button_client(void* thread_args);
  */
 void stop_button_listener(int _sig);
 
+/**
+ * @brief Adds a delta to the forbidden zone coordinates of the current active camera.
+ *        For increments (increment_fz_x and increment_fz_y): FZ_INC_DELTA is used. 
+ *        For decrements (decrement_fz_x and decrement_fz_y): FZ_DEC_DELTA is used.
+ *        Range is enforced such that the whole bounding box stays within the camera-viewport. 
+ *        Currently, these values are hardcoded - CAMERA_MAX_X and CAMERA_MAX_Y.  
+ * 
+ * @param system - the overall system_status struct housing all the camera modules
+ */
 void increment_fz_x(system_status* system); 
-
 void decrement_fz_x(system_status* system);
-
 void increment_fz_y(system_status* system);
-
 void decrement_fz_y(system_status* system);
 
-void increment_active_camera(system_status* system);
-
-/* Debug/print functions for a basic set of actions */
-static void print_center(struct system_status* _args) {
-    puts("Center button pressed!");
-}
-
-static void print_up(struct system_status* _args) {
-    puts("Up button pressed!");
-}
-
-static void print_down(struct system_status* _args) {
-    puts("Down button pressed!");
-}
-
-static void print_left(struct system_status* _args) {
-    puts("Left button pressed!");
-}
-
-static void print_right(struct system_status* _args) {
-    puts("Right button pressed!");
-}
+/**
+ * @brief Cycles the active camera. Increments guiState member, or wraps around to 0 after reaching last camera. 
+ *        guiState member can be used as an index into cameras array.
+ * 
+ * @param system - the system_status containing the active camera state
+ */
+void cycle_active_camera(system_status* system);
 
 #endif

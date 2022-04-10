@@ -58,7 +58,7 @@ void change_fz_y(system_status* system, int8_t delta) {
 
 /* Button action functions */
 
-void increment_active_camera(system_status* system) {
+void cycle_active_camera(system_status* system) {
     pthread_mutex_lock(&system->lock);
 
     system->guiState++;
@@ -88,6 +88,30 @@ void decrement_fz_y(system_status* system) {
     change_fz_y(system, FZ_DEC_DELTA); 
 }
 
+/* Debug button actions */ 
+
+
+/* Debug/print functions for a basic set of button actions */
+void print_center(struct system_status* _args) {
+    puts("Center button pressed!");
+}
+
+void print_up(struct system_status* _args) {
+    puts("Up button pressed!");
+}
+
+void print_down(struct system_status* _args) {
+    puts("Down button pressed!");
+}
+
+void print_left(struct system_status* _args) {
+    puts("Left button pressed!");
+}
+
+void print_right(struct system_status* _args) {
+    puts("Right button pressed!");
+}
+
 /* Button action Structs */
 
 struct button_actions debug_actions = {
@@ -99,9 +123,9 @@ struct button_actions debug_actions = {
 };
 
 struct button_actions basic_menu_actions = {
-    .on_center = increment_active_camera,
-    .on_down = decrement_fz_y,
-    .on_up = increment_fz_y,
+    .on_center = cycle_active_camera,
+    .on_down = increment_fz_y,
+    .on_up = decrement_fz_y,
     .on_left = decrement_fz_x,
     .on_right = increment_fz_x
 };
