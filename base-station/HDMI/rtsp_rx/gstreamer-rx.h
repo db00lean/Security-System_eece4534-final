@@ -11,7 +11,7 @@ struct camera_rx {
   GstAppSink *appsink;
 };
 
-struct image * get_frame(struct camera_rx* cam, enum img_enc enc);
+struct image * get_frame(struct camera_rx* cam, enum img_enc enc, int width, int height);
 
 void free_rx_camera(struct camera_rx* cam);
 

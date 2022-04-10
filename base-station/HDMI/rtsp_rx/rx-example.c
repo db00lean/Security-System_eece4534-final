@@ -9,19 +9,23 @@ int main(int argc, char *argv[]) {
 
 
   // note to developer: break at these points to check data
-  struct image * img = get_frame(cam, IMGENC_ARGB);
+  struct image * img = get_frame(cam, IMGENC_BGR, 640, 480);
+  printf("first\n");
   free_image(img);
   sleep(1);
-  img = get_frame(cam, IMGENC_ARGB);
+  img = get_frame(cam, IMGENC_BGR, 640, 480);
+  printf("second\n");
   free_image(img);
   sleep(1);
-  img = get_frame(cam, IMGENC_ARGB);
+  img = get_frame(cam, IMGENC_BGR, 640, 480);
+  printf("third\n");
   free_image(img);
   sleep(1);
-  img = get_frame(cam, IMGENC_ARGB);
+  img = get_frame(cam, IMGENC_BGR, 640, 480);
+  printf("fourth\n");
   free_image(img);
 
-  void free_rx_camera(struct camera_rx* cam);
+  cleanup_rx_camera(cam);
 
   printf("done\n");
   return 0;

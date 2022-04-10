@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <gst/app/gstappsink.h>
+#include <gst/video/video.h>
 #include <gst/gst.h>
 
 #include "imagelib.h"
@@ -33,8 +34,8 @@ struct camera_rx * init_rx_camera(char* uri) {
   cam->pipeline = gst_parse_launch(
       "videotestsrc ! videoconvert ! "
       "video/x-raw,format=ARGB,width=320,height=240 ! "
-      "queue leaky=downstream max-size-time=250000000 ! " //.25 second queue
-      "appsink name=sink",
+      //"queue leaky=downstream max-size-time=250000000 ! " //.25 second queue
+      "appsink name=sink max-buffers=120,drop=true",
       NULL);
 
   gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
@@ -63,18 +64,47 @@ struct camera_rx * init_rx_camera(char* uri) {
   return cam;
 }
 
-struct image * get_frame(struct camera_rx *cam, enum img_enc enc) {
+struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int height) {
   GstSample *sample = gst_app_sink_pull_sample(cam->appsink);
+
   if (!sample) {
     printf("sample is NULL\n");
     exit(1); //TODO
   }
-  GstBuffer *buffer = gst_sample_get_buffer(sample);
+
+  //TODO: make this actually handle the input type
+  GstCaps *caps = gst_caps_new_simple ("video/x-raw",
+     "format", G_TYPE_STRING, "BGR",
+     "width", G_TYPE_INT, width,
+     "height", G_TYPE_INT, height,
+     NULL);
+
+  // 0.5 second timeout. is ok?
+  GstSample *converted_sample = gst_video_convert_sample(sample, caps, 500000000, NULL);
+
+
+  if (!converted_sample) {
+    printf("sample converted to NULL\n");
+    exit(1); //TODO
+  }
+
+  GstBuffer *buffer = gst_sample_get_buffer(converted_sample);
   GstMapInfo map;
   gst_buffer_map(buffer, &map, GST_MAP_READ);
 
-  struct image *img = create_image_size(IMGENC_ARGB, map.size);
+  struct image *img = create_image_size(enc, map.size);
   memcpy(img->buf, map.data, map.size);
+  img->buf_len = map.size;
+  img->width=width;
+  img->height=height;
+  img->enc = enc;
+
+  // cleanup memory
+  gst_sample_unref(sample);
+  gst_sample_unref(converted_sample);
+  //gst_buffer_unref(buffer);
+  gst_caps_unref(caps);
+
   return img;
 }
 
@@ -82,4 +112,6 @@ void cleanup_rx_camera(struct camera_rx * cam) {
   /* Free resources */
   gst_element_set_state(cam->pipeline, GST_STATE_NULL);
   gst_object_unref(cam->pipeline);
+  gst_object_unref(cam->appsink);
+  free(cam);
 }

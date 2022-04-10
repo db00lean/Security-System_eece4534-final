@@ -8,6 +8,7 @@ enum img_enc {
   // the following assume one byte per channel, like gstreamer.
   IMGENC_RGB,
   IMGENC_ARGB,
+  IMGENC_BGR,
 };
 
 struct image {
