@@ -47,17 +47,7 @@ struct camera_rx * init_rx_camera(char* uri) {
   gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
 
 
-  GstElement *sink = gst_bin_get_by_name(GST_BIN(cam->pipeline), "sink");
-  if (!sink) {
-    printf("sink is NULL\n");
-    exit(1);
-  }
-
-  cam->appsink = GST_APP_SINK(sink);
-  if (!cam->appsink) {
-    printf("appsink is NULL\n");
-    exit(1);
-  }
+  cam->appsink = GST_APP_SINK_CAST(gst_bin_get_by_name(GST_BIN(cam->pipeline), "sink"));
 
   /* Start playing */
   GstStateChangeReturn ret = gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
@@ -105,9 +95,9 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
   img->enc = enc;
 
   // cleanup memory
+  gst_buffer_unmap(buffer, &map);
   gst_sample_unref(sample);
   gst_sample_unref(converted_sample);
-  //gst_buffer_unref(buffer);
   gst_caps_unref(caps);
 
   return img;
@@ -119,4 +109,5 @@ void cleanup_rx_camera(struct camera_rx * cam) {
   gst_object_unref(cam->pipeline);
   gst_object_unref(cam->appsink);
   free(cam);
+  gst_deinit();
 }
