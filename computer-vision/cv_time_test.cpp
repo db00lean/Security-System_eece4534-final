@@ -1,5 +1,5 @@
 #include <iostream>
-#include "cv_main.h"
+#include "../camera-module/cv_main.h"
 #include <chrono>
 
 // TODO: Rename "cv_main.cpp" and "cv_main.h" later on

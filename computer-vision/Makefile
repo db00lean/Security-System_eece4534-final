@@ -4,7 +4,7 @@ LIBS = `pkg-config --libs opencv`
 cv_main: cv_main.cpp 
 	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
 
-time_test: cv_time_testgit .cpp 
+time_test: cv_time_test.cpp 
 	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
 
 # test: test.cpp
