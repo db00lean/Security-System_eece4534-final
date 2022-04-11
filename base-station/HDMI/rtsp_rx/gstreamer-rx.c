@@ -7,6 +7,13 @@
 #include "imagelib.h"
 #include "gstreamer-rx.h"
 
+static const char* const ENC_LOOKUP[] = {
+  [IMGENC_RGB] = "RGB",
+  [IMGENC_ARGB] = "ARGB",
+  [IMGENC_BGR] = "BGR",
+};
+
+
 struct camera_rx * init_rx_camera(char* uri) {
 
   struct camera_rx* cam = malloc(sizeof(struct camera_rx));
@@ -34,7 +41,6 @@ struct camera_rx * init_rx_camera(char* uri) {
   cam->pipeline = gst_parse_launch(
       "videotestsrc ! videoconvert ! "
       "video/x-raw,format=ARGB,width=320,height=240 ! "
-      //"queue leaky=downstream max-size-time=250000000 ! " //.25 second queue
       "appsink name=sink max-buffers=120,drop=true",
       NULL);
 
@@ -72,9 +78,8 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
     exit(1); //TODO
   }
 
-  //TODO: make this actually handle the input type
   GstCaps *caps = gst_caps_new_simple ("video/x-raw",
-     "format", G_TYPE_STRING, "BGR",
+     "format", G_TYPE_STRING, ENC_LOOKUP[enc],
      "width", G_TYPE_INT, width,
      "height", G_TYPE_INT, height,
      NULL);
