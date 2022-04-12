@@ -2,7 +2,7 @@
 #ifndef __DRM_USER__
 #define __DRM_USER__
 #include <stdint.h>
-#include <cstdio>
+#include <stdio.h>
 
 
 //Struct to hold frame contents

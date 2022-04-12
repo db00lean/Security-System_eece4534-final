@@ -100,7 +100,7 @@ int drm_init(int fd)
     return 0;
 }
 
-int makeFB(int fd, struct buf_context *buf){
+int makeFB(int fd, struct buf_context *myBuf){
 // 32 bit memory location to store address of framebuffer
 
 
@@ -134,7 +134,7 @@ int makeFB(int fd, struct buf_context *buf){
     }
     // create DRM FB using information within crereq, populated by drmIoctl call above
     ret = drmModeAddFB(fd, (uint32_t)crereq.width, (uint32_t)crereq.height, 24,
-                       crereq.bpp, crereq.pitch, crereq.handle, &buf->fb);
+                       crereq.bpp, crereq.pitch, crereq.handle, &myBuf->fb);
 
 
     if (ret)
@@ -144,15 +144,15 @@ int makeFB(int fd, struct buf_context *buf){
         return -3;
     }
 
-    buf->pitch = crereq.pitch;
-    buf->handle = crereq.handle;
-    buf->size = crereq.size;
+    myBuf->pitch = crereq.pitch;
+    myBuf->handle = crereq.handle;
+    myBuf->size = crereq.size;
 
     // Clear mreq
     memset(&mreq, 0, sizeof(mreq));
 
     // Set memory mapping handle equal to the handle of the dumb fb just created
-    mreq.handle = buf->handle;
+    mreq.handle = myBuf->handle;
     // Map dumb buffer based on mreq.handle
     // This Ioctl call populates mreq.offset, used in mmap call below
     ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
@@ -166,15 +166,15 @@ int makeFB(int fd, struct buf_context *buf){
  
 
     // Map memory region for DRM framebuffer using size and mapped offset of dumbbuffer
-    buf->bufmap = mmap(0, buf->size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, mreq.offset);
+    myBuf->bufmap = mmap(0, myBuf->size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, mreq.offset);
 
-    if (buf->bufmap == MAP_FAILED)
+    if (myBuf->bufmap == MAP_FAILED)
     {
         printf("map failed");
         return -3;
     }
 
-    memset(buf->bufmap, 0, buf->size);
+    memset(myBuf->bufmap, 0, myBuf->size);
 
    
 
@@ -340,33 +340,54 @@ void demo(struct buf_context buf)
     }
 }
 
+void demo2(struct buf_context buf)
+{
+    int y, x;
+    //Loop to iterate through rows
+    for (y = 0; y < mode->vdisplay; y++)
+    {
+        //Loop to iterate through columns
+        for (x = 0; x < mode->hdisplay; x++)
+        {
+            //Draw top 3rd of screen red
+            if (y < (mode->vdisplay / 3))
+            {
+                draw_pixel(x, y, colors[1], buf.bufmap);
+            }
+            //Draw middle 3rd of screen blue
+            else if (y < (mode->vdisplay * 2 / 3))
+            {
+                draw_pixel(x, y, colors[2],  buf.bufmap);
+            }
+            //Draw bottom 3rd of screen green
+            else
+            {
+                draw_pixel(x, y, colors[0],  buf.bufmap);
+            }
+        }
+    }
+}
 
-void pageFlip(int fd, struct buf_context* bufs){
+
+void pageFlip(int fd, struct buf_context *bufs){
 
 
-
+    printf("inside page flip\n");
     drmSetMaster(fd);
 
     // clear crtc
-    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
+    //drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
 
-    drmModeSetCrtc(fd, crtc->crtc_id, bufs[0].fb, 0, 0, &conn->connector_id, 1, mode);
+    printf("before set crtc\n");
 
-    int i =0;
-    while(1){
-      
+    //drmModeSetCrtc(fd, crtc->crtc_id, bufs[0].fb, 0, 0, &conn->connector_id, 1, mode);
 
-        getchar();
-        printf("Changing to FB: %d", i);
-        drmModePageFlip(fd, crtc->crtc_id, bufs[i].fb, DRM_MODE_PAGE_FLIP_EVENT, NULL );
-        
-        if(i == 1){
-            i = 0;
-        }
-        else{
-            i = 1;
-        }
-    }
+    printf("before buf id\n");
+    uint32_t buf_id = bufs->fb;
+    
+    printf("before page flip\n");
+    printf("Changing to FB: %d\n", bufs->fb);
+    drmModePageFlip(fd, crtc->crtc_id, buf_id, DRM_MODE_PAGE_FLIP_EVENT, NULL );
 
 
     drmDropMaster(fd);
