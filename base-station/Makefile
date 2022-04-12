@@ -23,10 +23,10 @@ management_server.o: system_management_server.c aggregate_detect.h
 agg_detect.o: aggregate_detect.c aggregate_detect.h
 	$(CC) $(CFLAGS) -c aggregate_detect.c
 
-button_client.o: button_client.c button_client.h
+button_client.o: button_client.c
 	$(CC) $(CFLAGS) -c button_client.c
 
-button_client_standalone.o: button_client.c button_client.h
+button_client_standalone.o: button_client.c
 	$(CC) $(CFLAGS) -o button_client_standalone.o -c button_client.c -DBUTTON_CLIENT_MAIN
 
 clean:

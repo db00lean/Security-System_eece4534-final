@@ -1,3 +1,5 @@
+# Makefile for ZedBoard button driver
+
 obj-m := zed_btns.o
 ccflags-y += -DDEBUG
 ESL_KERNEL_VERSION ?= 5.10.0-esl

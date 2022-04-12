@@ -2,8 +2,8 @@
 // John Craffey
 
 #include "../common_headers/system_management.h"
+#include "../common_headers/button_client.h"
 #include "aggregate_detect.h"
-#include "button_client.h"
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -13,9 +13,26 @@
 #include "../network/server.h"
 
 // global variable to track the system charateristics
-struct system_status securitySystem = {
+system_status securitySystem = {
     .numberOfCameras = 0,
+    .menuMode = 0
 };
+
+struct coordinate_data get_forbidden_zone(system_status* system) {
+  struct coordinate_data fz;
+  pthread_mutex_lock(&system->lock);
+  fz = system->cameras[system->guiState].forbiddenZone;
+  pthread_mutex_unlock(&system->lock);
+  return fz; 
+}
+
+camera_module* get_active_camera(system_status* system) {
+  camera_module* cam;
+  pthread_mutex_lock(&system->lock);
+  cam = &(system->cameras[system->guiState]);
+  pthread_mutex_unlock(&system->lock);
+  return cam;
+}
 
 // dump all data for the system
 void print_system_info() {
@@ -58,6 +75,10 @@ int initialize_camera(int cameraNumber) {
 }
 
 int main(int argc, char **argv) {
+  // Kick off thread for button presses
+  pthread_t btn_listener_thread;
+  pthread_mutex_init(&securitySystem.lock, 0);
+  signal(SIGINT, stop_button_listener);
 
   // init metadata network
   received_message* msg;
@@ -76,11 +97,8 @@ int main(int argc, char **argv) {
   // print for debug
   print_system_info();
 
-  // Kick off thread for button presses
-  pthread_t btn_listener_thread;
-
-  signal(SIGINT, stop_button_listener);
-  pthread_create(&btn_listener_thread, NULL, run_button_client, NULL);
+  // launching button thread
+  pthread_create(&btn_listener_thread, NULL, run_button_client, &securitySystem);
 
   // get metadata from the network
   msg = receive_msg(networkServer->responder);
@@ -94,6 +112,7 @@ int main(int argc, char **argv) {
   aggregate_detect(securitySystem.cameras[0]);
 
   // cleanup
+  pthread_mutex_destroy(&securitySystem.lock);
   free(securitySystem.cameras);
   pthread_join(btn_listener_thread, NULL);
   free(networkServer);
