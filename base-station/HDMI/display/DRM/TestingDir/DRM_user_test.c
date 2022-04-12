@@ -6,8 +6,6 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
 
 #include <drm_fourcc.h>
 
@@ -33,13 +31,7 @@ drmModeFB *fb;
 
 
 
-struct drm_mode_create_dumb crereq;
 
-// struct to create memory mapping for dumb buffer
-struct drm_mode_map_dumb mreq;
-
-// struct to destroy dumb buffer
-struct drm_mode_destroy_dumb dreq;
 //Defining constants for colors according to default pixel format -- 32 bit word with transparency, red, green, and blue values
 uint32_t const red = (0xff << 16);
 uint32_t const green = (0xff << 8);
@@ -106,19 +98,18 @@ void *drm_map(int fd, struct buf_context *myBuf)
     printf("fb id %d\n", *fb);
 
     int ret;
-    // struct to create dumb buffer
 
 
     // clear crereq before setting members
-    memset(&crereq, 0, sizeof(crereq));
+    memset(&myBuf->crereq, 0, sizeof(myBuf->crereq));
 
     // set members of crereq based on members of "drmModeModeInfo" obtained in drm_init()
-    crereq.height = mode->vdisplay;
-    crereq.width = mode->hdisplay;
-    crereq.bpp = 32;
+    myBuf->crereq.height = mode->vdisplay;
+    myBuf->crereq.width = mode->hdisplay;
+    myBuf->crereq.bpp = 32;
     printf("before drm ioctl\n");
     // create dumb DRM based on crereq members -- "handle, pitch, size will be returned", members of crereq
-    ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &crereq);
+    ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &myBuf->crereq);
 
     if (ret)
     {
@@ -127,8 +118,8 @@ void *drm_map(int fd, struct buf_context *myBuf)
     }
     // create DRM FB using information within crereq, populated by drmIoctl call above
     printf("before add fb\n");
-    ret = drmModeAddFB(fd, (uint32_t)crereq.width, (uint32_t)crereq.height, 24,
-                       crereq.bpp, crereq.pitch, crereq.handle, fb);
+    ret = drmModeAddFB(fd, (uint32_t)myBuf->crereq.width, (uint32_t)myBuf->crereq.height, 24,
+                       myBuf->crereq.bpp, myBuf->crereq.pitch, myBuf->crereq.handle, fb);
     if (ret)
     {
         printf("Failed to create DRM buffer\n");
@@ -137,13 +128,13 @@ void *drm_map(int fd, struct buf_context *myBuf)
     }
 
     // Clear mreq
-    memset(&mreq, 0, sizeof(mreq));
+    memset(&myBuf->mreq, 0, sizeof(myBuf->mreq));
 
     // Set memory mapping handle equal to the handle of the dumb fb just created
-    mreq.handle = crereq.handle;
+    myBuf->mreq.handle = myBuf->crereq.handle;
     // Map dumb buffer based on mreq.handle
     // This Ioctl call populates mreq.offset, used in mmap call below
-    ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
+    ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &myBuf->mreq);
 
     if (ret)
     {
@@ -161,7 +152,7 @@ void *drm_map(int fd, struct buf_context *myBuf)
     drmDropMaster(fd);
 
     // Map memory region for DRM framebuffer using size and mapped offset of dumbbuffer
-    myBuf->map = mmap(0, crereq.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, mreq.offset);
+    myBuf->map = mmap(0, myBuf->crereq.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, myBuf->mreq.offset);
 
     if (myBuf->map == MAP_FAILED)
     {
@@ -172,7 +163,7 @@ void *drm_map(int fd, struct buf_context *myBuf)
 }
 void drm_unmap(struct buf_context *myBuf)
 {
-    munmap(myBuf->map, crereq.size);
+    munmap(myBuf->map, myBuf->crereq.size);
 }
 void print_info()
 {
@@ -248,6 +239,33 @@ void demo(struct buf_context *myBuf)
             else
             {
                 draw_pixel(x, y, colors[2], myBuf);
+            }
+        }
+    }
+}
+void demo2(struct buf_context *myBuf)
+{
+    int y, x;
+    //Loop to iterate through rows
+    for (y = 0; y < mode->vdisplay; y++)
+    {
+        //Loop to iterate through columns
+        for (x = 0; x < mode->hdisplay; x++)
+        {
+            //Draw top 3rd of screen red
+            if (y < (mode->vdisplay / 3))
+            {
+                draw_pixel(x, y, colors[1], myBuf);
+            }
+            //Draw middle 3rd of screen blue
+            else if (y < (mode->vdisplay * 2 / 3))
+            {
+                draw_pixel(x, y, colors[2], myBuf);
+            }
+            //Draw bottom 3rd of screen green
+            else
+            {
+                draw_pixel(x, y, colors[0], myBuf);
             }
         }
     }

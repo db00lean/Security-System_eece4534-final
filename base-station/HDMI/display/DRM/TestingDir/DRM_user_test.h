@@ -2,6 +2,10 @@
 #ifndef __DRM_USER__
 #define __DRM_USER__
 #include <stdint.h>
+#include <xf86drm.h>
+#include <xf86drmMode.h>
+
+
 
 
 //Pointer to memory mapped region for writing to card
@@ -10,6 +14,14 @@
 struct buf_context{
 	void *map;
     uint32_t fb;
+	// struct to create dumb buffer
+	struct drm_mode_create_dumb crereq;
+
+	// struct to create memory mapping for dumb buffer
+	struct drm_mode_map_dumb mreq;
+
+	// struct to destroy dumb buffer
+	struct drm_mode_destroy_dumb dreq;
 };
 
 
@@ -31,6 +43,7 @@ int drm_close();
 void draw_pixel(int x, int y, uint32_t ARGB, struct buf_context *myBuf);
 //Demo function to fill the screen with 3 rectangles
 void demo();
+
 //page flip
 //void pageFlip(int fd, struct buf_context *bufs);
 
