@@ -2,6 +2,7 @@ TARGET:=main_drm_test
 SRCS:=main_drm_test.c DRM_user_test.c 
 OBJS:=$(SRCS:.c=.o)
 ESL_ZEDBOARD_IP:=129.10.156.135
+UPLOAD_PATH:=/~
 
 DRM_CFLAGS := $(shell pkg-config --cflags libdrm)
 DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
