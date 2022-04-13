@@ -271,28 +271,48 @@ void demo2(struct buf_context *myBuf)
     }
 }
 
-// void pageFlip(int fd, struct buf_context *bufs){
+void pageFlip(struct buf_context *myBuf){
 
 
-//     printf("inside page flip\n");
-//     drmSetMaster(fd);
+    printf("inside page flip\n");
+    //drmModeSetCrtc(fd, crtc->crtc_id, myBuf->fb, 0, 0, &conn->connector_id, 1, mode);
+    int ret;
+    ret = drmModePageFlip	(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, NULL);
+    if ( ret){
+        printf("couldn't page flip\n");
+        if (ret == -EINVAL)
+        {
+            printf("invalid crtc id or fb id\n");
+        }
+        else if (ret == -errno) {
+            printf("other page flip error\n");
+        }
+    } 
+	
 
-//     // clear crtc
-//     //drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
 
-//     printf("before set crtc\n");
 
-//     //drmModeSetCrtc(fd, crtc->crtc_id, bufs[0].fb, 0, 0, &conn->connector_id, 1, mode);
 
-//     printf("before buf id\n");
-//     uint32_t buf_id = bufs->fb;
+
+
+    // drmSetMaster(fd);
+
+    // // clear crtc
+    // //drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
+
+    // printf("before set crtc\n");
+
+    // //drmModeSetCrtc(fd, crtc->crtc_id, bufs[0].fb, 0, 0, &conn->connector_id, 1, mode);
+
+    // printf("before buf id\n");
+    // uint32_t buf_id = bufs->fb;
     
-//     printf("before page flip\n");
-//     printf("Changing to FB: %d\n", bufs->fb);
-//     drmModePageFlip(fd, crtc->crtc_id, buf_id, DRM_MODE_PAGE_FLIP_EVENT, NULL );
+    // printf("before page flip\n");
+    // printf("Changing to FB: %d\n", bufs->fb);
+    // drmModePageFlip(fd, crtc->crtc_id, buf_id, DRM_MODE_PAGE_FLIP_EVENT, NULL );
 
 
-//     drmDropMaster(fd);
+    // drmDropMaster(fd);
 
 
-// }
+}

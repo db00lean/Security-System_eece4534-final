@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <errno.h>
 
 
 
@@ -13,6 +14,7 @@
 
 struct buf_context{
 	void *map;
+	int fd;
     uint32_t fb;
 	// struct to create dumb buffer
 	struct drm_mode_create_dumb crereq;
