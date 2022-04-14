@@ -50,7 +50,7 @@ uint32_t const colors[] = {red, green, blue};
 int drm_open()
 {
 
-    int fd, flags;
+    int fd;
 
     // Opening cards
     fd = open("/dev/dri/card0", O_RDWR);

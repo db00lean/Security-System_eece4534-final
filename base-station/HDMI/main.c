@@ -10,13 +10,14 @@
  */
 
 // includes are placeholders, header files are currently located in separate branches
+#include "inc/gstreamer-rx.h"
+#include "inc/imagelib.h"
 #include "../common_headers/system_management.h"
 #include "../common_headers/cv_structs.h"
 #include "inc/draw_bounding_box.h"
 #include "inc/drawtext.h"
 #include "inc/imagelib.h"
 #include "inc/DRM_user.h"
-
 
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
@@ -74,7 +75,7 @@ void show_background(struct system_status * system) {
     struct camera_module * active_camera = &system->cameras[system->guiState];
 
     //camera boxes in bottom row
-    char num_str[2];
+    char num_str[10];
     int status_color;
 
     for (int i = 0; i < system->numberOfCameras; i++) {
@@ -171,7 +172,7 @@ void show_camera_info(struct system_status * system) {
 
 
     //active camera red box outline
-    char num_str[2];
+    char num_str[10];
     int status_color;
 
     for (int i = 0; i < system->numberOfCameras; i++) {
@@ -232,7 +233,7 @@ void show_camera_options(struct system_status * system) {
 void render(struct system_status * system) {
     // TODO: figure out how to get pointer to system management struct
     //init DRM
-    int fd, ret;
+    int fd;
     fd = drm_open();
     drm_init(fd);
     map = drm_map(fd);
