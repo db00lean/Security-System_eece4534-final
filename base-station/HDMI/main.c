@@ -18,9 +18,17 @@
 #include "inc/DRM_user.h"
 
 
+
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
 // #include "rendering.h"
-// - bounding_box_colors[] = {red, orange, yelow, light_green, green, teal, blue, violet, grey};
+enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, orange = 0xffa500, yellow = 0xffff00, light_green = 0xaaff00, green = 0x00ff00, cyan = 0x00ffff, blue = 0x0000ff, violet = 0xff00ff, grey = 0xaaaaaa};
+#define MONITOR_H 1080
+#define MONITOR_W 1920
+#define CAM_SEL_BOX_DIM 150
+#define CAM_SEL_BOX_X 100
+#define CAM_SEL_BOX_Y 750
+#define TOP_LINE 100
+#define CAM_SEL_BOX_RAD 10
 
 /**
  * @brief draws the background of the GUI (static elements)
@@ -28,35 +36,35 @@
  */
 void show_background() {
     //top name
-    draw_text_scale(50, 50, "Security System", 0xff00ff, 4);
+    draw_text_scale(MONITOR_W/2, TOP_LINE/2, "Security System", light_green, 4);
     //camera frame border
-    draw_boundingbox(100, 100, 800, 600, 0xffffff);
+    draw_boundingbox(TOP_LINE, TOP_LINE, MONITOR_W/2, MONITOR_H/2, white);
 
 
 
     
     //shown box and people status block
-    draw_boundingbox(1000, 500, 350, 100, 0xcccccc);
-    draw_text_scale(1020, 512, "Show Boxes: ", 0x0ff00, 2);
-    draw_circle_filled(1040, 512, 10, 0xff0000);
-    draw_text_scale(1020, 550, "Show Person #: ", 0x00ff00, 2);
-    draw_circle_filled(1040, 550, 10, 0xff0000);
+    draw_boundingbox((MONITOR_W/2 + TOP_LINE * 2), MONITOR_H/4 + TOP_LINE, TOP_LINE * 3, TOP_LINE, grey);
+    draw_text_scale((MONITOR_W/2 + TOP_LINE * 3.5), MONITOR_H/4 + TOP_LINE * 1.1, "Show Boxes: ", light_green, 2);
+    draw_circle_filled((MONITOR_W/2 + TOP_LINE * 3.5) + TOP_LINE * 1.1, MONITOR_H/4 + TOP_LINE * 1.1, CAM_SEL_BOX_RAD, green);
+    draw_text_scale((MONITOR_W/2 + TOP_LINE * 3.5), MONITOR_H/4 + TOP_LINE * 1.4, "Show Person #: ", light_green, 2);
+    draw_circle_filled((MONITOR_W/2 + TOP_LINE * 3.5) + TOP_LINE * 1.1, MONITOR_H/4 + TOP_LINE * 1.4, CAM_SEL_BOX_RAD, green);
 
     
     //camera status boxes
-    draw_boundingbox(100, 750, 150, 150, 0xff0000);
-    draw_text_scale(175, 825, "1", 0x00ffff, 10);
-    draw_circle_filled(100, 750, 10, 0xff0000);
+    // draw_boundingbox(100, 750, 150, 150, 0xff0000);
+    // draw_text_scale(175, 825, "1", 0x00ffff, 10);
+    // draw_circle_filled(100, 750, 10, 0xff0000);
 
 
-    draw_boundingbox(300, 750, 150, 150, 0xff0000);
-    draw_text_scale(375, 825, "2", 0x00ffff, 10);
-    draw_circle_filled(300, 750, 10, 0xff0000);
+    // draw_boundingbox(300, 750, 150, 150, 0xff0000);
+    // draw_text_scale(375, 825, "2", 0x00ffff, 10);
+    // draw_circle_filled(300, 750, 10, 0xff0000);
 
 
-    draw_boundingbox(500, 750, 150, 150, 0xff0000);
-    draw_text_scale(575, 825, "3", 0x00ffff, 10);
-    draw_circle_filled(500, 750, 10, 0x00ff00);
+    // draw_boundingbox(500, 750, 150, 150, 0xff0000);
+    // draw_text_scale(575, 825, "3", 0x00ffff, 10);
+    // draw_circle_filled(500, 750, 10, 0x00ff00);
 
 
 
@@ -74,8 +82,8 @@ void show_background() {
     }
     //draw image to screen using draw pixel
     // for each box, draw a rectangle bounding box
-    for (int x = 100; x < 900; x++) {
-        for (int y = 100; y < 700; y++) {
+    for (int x = TOP_LINE; x < (TOP_LINE + MONITOR_W / 2); x++) {
+        for (int y = 100; y < (TOP_LINE + MONITOR_H / 2); y++) {
             unsigned int color = (img->buf[x + y] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
             draw_pixel(x,y,color);
         }
