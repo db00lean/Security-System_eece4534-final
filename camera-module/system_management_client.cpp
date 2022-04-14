@@ -105,7 +105,6 @@ int main(int argc, char *argv[]) {
 
   // ### cleanup ###
   pthread_join(cv_main_thread, NULL);
-  pthread_join(camera_main_thread, NULL);
   pthread_mutex_destroy(&mutex);
   free(c)
 
