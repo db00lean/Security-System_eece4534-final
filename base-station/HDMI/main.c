@@ -10,7 +10,8 @@
  */
 
 // includes are placeholders, header files are currently located in separate branches
-#include "../common_headers/system_management.h"
+#include "../../common_headers/hdmi_main.h"
+#include "../../common_headers/system_management.h"
 #include "../common_headers/cv_structs.h"
 #include "inc/draw_bounding_box.h"
 #include "inc/drawtext.h"
@@ -205,10 +206,11 @@ void render(struct system_status * system) {
     }
 }
 
-int main() {
+void* hdmi_main(void* thread_args) {
     // run indefinitely
-    struct system_status * system;
+    struct system_status *system = (system_status*) thread_args; 
 
     render(system);
+    return NULL;
     
 }
