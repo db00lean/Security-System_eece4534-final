@@ -27,8 +27,23 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
 #define CAM_SEL_BOX_DIM 150
 #define CAM_SEL_BOX_X 100
 #define CAM_SEL_BOX_Y 750
-#define TOP_LINE 100
 #define CAM_SEL_BOX_RAD 10
+
+//general locations of objects to draw
+#define IMAGE_TOP_LEFT_X 100
+#define IMAGE_TOP_LEFT_Y 100
+#define IMAGE_WIDTH MONITOR_W/2
+#define IMAGE_HEIGHT MONITOR_H/2
+#define TITLE_X MONITOR_W/2
+#define TITLE_Y 50
+#define ZONE_STATUS_TOP_LEFT_X MONITOR_W/2 + 200
+#define ZONE_STATUS_TOP_LEFT_Y IMAGE_TOP_LEFT_Y
+#define RIGHT_BOX_H 200
+#define RIGHT_BOX_W 400
+#define PEOPLE_BOX_TOP_LEFT_X ZONE_STATUS_TOP_LEFT_X
+#define PEOPLE_BOX_TOP_LEFT_Y ZONE_STATUS_TOP_LEFT_Y + 300
+#define TOGGLE_OPT_BOX_TOP_LEFT_X ZONE_STATUS_TOP_LEFT_X
+#define TOGGLE_OPT_BOX_TOP_LEFT_Y PEOPLE_BOX_TOP_LEFT_Y + 300
 
 /**
  * @brief draws the background of the GUI (static elements)
@@ -36,19 +51,16 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
  */
 void show_background() {
     //top name
-    draw_text_scale(MONITOR_W/2, TOP_LINE/2, "Security System", light_green, 4);
+    draw_text_scale(TITLE_X, TITLE_Y, "Security System", light_green, 4);
     //camera frame border
-    draw_boundingbox(TOP_LINE, TOP_LINE, MONITOR_W/2, MONITOR_H/2, white);
-
-
-
+    draw_boundingbox(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, white);
     
     //shown box and people status block
-    draw_boundingbox((MONITOR_W/2 + TOP_LINE * 2), MONITOR_H/4 + TOP_LINE, TOP_LINE * 3, TOP_LINE, grey);
-    draw_text_scale((MONITOR_W/2 + TOP_LINE * 3.5), MONITOR_H/4 + TOP_LINE * 1.1, "Show Boxes: ", light_green, 2);
-    draw_circle_filled((MONITOR_W/2 + TOP_LINE * 3.5) + TOP_LINE * 1.1, MONITOR_H/4 + TOP_LINE * 1.1, CAM_SEL_BOX_RAD, green);
-    draw_text_scale((MONITOR_W/2 + TOP_LINE * 3.5), MONITOR_H/4 + TOP_LINE * 1.4, "Show Person #: ", light_green, 2);
-    draw_circle_filled((MONITOR_W/2 + TOP_LINE * 3.5) + TOP_LINE * 1.1, MONITOR_H/4 + TOP_LINE * 1.4, CAM_SEL_BOX_RAD, green);
+    draw_boundingbox(TOGGLE_OPT_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
+    draw_text_scale(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, "Show Boxes: ", light_green, 2);
+    draw_circle_filled(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, CAM_SEL_BOX_RAD, green);
+    draw_text_scale(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, "Show Person #: ", light_green, 2);
+    draw_circle_filled(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, CAM_SEL_BOX_RAD, green);
 
     
     //camera status boxes
@@ -82,15 +94,15 @@ void show_background() {
     }
     //draw image to screen using draw pixel
     // for each box, draw a rectangle bounding box
-    for (int x = TOP_LINE; x < (TOP_LINE + MONITOR_W / 2); x++) {
-        for (int y = 100; y < (TOP_LINE + MONITOR_H / 2); y++) {
-            unsigned int color = (img->buf[x + y] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
-            draw_pixel(x,y,color);
-        }
-    }
+    // for (int x = TOP_LINE; x < (TOP_LINE + MONITOR_W / 2); x++) {
+    //     for (int y = 100; y < (TOP_LINE + MONITOR_H / 2); y++) {
+    //         unsigned int color = (img->buf[x + y] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
+    //         draw_pixel(x,y,color);
+    //     }
+    // }
 
     //draw bounding boxes
-    draw_boundingbox(300, 300, 100, 200, 0xff0000);
+    // draw_boundingbox(300, 300, 100, 200, 0xff0000);
 
     // //shape testing
     // draw_circle_filled(1300, 300, 200, 0xff00ff);
@@ -130,10 +142,10 @@ void show_bounding_box(struct system_status * system) {
     struct cv_data * camera_metadata = &active_camera->cvMetadata;
 
     //people count block
-    draw_boundingbox(1000, 300, 200, 50, 0xcccccc);
-    draw_text_scale(1000, 275, "Number of People", 0xff00ff, 2);
+    draw_boundingbox(PEOPLE_BOX_TOP_LEFT_X, PEOPLE_BOX_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
+    draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 50, "Number of People", violet, 2);
     int camera_num_display = camera_metadata->num_bbox + 48;
-    draw_text_scale(1025, 312, (char *)&camera_num_display, 0x00ff00, 3);
+    draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 100, (char *)&camera_num_display, 0x00ff00, 3);
 
     // loop through each bounding box and draw
     int b;
@@ -143,7 +155,7 @@ void show_bounding_box(struct system_status * system) {
                           box_data->y_coord,
                           box_data->x_len,
                           box_data->y_len,
-                          0xffffff //bounding_box_colors[b]
+                          red
                           );
     }
 }
@@ -157,50 +169,49 @@ void show_camera_info(struct system_status * system) {
     // get the current camera information from the struct
     struct camera_module * active_camera = &system->cameras[system->guiState];
     //zone status block
-    draw_boundingbox(1000, 100, 200, 50, 0xcccccc);
-    draw_text_scale(1000, 75, "Zone Status", 0xff00ff, 2);
+    draw_boundingbox(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
+    draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
     if (active_camera->detection) {
         // draw "ZONE OCCUPIED"
-        draw_text_scale(1025, 112, "Occupied", 0x00ff00, 3);
+        draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", red, 3);
     } else {
         // draw "ZONE VACANT"
-        draw_text_scale(1025, 112, "Vacant", 0x00ff00, 3);
-
+        draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", green, 3);
     }
 
     char num_str[2];
     int status_color;
 
-    for (int i = 0; i < system->numberOfCameras) {
+    for (int i = 0; i < system->numberOfCameras; i++) {
 
         if (i == system->guiState) {
             draw_boundingbox(CAM_SEL_BOX_X + (i * 200) - 3,
                              CAM_SEL_BOX_Y - 3,
                              CAM_SEL_BOX_DIM + 6,
                              CAM_SEL_BOX_DIM + 6,
-                             bounding_box_colors[red]);
+                             red);
         }
 
         draw_rectangle_filled(CAM_SEL_BOX_X + (i * 200),
                               CAM_SEL_BOX_Y,
                               CAM_SEL_BOX_DIM,
                               CAM_SEL_BOX_DIM,
-                              bounding_box_colors[grey]);
+                              grey);
 
-        sprintf(num_str, "%d", i);
+        sprintf(num_str, "%d", i+1);
         draw_text_scale(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_DIM / 2),
                         CAM_SEL_BOX_Y + (CAM_SEL_BOX_DIM / 2),
                         num_str,
-                        bounding_box_colors[black], 10);
+                        black, 10);
 
-        if (system->cameras[i]->status) {
-            status_color = bounding_box_colors[green];
+        if (system->cameras[i].status) {
+            status_color = green;
         } else {
-            status_color = bounding_box_colors[red];
+            status_color = red;
         }
 
         draw_circle_filled(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_RAD / 2),
-                           CAM_SEL_BOX_Y + (CAM_SEL_BOX_RAD / 2),,
+                           CAM_SEL_BOX_Y + (CAM_SEL_BOX_RAD / 2),
                            CAM_SEL_BOX_RAD,
                            status_color);
     }
