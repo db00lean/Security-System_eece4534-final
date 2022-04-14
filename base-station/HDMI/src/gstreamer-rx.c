@@ -40,8 +40,8 @@ struct camera_rx * init_rx_camera(char* uri) {
   // alternative in case you don't have network or dave decides he's had enough:
   // (or maybe you just want faster development)
   cam->pipeline = gst_parse_launch(
-      "videotestsrc ! videoconvert ! "
-      "video/x-raw,format=ARGB,width=320,height=240 ! "
+      "videotestsrc ! timeoverlay ! videoconvert ! "
+      "video/x-raw,format=ARGB,width=640,height=480 ! "
       "appsink name=sink max-buffers=120,drop=true",
       NULL);
 
