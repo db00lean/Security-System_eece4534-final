@@ -66,6 +66,7 @@ void *cv_t(void *thread_args) {
     // whatever the gstream type is)
     pthread_mutex_lock(&mutex;);   // Lock
     cv_data_q.push(GetBBoxesFromFrame());
+    pthread_mutex_unlock(&mutex;); // Unlock
   }*/
 #endif
 
@@ -76,7 +77,6 @@ int main(int argc, char *argv[]) {
 
   // ### init ###
   // networking stuff
-  // This stuff is based off of code in the sysman branch and won't work until a merge
   // TODO: find cam_id
   const char* port = "55000"; // Statically defined for now
   const char* address = "127.0.0.1";
