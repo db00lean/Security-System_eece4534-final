@@ -30,16 +30,25 @@ void stop_button_listener(int _sig) {
 
 /* Button action helpers */
 
+void print_sys_fzones(system_status* system) {
+    int ii;
+    camera_module* cam;  
+    for (ii = 0; ii < system->numberOfCameras; ii++) {
+        cam = system->cameras + ii;
+        printf("[%d] - { X: %d, Y: %d }\n", ii, cam->forbiddenZone.x_coord, cam->forbiddenZone.y_coord);
+    }
+}
+
 void change_fz_x(system_status* system, int8_t delta) {
      pthread_mutex_lock(&system->lock);
     
     struct coordinate_data* zone = &(system->cameras[system->guiState].forbiddenZone);
-    zone->x_coord += delta;
-    ENFORCE_RANGE(zone->x_coord, 0, CAMERA_MAX_X - zone->x_len);
+    APPLY_DELTA_ENFORCE_RANGE(zone->x_coord, delta, (CAMERA_MAX_X - zone->x_len));
 
     pthread_mutex_unlock(&system->lock);
 #ifdef DEBUG
     printf("[ Menu ] - Change forbidden zone x-coord; Delta: %d, New value: %u\n", delta, zone->x_coord);
+    print_sys_fzones(system);
 #endif
 }
 
@@ -47,12 +56,12 @@ void change_fz_y(system_status* system, int8_t delta) {
     pthread_mutex_lock(&system->lock);
     
     struct coordinate_data* zone = &(system->cameras[system->guiState].forbiddenZone);
-    zone->y_coord += delta;
-    ENFORCE_RANGE(zone->y_coord, 0, CAMERA_MAX_Y - zone->y_len);
+    APPLY_DELTA_ENFORCE_RANGE(zone->y_coord, delta, (CAMERA_MAX_Y - zone->y_len));
 
     pthread_mutex_unlock(&system->lock);
 #ifdef DEBUG
     printf("[ Menu ] - Change forbidden zone y-coord; Delta: %d, New value: %u\n", delta, zone->y_coord);
+    print_sys_fzones(system);
 #endif
 }
 
@@ -185,6 +194,8 @@ void* run_button_client(void* thread_args) {
         puts("[ Btn Listener ] - Could not open zedbtn character device file.\n");
         return NULL;
     }
+
+    puts("[ Btn Listener ] - Hello from button listener thread!\n");
 
     while(run_button_listener) {
 #ifdef DEBUG
