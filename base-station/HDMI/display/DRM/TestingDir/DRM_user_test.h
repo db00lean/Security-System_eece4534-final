@@ -47,7 +47,7 @@ void draw_pixel(int x, int y, uint32_t ARGB, struct buf_context *myBuf);
 void demo();
 
 //page flip
-//void pageFlip(int fd, struct buf_context *bufs);
+void pageFlip(int fd, struct buf_context *bufs);
 
 
 #endif

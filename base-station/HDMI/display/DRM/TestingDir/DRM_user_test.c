@@ -24,7 +24,7 @@ drmModeModeInfo *mode;
 drmModeEncoder *encode;
 drmModeCrtc *crtc;
 drmModeFB *fb;
-
+int CRTC_FB;
 //Pointer to memory mapped region for writing to card
 //moved to struct
 //void *map;
@@ -86,6 +86,8 @@ int drm_init(int fd)
     // set "struct drmModeModeInfo" to the "struct drmModeModeInfo" member contained within "drmModeConnector"
     mode = conn->modes;
 
+
+    CRTC_FB = crtc->crtc_id;
     return 0;
 }
 void *drm_map(int fd, struct buf_context *myBuf, int id)
@@ -145,7 +147,7 @@ void *drm_map(int fd, struct buf_context *myBuf, int id)
     // drmSetMaster(fd);
 
     // //clear crtc
-    //drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
+
 
     drmModeSetCrtc(fd, crtc->crtc_id, *fb, 0, 0, &conn->connector_id, 1, mode);
     printf("creating buf w CRTC ID: %d\n", crtc->crtc_id);
@@ -281,8 +283,12 @@ void pageFlip(int fd, struct buf_context *myBuf){
     //unsigned int waiting(1);
     printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
 
+    uint32_t *fb = malloc(sizeof(uint32_t));
+    printf("fb id %d\n", *fb);
+    fb = &myBuf->fb;
+
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
-    ret = drmModeSetCrtc(myBuf->fd, crtc->crtc_id, myBuf->fb, 0, 0, &conn->connector_id, 1, NULL);
+    ret = drmModeSetCrtc(myBuf->fd, crtc->crtc_id,  *fb,  0, 0, &conn->connector_id, 1, mode);
 
 
     //ret = drmModePageFlip(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, waiting);
@@ -295,32 +301,6 @@ void pageFlip(int fd, struct buf_context *myBuf){
         else if (ret == -errno) {
             printf("other page flip error\n");
         }
-    } 
-	
-
-
-
-
-
-
-    // drmSetMaster(fd);
-
-    // // clear crtc
-    // //drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
-
-    // printf("before set crtc\n");
-
-    // //drmModeSetCrtc(fd, crtc->crtc_id, bufs[0].fb, 0, 0, &conn->connector_id, 1, mode);
-
-    // printf("before buf id\n");
-    // uint32_t buf_id = bufs->fb;
-    
-    // printf("before page flip\n");
-    // printf("Changing to FB: %d\n", bufs->fb);
-    // drmModePageFlip(fd, crtc->crtc_id, buf_id, DRM_MODE_PAGE_FLIP_EVENT, NULL );
-
-
-    // drmDropMaster(fd);
-
+    }
 
 }

@@ -34,7 +34,7 @@ int main()
     getchar(); 
 
     demo(myBuf0);
-    pageFlip(myBuf0);
+    pageFlip(fd, myBuf0);
     getchar();
     getchar(); 
     demo2(myBuf1);
