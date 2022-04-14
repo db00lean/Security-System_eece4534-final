@@ -1,3 +1,4 @@
+// Connor Northway
 #ifndef __IMAGELIB_H__
 #define __IMAGELIB_H__
 

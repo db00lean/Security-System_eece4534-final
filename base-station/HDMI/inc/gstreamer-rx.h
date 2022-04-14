@@ -1,3 +1,4 @@
+// Connor Northway
 #ifndef GSTREAMER_RX_H
 #define GSTREAMER_RX_H
 

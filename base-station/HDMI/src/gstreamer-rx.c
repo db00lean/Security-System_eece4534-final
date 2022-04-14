@@ -1,3 +1,4 @@
+// Connor Northway
 #include <stdio.h>
 
 #include <gst/app/gstappsink.h>
