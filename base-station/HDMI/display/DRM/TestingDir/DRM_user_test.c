@@ -88,7 +88,7 @@ int drm_init(int fd)
 
     return 0;
 }
-void *drm_map(int fd, struct buf_context *myBuf)
+void *drm_map(int fd, struct buf_context *myBuf, int id)
 {
     // 32 bit memory location to store address of framebuffer
     printf("inside drm map\n");
@@ -142,17 +142,18 @@ void *drm_map(int fd, struct buf_context *myBuf)
         return MAP_FAILED;
     }
 
-    drmSetMaster(fd);
+    // drmSetMaster(fd);
 
-    // clear crtc
-    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
+    // //clear crtc
+    //drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
 
     drmModeSetCrtc(fd, crtc->crtc_id, *fb, 0, 0, &conn->connector_id, 1, mode);
+    printf("creating buf w CRTC ID: %d\n", crtc->crtc_id);
 
-    drmDropMaster(fd);
+    // drmDropMaster(fd);
 
     // Map memory region for DRM framebuffer using size and mapped offset of dumbbuffer
-    myBuf->map = mmap(0, myBuf->crereq.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, myBuf->mreq.offset);
+    myBuf->map = mmap(0, myBuf->crereq.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, myBuf->mreq.offset );//* (1+id));
 
     if (myBuf->map == MAP_FAILED)
     {
@@ -271,18 +272,25 @@ void demo2(struct buf_context *myBuf)
     }
 }
 
-void pageFlip(struct buf_context *myBuf){
+void pageFlip(int fd, struct buf_context *myBuf){
 
 
     printf("inside page flip\n");
-    //drmModeSetCrtc(fd, crtc->crtc_id, myBuf->fb, 0, 0, &conn->connector_id, 1, mode);
     int ret;
-    ret = drmModePageFlip	(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, NULL);
+    void *waiting;
+    //unsigned int waiting(1);
+    printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
+
+    crtc = drmModeGetCrtc(fd, encode->crtc_id);
+    ret = drmModeSetCrtc(myBuf->fd, crtc->crtc_id, myBuf->fb, 0, 0, &conn->connector_id, 1, NULL);
+
+
+    //ret = drmModePageFlip(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, waiting);
     if ( ret){
         printf("couldn't page flip\n");
         if (ret == -EINVAL)
         {
-            printf("invalid crtc id or fb id\n");
+            printf("invalid crtc id\n");
         }
         else if (ret == -errno) {
             printf("other page flip error\n");

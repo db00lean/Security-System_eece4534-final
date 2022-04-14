@@ -34,7 +34,7 @@ int drm_open();
 //Initializes DRM -- uses libdrm to create structs with DRM device info
 int drm_init(int fd);
 //Maps device to virtual address
-void *drm_map(int fd, struct buf_context *myBuf);
+void *drm_map(int fd, struct buf_context *myBuf, int id);
 //Frees virtual memory space mapped to DRM device
 void drm_unmap(struct buf_context *myBuf);
 //Print info obtained in drm_init()
