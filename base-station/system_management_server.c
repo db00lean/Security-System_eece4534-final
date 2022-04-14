@@ -121,6 +121,7 @@ int main(int argc, char **argv) {
   pthread_mutex_destroy(&securitySystem.lock);
   free(securitySystem.cameras);
   pthread_join(btn_listener_thread, NULL);
+  pthread_join(hdmi_thread, NULL);
   free(networkServer);
 
   return 0;
