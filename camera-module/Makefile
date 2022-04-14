@@ -1,17 +1,44 @@
-CFLAGS = `pkg-config --cflags opencv`
-LIBS = `pkg-config --libs opencv`
+TARGET:=output_cv
+SRCS:=cv_main.cpp
+OBJS:=$(SRCS:.c=.o)
 
-cv_main: cv_main.cpp 
-	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
+CV_CFLAGS := $(shell pkg-config --cflags opencv)
+CV_LDFLAGS := $(shell pkg-config --libs opencv)
 
-time_test: cv_time_testgit .cpp 
-	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
+# CFLAGS = `pkg-config --cflags opencv`
+# LIBS = `pkg-config --libs opencv`
 
-# test: test.cpp
-	# g++ $(CFLAGS) $(LIBS) -o $@ $<
+INCLUDE_DIRS:=.. $(ZED_INCLUDE) /inc
+CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(CV_CFLAGS)
+LALSA:= -lasound -lpthread -lrt -ldl -lm
 
-clean: 
-	$(RM) computer_vision.o
+.PHONY: clean
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CXX) -o $@ $(CV_LDFLAGS) $^ -lm
+
+%.o: %.cpp %.h
+	$(CXX) $(CFLAGS) -c $< 
+
+clean:
+	rm -rf $(OBJS) $(TARGET) *.o
+
+# CFLAGS = `pkg-config --cflags opencv`
+# LIBS = `pkg-config --libs opencv`
+
+# cv_main: cv_main.cpp 
+# 	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
+
+# time_test: cv_time_testgit .cpp 
+# 	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
+
+# # test: test.cpp
+# 	# g++ $(CFLAGS) $(LIBS) -o $@ $<
+
+# clean: 
+# 	$(RM) computer_vision.o
 
 # OLD MAKEFILE BELOW: Leaving as a reference for when we migrate to zedboard stuff.
 # Need to fix cv_main.cpp compiling first before the bottom half can be reimplemented
