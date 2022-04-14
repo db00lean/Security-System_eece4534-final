@@ -51,6 +51,7 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
  * 
  */
 void show_background() {
+    draw_rectangle_filled(0,0,MONITOR_W,MONITOR_H, black);
     //top name
     draw_text_scale(TITLE_X, TITLE_Y, "Security System", light_green, 4);
     //camera frame border
@@ -259,6 +260,7 @@ void render(struct system_status * system) {
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
+        // draw_rectangle_filled(0,0,MONITOR_W,MONITOR_H, black);
     }
 }
 

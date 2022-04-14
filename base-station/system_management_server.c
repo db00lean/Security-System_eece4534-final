@@ -72,6 +72,13 @@ int initialize_camera(int cameraNumber) {
 
   securitySystem.cameras[cameraNumber].status = 1;
 
+  securitySystem.cameras[cameraNumber].forbiddenZone.x_coord = 0;
+  securitySystem.cameras[cameraNumber].forbiddenZone.y_coord = 0;
+  securitySystem.cameras[cameraNumber].forbiddenZone.x_len = 150;
+  securitySystem.cameras[cameraNumber].forbiddenZone.y_len = 200;
+
+
+
   return 0;
 }
 
