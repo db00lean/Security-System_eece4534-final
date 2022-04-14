@@ -80,19 +80,19 @@ void show_background() {
 
 
 
-    //temp testing of draw image - delete later
-    // Using image struct from imagelib.h and fill with data for now
-    int IMG_W = 1920;
-    int IMG_H = 1080;
-    struct image *img = create_image(IMGENC_RGB, IMG_W, IMG_H);
-    for (int i = 0; i<IMG_H; i++) {
-       for (int j = 0; j<IMG_W; j++) {
-           img->buf[i + j + 0] = i % 255;
-           img->buf[i + j + 1] = 50;
-           img->buf[i + j + 2] = j % 255;
-       }   
-    }
-    //draw image to screen using draw pixel
+    // //temp testing of draw image - delete later
+    // // Using image struct from imagelib.h and fill with data for now
+    // int IMG_W = 1920;
+    // int IMG_H = 1080;
+    // struct image *img = create_image(IMGENC_RGB, IMG_W, IMG_H);
+    // for (int i = 0; i<IMG_H; i++) {
+    //    for (int j = 0; j<IMG_W; j++) {
+    //        img->buf[i + j + 0] = i % 255;
+    //        img->buf[i + j + 1] = 50;
+    //        img->buf[i + j + 2] = j % 255;
+    //    }   
+    // }
+    // // draw image to screen using draw pixel
     // for each box, draw a rectangle bounding box
     // for (int x = TOP_LINE; x < (TOP_LINE + MONITOR_W / 2); x++) {
     //     for (int y = 100; y < (TOP_LINE + MONITOR_H / 2); y++) {
@@ -101,15 +101,7 @@ void show_background() {
     //     }
     // }
 
-    //draw bounding boxes
-    // draw_boundingbox(300, 300, 100, 200, 0xff0000);
-
-    // //shape testing
-    // draw_circle_filled(1300, 300, 200, 0xff00ff);
-    // draw_circle_outline(300, 300, 200, 0xffff00);
-    // draw_circle_outline(300, 300, 10, 0xffff00);
-    // draw_rectangle_filled(1500, 700, 200, 200, 0xffff00);
-    free_image(img);   
+    // free_image(img);   
 }
 
 /**
@@ -278,18 +270,18 @@ int main() {
     struct coordinate_data * cv_dat_2 = malloc(sizeof(struct coordinate_data));
     struct cv_data * computer_v = malloc(sizeof(struct cv_data));
 
-    zone_data->x_coord = 100;
-    zone_data->y_coord = 100;
+    zone_data->x_coord = 120;
+    zone_data->y_coord = 120;
     zone_data->x_len = 200;
     zone_data->y_len = 200;
 
     cv_dat_1->x_coord = 400;
-    cv_dat_1->y_coord = 100;
+    cv_dat_1->y_coord = 200;
     cv_dat_1->x_len = 100;
     cv_dat_1->y_len = 150;
 
     cv_dat_2->x_coord = 700;
-    cv_dat_2->y_coord = 100;
+    cv_dat_2->y_coord = 400;
     cv_dat_2->x_len = 100;
     cv_dat_2->y_len = 150;
 
