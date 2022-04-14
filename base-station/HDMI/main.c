@@ -207,7 +207,44 @@ void render(struct system_status * system) {
 
 int main() {
     // run indefinitely
-    struct system_status * system;
+    struct system_status * system = malloc(sizeof(struct system_status));
+    struct camera_module * cameras = malloc(sizeof(struct camera_module) * 3);
+    struct coordinate_data * zone_data = malloc(sizeof(struct coordinate_data));
+    struct coordinate_data * cv_dat_1 = malloc(sizeof(struct coordinate_data));
+    struct coordinate_data * cv_dat_2 = malloc(sizeof(struct coordinate_data));
+    struct cv_data * computer_v = malloc(sizeof(struct cv_data));
+
+    zone_data->x_coord = 100;
+    zone_data->y_coord = 100;
+    zone_data->x_len = 200;
+    zone_data->y_len = 200;
+
+    cv_dat_1->x_coord = 400;
+    cv_dat_1->y_coord = 100;
+    cv_dat_1->x_len = 100;
+    cv_dat_1->y_len = 150;
+
+    cv_dat_2->x_coord = 700;
+    cv_dat_2->y_coord = 100;
+    cv_dat_2->x_len = 100;
+    cv_dat_2->y_len = 150;
+
+    computer_v->num_bbox = 2;
+    computer_v->box_data[0] = cv_dat_1;
+    computer_v->box_data[1] = cv_dat_2;
+
+    cameras[0].cameraNumber = 0;
+    cameras[0].sysManPortNumber = 8080;
+    cameras[0].streamPortNumber = 9090;
+
+    cameras[0].status = 1;
+    cameras[0].detection = 0;
+    cameras[0].forbiddenZone = zone_data;
+    cameras[0].cv_data = computer_v;
+
+    system->number_of_cameras = 3;
+    system->guiState = 0;
+    system->cameras = cameras;
 
     render(system);
     
