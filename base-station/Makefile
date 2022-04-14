@@ -12,6 +12,7 @@ CFLAGS := -O
 
 sysman_server: management_server.o agg_detect.o button_client.o
 	(cd ../network && make server.o)
+	# (cd HDMI $$ make)
 	$(CC) -o sysman_server system_management_server.o aggregate_detect.o button_client.o ../network/server.o ../network/client.o ../network/packet.o $(LIBS)
 
 button_listener: button_client_standalone.o
