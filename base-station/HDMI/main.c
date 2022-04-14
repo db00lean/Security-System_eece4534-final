@@ -32,20 +32,16 @@ void show_background() {
     //camera frame border
     draw_boundingbox(100, 100, 800, 600, 0xffffff);
 
-    //zone status block
-    draw_boundingbox(1000, 100, 200, 50, 0xcccccc);
-    draw_text_scale(1000, 75, "Zone Status", 0xff00ff, 2);
-    draw_text_scale(1025, 112, "Vacant", 0x00ff00, 3);
 
-    //people count block
-    draw_boundingbox(1000, 300, 200, 50, 0xcccccc);
-    draw_text_scale(1000, 275, "Number of People", 0xff00ff, 2);
-    draw_text_scale(1025, 312, "3", 0x00ff00, 3);
+
     
     //shown box and people status block
     draw_boundingbox(1000, 500, 350, 100, 0xcccccc);
-    draw_text_scale(1020, 512, "Show Boxes: Yes", 0x0ff00, 2);
-    draw_text_scale(1020, 550, "Show Person #: Yes", 0x00ff00, 2);
+    draw_text_scale(1020, 512, "Show Boxes: ", 0x0ff00, 2);
+    draw_circle_filled(1040, 512, 10, 0xff0000);
+    draw_text_scale(1020, 550, "Show Person #: ", 0x00ff00, 2);
+    draw_circle_filled(1040, 550, 10, 0xff0000);
+
     
     //camera status boxes
     draw_boundingbox(100, 750, 150, 150, 0xff0000);
@@ -125,6 +121,12 @@ void show_bounding_box(struct system_status * system) {
     struct camera_module * active_camera = &system->cameras[system->guiState];
     struct cv_data * camera_metadata = &active_camera->cvMetadata;
 
+    //people count block
+    draw_boundingbox(1000, 300, 200, 50, 0xcccccc);
+    draw_text_scale(1000, 275, "Number of People", 0xff00ff, 2);
+    int camera_num_display = camera_metadata->num_bbox + 48;
+    draw_text_scale(1025, 312, (char *)&camera_num_display, 0x00ff00, 3);
+
     // loop through each bounding box and draw
     int b;
     for (b = 0; b < camera_metadata->num_bbox; b ++) {
@@ -146,15 +148,21 @@ void show_bounding_box(struct system_status * system) {
 void show_camera_info(struct system_status * system) {
     // get the current camera information from the struct
     struct camera_module * active_camera = &system->cameras[system->guiState];
-
+    //zone status block
+    draw_boundingbox(1000, 100, 200, 50, 0xcccccc);
+    draw_text_scale(1000, 75, "Zone Status", 0xff00ff, 2);
     if (active_camera->detection) {
         // draw "ZONE OCCUPIED"
+        draw_text_scale(1025, 112, "Occupied", 0x00ff00, 3);
     } else {
         // draw "ZONE VACANT"
+        draw_text_scale(1025, 112, "Vacant", 0x00ff00, 3);
+
     }
 
     if (active_camera->status) {
         // draw "on"
+
     } else {
         // draw "off"
     }
@@ -199,9 +207,9 @@ void render(struct system_status * system) {
         // draw GUI elements
         show_background();
       //  show_camera_frame(system);
-      //  show_bounding_box(system);
-      //  show_camera_info(system);
-      //  show_camera_options(system);
+        show_bounding_box(system);
+        show_camera_info(system);
+        show_camera_options(system);
     }
 }
 
@@ -229,20 +237,20 @@ int main() {
     cv_dat_2->x_len = 100;
     cv_dat_2->y_len = 150;
 
-    computer_v->num_bbox = 2;
-    computer_v->box_data[0] = cv_dat_1;
-    computer_v->box_data[1] = cv_dat_2;
+    computer_v->num_bbox = 8;
+    computer_v->box_data[0] = *cv_dat_1;
+    computer_v->box_data[1] = *cv_dat_2;
 
     cameras[0].cameraNumber = 0;
     cameras[0].sysManPortNumber = 8080;
     cameras[0].streamPortNumber = 9090;
 
     cameras[0].status = 1;
-    cameras[0].detection = 0;
-    cameras[0].forbiddenZone = zone_data;
-    cameras[0].cv_data = computer_v;
+    cameras[0].detection = 1;
+    cameras[0].forbiddenZone = *zone_data;
+    cameras[0].cvMetadata = *computer_v;
 
-    system->number_of_cameras = 3;
+    system->numberOfCameras = 3;
     system->guiState = 0;
     system->cameras = cameras;
 
