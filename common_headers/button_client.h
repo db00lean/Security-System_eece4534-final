@@ -16,13 +16,36 @@
 #include <poll.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "button_driver/zed_btns.h"
+
+#include "../base-station/button_driver/zed_btns.h"
+#include "system_management.h"
+
+#define FZ_INC_DELTA (1)
+#define FZ_DEC_DELTA (-1)
 
 #define CAN_READ_PFD(pfd) (pfd.revents & POLLIN)
 
-typedef void (*button_action)(void* args);
+#define ENFORCE_RANGE(val, min, max) \
+do { \
+    if (val < min) \
+        val = min; \
+    else if (val > max) \
+        val = max; \
+} while(0);
+
+typedef void (*button_action)(struct system_status* args);
 typedef uint8_t button_value;
 
+/**
+ * struct button_actions - holds callbacks to button actions
+ * 
+ * Members: 
+ * @on_center - Callback fired when center button is pressed
+ * @on_left - Callback fired when left button is pressed
+ * @on_right - Callback fired when right button is pressed
+ * @on_up - Callback fired when up button is pressed
+ * @on_down - Callback fired when down button pressed
+ */
 struct button_actions {
     button_action on_center; 
     button_action on_left; 
@@ -42,20 +65,15 @@ struct button_actions {
 int init_zedbtn_pollfd(struct pollfd* pfd);
 
 /**
- * @brief Flushes the current contents of the given fd, with logging. 
- * 
- * @param fd - file descriptor of the file to flush
- */
-void flush_fd(int fd);
-
-/**
  * @brief Executes actions from the given set of button_actions, corresponding to what button(s) have been pressed. 
  * 
  * @param actions - pointer to a single set of actions to execute,
+ * @param n_actions - number of actions in the given list of actions, used for bounds checking
  * @param btn_val - the current button values to interpret. 
  *                  Refer to zed_btns.h and the IS_PRESSED macro to interpret this value 
+ * @param system - pointer to the system_status struct, passed as an argument to the button action.
  */
-void exec_action(struct button_actions* actions, button_value btn_val);
+void exec_action(struct button_actions* actions, int n_actions, button_value btn_val, struct system_status* system);
 
 /**
  * @brief Button press listener. Meant to be used as a thread function (argument to pthread_create)
@@ -78,25 +96,26 @@ void* run_button_client(void* thread_args);
  */
 void stop_button_listener(int _sig);
 
-/* Debug/print functions for a basic set of actions */
-static void print_center(void* _args) {
-    puts("Center button pressed!");
-}
+/**
+ * @brief Adds a delta to the forbidden zone coordinates of the current active camera.
+ *        For increments (increment_fz_x and increment_fz_y): FZ_INC_DELTA is used. 
+ *        For decrements (decrement_fz_x and decrement_fz_y): FZ_DEC_DELTA is used.
+ *        Range is enforced such that the whole bounding box stays within the camera-viewport. 
+ *        Currently, these values are hardcoded - CAMERA_MAX_X and CAMERA_MAX_Y.  
+ * 
+ * @param system - the overall system_status struct housing all the camera modules
+ */
+void increment_fz_x(system_status* system); 
+void decrement_fz_x(system_status* system);
+void increment_fz_y(system_status* system);
+void decrement_fz_y(system_status* system);
 
-static void print_up(void* _args) {
-    puts("Up button pressed!");
-}
-
-static void print_down(void* _args) {
-    puts("Down button pressed!");
-}
-
-static void print_left(void* _args) {
-    puts("Left button pressed!");
-}
-
-static void print_right(void* _args) {
-    puts("Right button pressed!");
-}
+/**
+ * @brief Cycles the active camera. Increments guiState member, or wraps around to 0 after reaching last camera. 
+ *        guiState member can be used as an index into cameras array.
+ * 
+ * @param system - the system_status containing the active camera state
+ */
+void cycle_active_camera(system_status* system);
 
 #endif

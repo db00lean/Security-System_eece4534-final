@@ -2,7 +2,7 @@
  * @file zed_btns_driver.h
  * @author Siddharth Chenrayan (chenrayan.s@northeastern.edu)
  * @brief Driver header file for button_driver.c
- * @version 0.1
+ * @version 0.2
  * @date 2022-03-31
  * 
  * @copyright Copyright (c) 2022
@@ -37,7 +37,8 @@ struct kbtns_inst {
     // gpio members
     void __iomem *base; 
     int irq_num;
-    
+    char in_use; // determines if chrdev file is currently opened or not
+
     // chardev members
     dev_t devno;
     struct cdev chrdev;

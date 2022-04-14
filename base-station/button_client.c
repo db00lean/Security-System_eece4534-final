@@ -16,8 +16,10 @@
 #include <signal.h>
 #include <pthread.h>
 
-#include "button_client.h"
 #include "button_driver/zed_btns.h"
+#include "../common_headers/cv_structs.h"
+#include "../common_headers/system_management.h"
+#include "../common_headers/button_client.h"
 
 char run_button_listener = 1;
 
@@ -26,6 +28,92 @@ void stop_button_listener(int _sig) {
     puts("[ Btn Listener ] - Press any button on the ZedBoard to terminate process...");
 }
 
+/* Button action helpers */
+
+void change_fz_x(system_status* system, int8_t delta) {
+     pthread_mutex_lock(&system->lock);
+    
+    struct coordinate_data* zone = &(system->cameras[system->guiState].forbiddenZone);
+    zone->x_coord += delta;
+    ENFORCE_RANGE(zone->x_coord, 0, CAMERA_MAX_X - zone->x_len);
+
+    pthread_mutex_unlock(&system->lock);
+#ifdef DEBUG
+    printf("[ Menu ] - Change forbidden zone x-coord; Delta: %d, New value: %u\n", delta, zone->x_coord);
+#endif
+}
+
+void change_fz_y(system_status* system, int8_t delta) {
+    pthread_mutex_lock(&system->lock);
+    
+    struct coordinate_data* zone = &(system->cameras[system->guiState].forbiddenZone);
+    zone->y_coord += delta;
+    ENFORCE_RANGE(zone->y_coord, 0, CAMERA_MAX_Y - zone->y_len);
+
+    pthread_mutex_unlock(&system->lock);
+#ifdef DEBUG
+    printf("[ Menu ] - Change forbidden zone y-coord; Delta: %d, New value: %u\n", delta, zone->y_coord);
+#endif
+}
+
+/* Button action functions */
+
+void cycle_active_camera(system_status* system) {
+    pthread_mutex_lock(&system->lock);
+
+    system->guiState++;
+    if (system->guiState == system->numberOfCameras) {
+        system->guiState = 0; 
+    }
+
+    pthread_mutex_unlock(&system->lock);
+#ifdef DEBUG
+    printf("[ Menu ] - Increment active camera; New active camera: %d\n", system->guiState);
+#endif
+}
+
+void increment_fz_x(system_status* system) {
+    change_fz_x(system, FZ_INC_DELTA);
+}
+
+void decrement_fz_x(system_status* system) {
+    change_fz_x(system, FZ_DEC_DELTA);
+}
+
+void increment_fz_y(system_status* system) {
+    change_fz_y(system, FZ_INC_DELTA); 
+}
+
+void decrement_fz_y(system_status* system) {
+    change_fz_y(system, FZ_DEC_DELTA); 
+}
+
+/* Debug button actions */ 
+
+
+/* Debug/print functions for a basic set of button actions */
+void print_center(struct system_status* _args) {
+    puts("Center button pressed!");
+}
+
+void print_up(struct system_status* _args) {
+    puts("Up button pressed!");
+}
+
+void print_down(struct system_status* _args) {
+    puts("Down button pressed!");
+}
+
+void print_left(struct system_status* _args) {
+    puts("Left button pressed!");
+}
+
+void print_right(struct system_status* _args) {
+    puts("Right button pressed!");
+}
+
+/* Button action Structs */
+
 struct button_actions debug_actions = {
     .on_center = print_center,
     .on_down = print_down,
@@ -33,6 +121,16 @@ struct button_actions debug_actions = {
     .on_left = print_left,
     .on_right = print_right
 };
+
+struct button_actions basic_menu_actions = {
+    .on_center = cycle_active_camera,
+    .on_down = increment_fz_y,
+    .on_up = decrement_fz_y,
+    .on_left = decrement_fz_x,
+    .on_right = increment_fz_x
+};
+
+/* Thread setup and helpers */
 
 int init_zedbtn_pollfd(struct pollfd* pfd) {
     int zedbtns_fd = open(ZEDBTNS_FILE, O_RDONLY);
@@ -45,34 +143,33 @@ int init_zedbtn_pollfd(struct pollfd* pfd) {
     return 0;
 }
 
-void flush_fd(int fd) {
-    char buf[BUTTON_BUFFER_MAX_SIZE];
-    ssize_t bytes_read;
+void exec_action(struct button_actions* actions, int n_actions, button_value btn_val, struct system_status* system) {
+    struct button_actions actions_to_exec;
+    uint8_t mode = system->menuMode;
 
-    puts("[ Btn Listener ] - Flushing file contents...");
-    bytes_read = read(fd, buf, BUTTON_BUFFER_MAX_SIZE);
-    printf("[ Btn Listener ] - Flushed %d bytes from file.\n", bytes_read);
-}
+    if (actions == NULL || system == NULL || mode >= n_actions) {
+#ifdef DEBUG
+        puts("[ Btn Listener ] - Err when executing action: invalid args");
+#endif
+        return; 
+    }
 
-void exec_action(struct button_actions* actions, button_value btn_val) {
+    actions_to_exec = actions[mode];
+
     if (IS_PRESSED(BTN_C, btn_val)) {
-        actions->on_center(NULL);
+        actions_to_exec.on_center(system);
     }
-
     if (IS_PRESSED(BTN_D, btn_val)) {
-        actions->on_down(NULL);
+        actions_to_exec.on_down(system);
     }
-
     if (IS_PRESSED(BTN_U, btn_val)) {
-        actions->on_up(NULL);
+        actions_to_exec.on_up(system);
     }
-
     if (IS_PRESSED(BTN_L, btn_val)) {
-        actions->on_left(NULL);
+        actions_to_exec.on_left(system);
     }
-
     if (IS_PRESSED(BTN_R, btn_val)) {
-        actions->on_right(NULL);
+        actions_to_exec.on_right(system);
     }
 }
 
@@ -81,13 +178,13 @@ void* run_button_client(void* thread_args) {
     button_value btn_val_buffer[BUTTON_BUFFER_MAX_SIZE];
     ssize_t bytes_read;
     struct pollfd zedbtns_pfd;
+    system_status* system = (system_status*) thread_args; 
 
     err = init_zedbtn_pollfd(&zedbtns_pfd);
     if (err) {
         puts("[ Btn Listener ] - Could not open zedbtn character device file.\n");
         return NULL;
     }
-    flush_fd(zedbtns_pfd.fd);
 
     while(run_button_listener) {
 #ifdef DEBUG
@@ -107,12 +204,15 @@ void* run_button_client(void* thread_args) {
 #endif
 
             for (i = 0; i < BUTTON_BUFFER_MAX_SIZE && btn_val_buffer[i] != 0; i++) {
-                exec_action(&debug_actions, btn_val_buffer[i]);  
+#ifndef BUTTON_CLIENT_MAIN
+                exec_action(&basic_menu_actions, 1, btn_val_buffer[i], system);
+#else
+                exec_action(&debug_actions, 1, btn_val_buffer[i], system);
+#endif
             }
         }
     }
 
-    flush_fd(zedbtns_pfd.fd);
     close(zedbtns_pfd.fd);
     puts("[ Btn Listener ] - Exiting button listener thread.");
     return NULL;
@@ -121,9 +221,12 @@ void* run_button_client(void* thread_args) {
 #ifdef BUTTON_CLIENT_MAIN
 int main(int argc, char** argv) {
     pthread_t btn_listener_thread;
+    struct system_status sys = {
+        .menuMode = 0
+    };
 
     signal(SIGINT, stop_button_listener);
-    pthread_create(&btn_listener_thread, NULL, run_button_client, NULL);
+    pthread_create(&btn_listener_thread, NULL, run_button_client, &sys);
 
     puts("Hello from main button listener main!");
     // Can do other stuff in main...
