@@ -1,3 +1,6 @@
+#ifndef __IMAGELIB_H__
+#define __IMAGELIB_H__
+
 #include <stdint.h>
 
 enum img_enc {
@@ -23,3 +26,5 @@ struct image *read_ppm(char *filepath);
 struct image *create_image(enum img_enc enc, int width, int height);
 
 void free_image(struct image *img);
+
+#endif
