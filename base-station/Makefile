@@ -6,14 +6,14 @@ SRCS := $(wildcard *.c)
 OBJS := $(SRCS:.c=.o)
 HDRS := $(wildcard *.h)
 LIBS := -lpthread -lczmq -lzmq -lm
-CFLAGS := -O
+CFLAGS := -O -g
 DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
 
 .PHONY: sysman_server button_listener clean
 
 sysman_server: management_server.o agg_detect.o button_client.o HDMI/hdmi-lib.a
 	(cd ../network && make server.o)
-	# (cd HDMI $$ make hdmi-lib.a)
+	(cd HDMI $$ make hdmi-lib.a)
 	$(CC) -o sysman_server system_management_server.o aggregate_detect.o button_client.o ../network/server.o ../network/client.o ../network/packet.o HDMI/hdmi-lib.a $(DRM_LDFLAGS) $(LIBS)
 
 button_listener: button_client_standalone.o
@@ -33,5 +33,6 @@ button_client_standalone.o: button_client.c
 
 clean:
 	(cd ../network && make clean)
+	(cd HDMI && rm -f hdmi-lib.a)
 	rm -rf sysman_server button_listener *.o *.h.gch
 
