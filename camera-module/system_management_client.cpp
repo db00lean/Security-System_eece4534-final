@@ -3,6 +3,7 @@
 
 #include "cv_main.h"
 #include "stream.h"
+#include "../network/client.h"
 #include <pthread.h>
 #include <queue>
 #include <signal.h>
