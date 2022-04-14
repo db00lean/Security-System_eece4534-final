@@ -6,7 +6,7 @@ SRCS := $(wildcard *.c)
 OBJS := $(SRCS:.c=.o)
 HDRS := $(wildcard *.h)
 LIBS := -lpthread -lczmq -lzmq
-CFLAGS := -O
+CFLAGS := -O -Wall
 
 .PHONY: sysman_server button_listener clean
 
