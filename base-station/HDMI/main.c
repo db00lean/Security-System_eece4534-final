@@ -93,7 +93,7 @@ void show_background() {
     // draw_circle_outline(300, 300, 200, 0xffff00);
     // draw_circle_outline(300, 300, 10, 0xffff00);
     // draw_rectangle_filled(1500, 700, 200, 200, 0xffff00);
-    
+    free_image(img);   
 }
 
 /**
