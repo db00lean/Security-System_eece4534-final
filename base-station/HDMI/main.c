@@ -160,6 +160,43 @@ void show_camera_info(struct system_status * system) {
 
     }
 
+    char num_str[2];
+    int status_color;
+
+    for (int i = 0; i < system->numberOfCameras) {
+
+        if (i == system->guiState) {
+            draw_boundingbox(CAM_SEL_BOX_X + (i * 200) - 3,
+                             CAM_SEL_BOX_Y - 3,
+                             CAM_SEL_BOX_DIM + 6,
+                             CAM_SEL_BOX_DIM + 6,
+                             bounding_box_colors[red]);
+        }
+
+        draw_rectangle_filled(CAM_SEL_BOX_X + (i * 200),
+                              CAM_SEL_BOX_Y,
+                              CAM_SEL_BOX_DIM,
+                              CAM_SEL_BOX_DIM,
+                              bounding_box_colors[grey]);
+
+        sprintf(num_str, "%d", i);
+        draw_text_scale(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_DIM / 2),
+                        CAM_SEL_BOX_Y + (CAM_SEL_BOX_DIM / 2),
+                        num_str,
+                        bounding_box_colors[black], 10);
+
+        if (system->cameras[i]->status) {
+            status_color = bounding_box_colors[green];
+        } else {
+            status_color = bounding_box_colors[red];
+        }
+
+        draw_circle_filled(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_RAD / 2),
+                           CAM_SEL_BOX_Y + (CAM_SEL_BOX_RAD / 2),,
+                           CAM_SEL_BOX_RAD,
+                           status_color);
+    }
+
     if (active_camera->status) {
         // draw "on"
 
@@ -237,7 +274,7 @@ int main() {
     cv_dat_2->x_len = 100;
     cv_dat_2->y_len = 150;
 
-    computer_v->num_bbox = 8;
+    computer_v->num_bbox = 2;
     computer_v->box_data[0] = *cv_dat_1;
     computer_v->box_data[1] = *cv_dat_2;
 
