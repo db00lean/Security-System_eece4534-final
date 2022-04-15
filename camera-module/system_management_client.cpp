@@ -3,6 +3,7 @@
 
 #include "cv_main.h"
 #include "stream.h"
+#include "../network/client.h"
 #include <pthread.h>
 #include <queue>
 #include <signal.h>
@@ -22,6 +23,7 @@
 // std::queue<> cv_data_q;
 // struct cv_data queue
 std::queue<struct cv_data> cv_data_q;
+pthread_mutex_t mutex;
 
 struct stream_args {
   int argc;
@@ -62,7 +64,9 @@ void *cv_t(void *thread_args) {
   while (do_run_cv) {
     // TODO: Add "gstream camera_stream" as argument to GetBBoxesFromFrame (or
     // whatever the gstream type is)
+    pthread_mutex_lock(&mutex;);   // Lock
     cv_data_q.push(GetBBoxesFromFrame());
+    pthread_mutex_unlock(&mutex;); // Unlock
   }*/
 #endif
 
@@ -73,6 +77,11 @@ int main(int argc, char *argv[]) {
 
   // ### init ###
   // networking stuff
+  // TODO: find cam_id
+  const char* port = "55000"; // Statically defined for now
+  const char* address = "127.0.0.1";
+  int cam_id;
+  struct client* c = new_client(port, address);
 
   // ### kick off threads ###
 
@@ -83,11 +92,21 @@ int main(int argc, char *argv[]) {
 
   // CV
   pthread_t cv_main_thread;
+  pthread_mutex_init(&mutex,NULL);
   pthread_create(&cv_main_thread, NULL, cv_t, NULL);
+  struct cv_data out;
+
+  pthread_mutex_lock(&mutex);   // Lock
+  out = cv_data_q.front();
+  cv_data_q.pop();
+  pthread_mutex_unlock(&mutex);  // Unlock
+  send_msg(c->requester, cam_id, CV_DATA, (void*)&out, sizeof(struct cv_data)+sizeof(struct coordinate_data));
+
 
   // ### cleanup ###
   pthread_join(cv_main_thread, NULL);
-  pthread_join(stream_thread, NULL);
+  pthread_mutex_destroy(&mutex);
+  free(c);
 
   return 0;
 }

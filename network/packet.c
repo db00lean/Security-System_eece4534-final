@@ -7,7 +7,7 @@ packet_header * parse_packet_header(zmq_msg_t* msg) {
     void * packet_data;
     struct packet_header * ph;
     packet_data = zmq_msg_data(msg);
-    ph = malloc(sizeof(packet_header));
+    ph = (packet_header *) malloc(sizeof(packet_header));
     ph->cam_id = *(int*)packet_data;
     ph->type = *(PacketType*)(packet_data + sizeof(int));
     ph->len = *(int*)(packet_data + sizeof(int) + sizeof(PacketType));
@@ -26,7 +26,7 @@ void * parse_packet_data(zmq_msg_t* msg) {
 // Creates a packet with the provided details
 packet_header * build_packet(int cam_id, PacketType type, int data_len) {
     struct packet_header* p;
-    p = malloc(sizeof(packet_header));
+    p = (packet_header*) malloc(sizeof(packet_header));
     p->cam_id = cam_id;
     p->type = type;
     p->len = data_len;
