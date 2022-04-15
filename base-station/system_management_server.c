@@ -114,15 +114,18 @@ int main(int argc, char **argv) {
   pthread_create(&hdmi_thread, NULL, hdmi_main ,&securitySystem);
 
   // get metadata from the network
-  msg = receive_msg(networkServer->responder);
-  securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
-  printf("Received message\n");
-  printf("Camera id: %i\n", msg->cam_id);
-  printf("Data type: %i\n", msg->type);
-  printf("Data length: %i\n", msg->len);
+  while(1) {
+    msg = receive_msg(networkServer->responder);
+    securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
+    printf("Received message\n");
+    printf("active camera: %i\n", securitySystem.guiState);
+    printf("Camera id: %i\n", msg->cam_id);
+    printf("Data type: %i\n", msg->type);
+    printf("Data length: %i\n", msg->len);
 
-  // Perform a detection of whether or not a person is in the FZ on camera n
-  aggregate_detect(securitySystem.cameras[0]);
+    // Perform a detection of whether or not a person is in the FZ on camera n
+    aggregate_detect(&securitySystem.cameras[0]);
+  }
 
   // cleanup
   pthread_mutex_destroy(&securitySystem.lock);

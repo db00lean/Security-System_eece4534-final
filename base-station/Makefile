@@ -6,7 +6,7 @@ SRCS := $(wildcard *.c)
 OBJS := $(SRCS:.c=.o)
 HDRS := $(wildcard *.h)
 LIBS := -lpthread -lczmq -lzmq -lm
-CFLAGS := -O -g
+CFLAGS := -O -g -Wall
 DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
 
 .PHONY: sysman_server button_listener clean
