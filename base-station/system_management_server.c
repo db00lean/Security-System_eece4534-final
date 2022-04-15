@@ -1,6 +1,7 @@
 // System management server runs on security system base station
 // John Craffey
 
+#include "../common_headers/hdmi_main.h"
 #include "../common_headers/system_management.h"
 #include "../common_headers/button_client.h"
 #include "aggregate_detect.h"
@@ -71,14 +72,23 @@ int initialize_camera(int cameraNumber) {
 
   securitySystem.cameras[cameraNumber].status = 1;
 
+  securitySystem.cameras[cameraNumber].forbiddenZone.x_coord = 0;
+  securitySystem.cameras[cameraNumber].forbiddenZone.y_coord = 0;
+  securitySystem.cameras[cameraNumber].forbiddenZone.x_len = 150;
+  securitySystem.cameras[cameraNumber].forbiddenZone.y_len = 200;
+
+
+
   return 0;
 }
 
 int main(int argc, char **argv) {
-  // Kick off thread for button presses
+  // for button presse thread
   pthread_t btn_listener_thread;
   pthread_mutex_init(&securitySystem.lock, 0);
   signal(SIGINT, stop_button_listener);
+  // for HDMI thread
+  pthread_t hdmi_thread;
 
   // init metadata network
   received_message* msg;
@@ -100,6 +110,9 @@ int main(int argc, char **argv) {
   // launching button thread
   pthread_create(&btn_listener_thread, NULL, run_button_client, &securitySystem);
 
+  // launching HDMI thread
+  pthread_create(&hdmi_thread, NULL, hdmi_main ,&securitySystem);
+
   // get metadata from the network
   msg = receive_msg(networkServer->responder);
   securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
@@ -115,6 +128,7 @@ int main(int argc, char **argv) {
   pthread_mutex_destroy(&securitySystem.lock);
   free(securitySystem.cameras);
   pthread_join(btn_listener_thread, NULL);
+  pthread_join(hdmi_thread, NULL);
   free(networkServer);
 
   return 0;
