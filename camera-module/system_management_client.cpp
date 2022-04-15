@@ -22,7 +22,7 @@
 // stream queue
 // std::queue<> cv_data_q;
 // struct cv_data queue
-volatile std::queue<struct cv_data> cv_data_q;
+std::queue<struct cv_data> cv_data_q;
 pthread_mutex_t mutex;
 
 struct stream_args {
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
   // TODO: find cam_id
   const char* port = "55000"; // Statically defined for now
   const char* address = "127.0.0.1";
-  int cam_id
+  int cam_id;
   struct client* c = new_client(port, address);
 
   // ### kick off threads ###
@@ -92,11 +92,11 @@ int main(int argc, char *argv[]) {
 
   // CV
   pthread_t cv_main_thread;
-  pthread_mutex_init(&mutex;,NULL);
-  pthread_create(&cv_main_thread, NULL, cv, NULL);
+  pthread_mutex_init(&mutex,NULL);
+  pthread_create(&cv_main_thread, NULL, cv_t, NULL);
   struct cv_data out;
 
-  pthread_mutex_lock(&mutex;);   // Lock
+  pthread_mutex_lock(&mutex);   // Lock
   out = cv_data_q.front();
   cv_data_q.pop();
   pthread_mutex_unlock(&mutex);  // Unlock
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
   // ### cleanup ###
   pthread_join(cv_main_thread, NULL);
   pthread_mutex_destroy(&mutex);
-  free(c)
+  free(c);
 
   return 0;
 }
