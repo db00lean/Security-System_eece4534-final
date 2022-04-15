@@ -1,5 +1,4 @@
 ## makefile to create example client server for testing
-CC:= gcc
 CFLAGS:= -Wall -g -c
 
 %.o: %.c 
