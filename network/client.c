@@ -13,14 +13,14 @@
 struct client* new_client(const char* server_port, const char* server_address)
 {
     int err; 
-    struct client* c = malloc(sizeof(client));
+    struct client* c = (struct client*) malloc(sizeof(client));
     char bind_addr[22]; // @john Craffey I changed this from 20 to 22 because sprintf was giving me illegal hardware instruction with it at 20
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://%s:%s", server_address, server_port);
     printf("Client bind address is %s\n", bind_addr);
     c->context = zmq_ctx_new();
     // Bind requester to socket using the given server information
-    c->requester = zmq_socket(c->context, ZMQ_REQ);
+    c->requester = (zsock_t*) zmq_socket(c->context, ZMQ_REQ);
     if (!c->requester) {
         fprintf(stderr, "Error creating socket: %s\n", strerror(errno));    
     }
@@ -38,7 +38,7 @@ struct client* new_client(const char* server_port, const char* server_address)
 // from the server and exits once received, tiemout will be adjusted upon discussing with other sysman members.
 void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint32_t len)
 {
-    char* response = malloc(SERVER_RESPONSE_LENGTH);
+    char* response = (char*) malloc(SERVER_RESPONSE_LENGTH);
     int wait_reply = 1;
     int msg_len;
     packet_header* p;
