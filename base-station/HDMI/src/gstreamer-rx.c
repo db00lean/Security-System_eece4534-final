@@ -39,10 +39,14 @@ struct camera_rx * init_rx_camera(char* uri) {
   //     NULL);
   // alternative in case you don't have network or dave decides he's had enough:
   // (or maybe you just want faster development)
+  // cam->pipeline = gst_parse_launch(
+  //     "videotestsrc ! timeoverlay ! videoconvert ! "
+  //     "video/x-raw,format=ARGB,width=640,height=480 ! "
+  //     "appsink name=sink max-buffers=120,drop=true",
+  //     NULL);
   cam->pipeline = gst_parse_launch(
-      "videotestsrc ! timeoverlay ! videoconvert ! "
-      "video/x-raw,format=ARGB,width=640,height=480 ! "
-      "appsink name=sink max-buffers=120,drop=true",
+      "rtspsrc location=rtsp://129.10.156.133:8554/test ! rtpjpegdepay ! "
+      "decodebin ! appsink name=sink",
       NULL);
 
   gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
