@@ -8,7 +8,8 @@ client_test: client_test.o client.o packet.o
 server_test: server_test.o server.o packet.o
 	$(CC) -Wall -o server_test.out server_test.o server.o packet.o -lczmq -lzmq -lpthread
 all: client_test server_test
-cplus: client.c
+cplus: client.c  packet.c
 	${CXX} -c client.c
+	${CXX} -c packet.c
 clean:
 	rm -rf *.o *.out
