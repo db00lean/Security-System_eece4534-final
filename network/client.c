@@ -14,7 +14,7 @@ struct client* new_client(const char* server_port, const char* server_address)
 {
     int err; 
     struct client* c = malloc(sizeof(client));
-    char bind_addr[22]; // @john Craffey I changed this from 20 to 22 because sprintf was giving me illegal hardware instruction with it at 20
+    char bind_addr[27]; // @john Craffey I changed this from 20 because sprintf was giving me illegal hardware instruction with it at 20
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://%s:%s", server_address, server_port);
     printf("Client bind address is %s\n", bind_addr);

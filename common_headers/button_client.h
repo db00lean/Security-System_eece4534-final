@@ -20,17 +20,22 @@
 #include "../base-station/button_driver/zed_btns.h"
 #include "system_management.h"
 
-#define FZ_INC_DELTA (1)
-#define FZ_DEC_DELTA (-1)
+#define FZ_INC_DELTA (10)
+#define FZ_DEC_DELTA (-10)
 
 #define CAN_READ_PFD(pfd) (pfd.revents & POLLIN)
 
-#define ENFORCE_RANGE(val, min, max) \
+#define APPLY_DELTA_ENFORCE_RANGE(val, delta, max) \
 do { \
-    if (val < min) \
-        val = min; \
-    else if (val > max) \
+    if ((delta < 0) && (val <= -delta)) { \
+        val = 0; \
+    } \
+    else if ((delta > 0) && (val + delta >= max)) { \
         val = max; \
+    } \
+    else { \
+        val = val + delta; \
+    } \
 } while(0);
 
 typedef void (*button_action)(struct system_status* args);

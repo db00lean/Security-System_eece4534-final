@@ -10,7 +10,8 @@
  */
 
 // includes are placeholders, header files are currently located in separate branches
-#include "../common_headers/system_management.h"
+#include "../../common_headers/hdmi_main.h"
+#include "../../common_headers/system_management.h"
 #include "../common_headers/cv_structs.h"
 #include "inc/draw_bounding_box.h"
 #include "inc/drawtext.h"
@@ -50,6 +51,7 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
  * 
  */
 void show_background() {
+    draw_rectangle_filled(0,0,MONITOR_W,MONITOR_H, black);
     //top name
     draw_text_scale(TITLE_X, TITLE_Y, "Security System", light_green, 4);
     //camera frame border
@@ -258,50 +260,15 @@ void render(struct system_status * system) {
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
+        // draw_rectangle_filled(0,0,MONITOR_W,MONITOR_H, black);
     }
 }
 
-int main() {
+void* hdmi_main(void* thread_args) {
     // run indefinitely
-    struct system_status * system = malloc(sizeof(struct system_status));
-    struct camera_module * cameras = malloc(sizeof(struct camera_module) * 3);
-    struct coordinate_data * zone_data = malloc(sizeof(struct coordinate_data));
-    struct coordinate_data * cv_dat_1 = malloc(sizeof(struct coordinate_data));
-    struct coordinate_data * cv_dat_2 = malloc(sizeof(struct coordinate_data));
-    struct cv_data * computer_v = malloc(sizeof(struct cv_data));
-
-    zone_data->x_coord = 120;
-    zone_data->y_coord = 120;
-    zone_data->x_len = 200;
-    zone_data->y_len = 200;
-
-    cv_dat_1->x_coord = 400;
-    cv_dat_1->y_coord = 200;
-    cv_dat_1->x_len = 100;
-    cv_dat_1->y_len = 150;
-
-    cv_dat_2->x_coord = 700;
-    cv_dat_2->y_coord = 400;
-    cv_dat_2->x_len = 100;
-    cv_dat_2->y_len = 150;
-
-    computer_v->num_bbox = 2;
-    computer_v->box_data[0] = *cv_dat_1;
-    computer_v->box_data[1] = *cv_dat_2;
-
-    cameras[0].cameraNumber = 0;
-    cameras[0].sysManPortNumber = 8080;
-    cameras[0].streamPortNumber = 9090;
-
-    cameras[0].status = 1;
-    cameras[0].detection = 1;
-    cameras[0].forbiddenZone = *zone_data;
-    cameras[0].cvMetadata = *computer_v;
-
-    system->numberOfCameras = 3;
-    system->guiState = 0;
-    system->cameras = cameras;
+    struct system_status *system = (system_status*) thread_args; 
 
     render(system);
+    return NULL;
     
 }
