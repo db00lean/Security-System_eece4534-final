@@ -1,5 +1,5 @@
 ## makefile to create example client server for testing
-CFLAGS:= -Wall -g -c
+CFLAGS:= -Wall -g -c -O
 
 %.o: %.c 
 	$(CC) $(CFLAGS) *.c -lczmq -lzmq
