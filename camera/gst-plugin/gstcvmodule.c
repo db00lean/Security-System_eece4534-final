@@ -19,15 +19,8 @@
 /**
  * SECTION:element-gstcvmodule
  *
- * The cvmodule element does FIXME stuff.
+ * The cvmodule element generates bounding boxes from a video stream.
  *
- * <refsect2>
- * <title>Example launch line</title>
- * |[
- * gst-launch-1.0 -v fakesrc ! cvmodule ! FIXME ! fakesink
- * ]|
- * FIXME Describe what the pipeline does.
- * </refsect2>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -41,6 +34,9 @@
 
 GST_DEBUG_CATEGORY_STATIC (gst_cvmodule_debug_category);
 #define GST_CAT_DEFAULT gst_cvmodule_debug_category
+
+
+
 
 /* prototypes */
 
@@ -60,11 +56,16 @@ enum
   PROP_0
 };
 
-/* pad templates */
-
 /* FIXME: add/remove formats you can handle */
 #define VIDEO_SINK_CAPS \
     GST_VIDEO_CAPS_MAKE("{ I420, Y444, Y42B, UYVY, RGBA }")
+
+/* pad templates */
+static GstStaticPadTemplate sink_factory =
+GST_STATIC_PAD_TEMPLATE (
+  "sink", GST_PAD_SINK, GST_PAD_ALWAYS,
+  gst_caps_from_string (VIDEO_SINK_CAPS))
+);
 
 
 /* class initialization */
@@ -73,6 +74,7 @@ G_DEFINE_TYPE_WITH_CODE (GstCvModule, gst_cvmodule, GST_TYPE_VIDEO_SINK,
   GST_DEBUG_CATEGORY_INIT (gst_cvmodule_debug_category, "cvmodule", 0,
   "debug category for cvmodule element"));
 
+// Initialize the class (used only once)
 static void
 gst_cvmodule_class_init (GstCvModuleClass * klass)
 {
@@ -82,11 +84,10 @@ gst_cvmodule_class_init (GstCvModuleClass * klass)
   /* Setting up pads and setting metadata should be moved to
      base_class_init if you intend to subclass this class. */
   gst_element_class_add_pad_template (GST_ELEMENT_CLASS(klass),
-      gst_pad_template_new ("sink", GST_PAD_SINK, GST_PAD_ALWAYS,
-        gst_caps_from_string (VIDEO_SINK_CAPS)));
+     gst_static_pad_template_get(&sink_factory) );
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS(klass),
-      "FIXME Long name", "Generic", "FIXME Description",
+      "Security system CV module", "Generic", "Generate bounding box data",
       "FIXME <fixme@example.com>");
 
   gobject_class->set_property = gst_cvmodule_set_property;
@@ -97,9 +98,14 @@ gst_cvmodule_class_init (GstCvModuleClass * klass)
 
 }
 
+// Initialize a specific instance of this type
 static void
 gst_cvmodule_init (GstCvModule *cvmodule)
 {
+    // create pad from the pad template registered in gst_cvmodule_class_init()
+    cvmodule->sinkpad = gst_pad_new_from_static_template(&sink_factory, "sink");
+    gst_element_add_pad(GST_ELEMENT(cvmodule), cvmodule->sinkpad);
+
 }
 
 void
@@ -162,6 +168,10 @@ gst_cvmodule_show_frame (GstVideoSink * sink, GstBuffer * buf)
   GstCvModule *cvmodule = GST_CVMODULE (sink);
 
   GST_DEBUG_OBJECT (cvmodule, "show_frame");
+
+  // Note: buf is what holds the incoming data
+
+  // TODO: handle cv processing here? (where to forward msgs to base station?)
 
   return GST_FLOW_OK;
 }

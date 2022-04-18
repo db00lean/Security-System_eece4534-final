@@ -38,6 +38,8 @@ struct _GstCvModule
 {
   GstVideoSink base_cvmodule;
 
+  GstPad *sinkpad;
+
 };
 
 struct _GstCvModuleClass
