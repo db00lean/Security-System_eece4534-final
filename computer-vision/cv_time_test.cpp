@@ -2,6 +2,8 @@
 #include "../camera-module/cv_main.h"
 #include <chrono>
 
+// 4.29856e+06ms for 100 executions of openCV on the Xilinx --> ~43s per frame
+
 // TODO: Rename "cv_main.cpp" and "cv_main.h" later on
 // TODO: Update Makefile with the new name
 // TODO: Remove <iostream> and "stdio.h" after cout testing is done

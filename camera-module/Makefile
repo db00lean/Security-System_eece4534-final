@@ -1,15 +1,23 @@
+# export CPLUS_INCLUDE_PATH=/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4
 TARGET:=output_cv
 SRCS:=cv_main.cpp
-OBJS:=$(SRCS:.c=.o)
+TARGET:=time_output_cv
+SRCS:=cv_time_test.cpp
+OBJS:=$(SRCS:.cpp=.o)
 
-CV_CFLAGS := $(shell pkg-config --cflags opencv)
-CV_LDFLAGS := $(shell pkg-config --libs opencv)
+CV_CFLAGS := $(shell pkg-config --cflags opencv4)
+CV_LDFLAGS := $(shell pkg-config --libs opencv4)
+
+# CV_CFLAGS = -I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/opencv2
+ #-I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/
+# CV_LDFLAGS := $(shell pkg-config --libs opencv4)
 
 # CFLAGS = `pkg-config --cflags opencv`
 # LIBS = `pkg-config --libs opencv`
 
 INCLUDE_DIRS:=.. $(ZED_INCLUDE) /inc
-CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(CV_CFLAGS)
+# CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(CV_CFLAGS)
+CFLAGS:=-g -O0 $(CV_CFLAGS)
 LALSA:= -lasound -lpthread -lrt -ldl -lm
 
 .PHONY: clean
@@ -24,6 +32,8 @@ $(TARGET): $(OBJS)
 
 clean:
 	rm -rf $(OBJS) $(TARGET) *.o
+
+########################################### Uncomment everything above
 
 # CFLAGS = `pkg-config --cflags opencv`
 # LIBS = `pkg-config --libs opencv`
