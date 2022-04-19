@@ -1,6 +1,12 @@
 #include "cv_main.h"
 #include <iostream>
 
+// NOTE: Not sure if the current import for darknet.h requires something like dn::do_function()
+// or if it could just be referenced directly as do_function()
+// It's been hard to find documentation on darknet directly
+// Most data is from DarkHelp's Darknet background section and darknet/src/detector.c
+// DarkHelp's Darknet background: https://www.ccoderun.ca/programming/2019-08-25_Darknet_C_CPP/
+
 // TODO: Rename "cv_main.cpp" and "cv_main.h" later on
 // TODO: Update Makefile with the new name
 // TODO: Remove <iostream> and "stdio.h" after cout testing is done
@@ -16,6 +22,10 @@ cv::Mat ImportFrame()
   // imread("default.jpg");
   cv::Mat image = cv::imread("people.jpg", cv::IMREAD_GRAYSCALE);
 
+  // Replace cv::imread() with darknet::load_image()
+  // Testing with openCV's read first, as darknet's seems to be an opencv wrapper
+  // image image = load_image(path, 0, 0, net.c);
+
   // Error Handling
   // TODO: Fix error handling on merge with cv_main
   if (image.empty())
@@ -30,19 +40,20 @@ cv_data GenerateBBoxes(cv::Mat image)
 {
   // https://docs.opencv.org/3.4/d1/de5/classcv_1_1CascadeClassifier.html#a90fe1b7778bed4a27aa8482e1eecc116
   struct cv_data cv_data_output;
-
-  // UPDATE: hog is not really working
-  // hog (Histogram of Oriented Gradients) should deal with detection
-  // Might swap to boundingRect(thresh) --> Need to look into accuracy/resource usage of both
-  cv::HOGDescriptor hog;
-  // hog = cv::HOGDescriptor::HOGDescriptor();
-  hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
   int err = 0; // For error handling: use later
   std::vector<cv::Rect> bboxes;
   std::vector<double> found_weights; // Accuracy of model -- for internal use for the moment
 
-  // Uncalibrated, unscaled hog (Histogram of Oriented Gradients) --> Probably too expensive currently; TODO: REDUCE
-  hog.detectMultiScale(image, bboxes, found_weights, 0.0, cv::Size(8, 8), cv::Size(16, 16), 1.05, 2.0, false);
+  // HOG Descriptors work, but are too slow for the Xilinx board
+  // HOG (Histogram of Oriented Gradients) should deal with detection
+  // Might swap to boundingRect(thresh) --> Need to look into accuracy/resource usage of both
+
+  // HOG Descriptor code BEGIN
+  // cv::HOGDescriptor hog;
+  // hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
+
+  // // Uncalibrated, unscaled hog (Histogram of Oriented Gradients) --> Probably too expensive currently; TODO: REDUCE
+  // hog.detectMultiScale(image, bboxes, found_weights, 0.0, cv::Size(8, 8), cv::Size(16, 16), 1.05, 2.0, false);
   /*
   detectMultiScale(InputArray img,
                   std::vector< Rect > & foundLocations,
@@ -55,6 +66,7 @@ cv_data GenerateBBoxes(cv::Mat image)
                   bool 	useMeanshiftGrouping = false
                   )		const
   */
+  // HOG Descriptor code END
 
   // TODO: Add error Handling
   if (err < 0)
@@ -87,6 +99,29 @@ cv_data GenerateBBoxes(cv::Mat image)
   }
 
   return cv_data_output;
+}
+
+// Should make SetupDarknet return a struct that contains setup data
+// This struct should contain the loaded cfg info to pass into GenerateBBoxes()
+network SetupDarknet(char *cfgfile, char *weightfile)
+{
+  // Unsure if the following code will be needed:
+  // list *options = read_data_cfg(datacfg);
+  // char *name_list = option_find_str(options, "names", "data/names.list");
+  // int names_size = 0;
+  // char **names = get_labels_custom(name_list, &names_size); // get_labels(name_list);
+
+  // Need to move loading weights to a spot that only executes it once
+  network net = parse_network_cfg_custom(cfgfile, 1, 1); // set batch=1
+  // if (weightfile)
+  // {
+  //   load_weights(&net, weightfile);
+  // }
+
+  // NOTE: The following is passed into test_detector() in darknet/detector.c
+  // Should be a good reference for what is needed to actually set up darknet
+  // void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh,
+  //    float hier_thresh, int dont_show, int ext_output, int save_labels, char *outfile, int letter_box, int benchmark_layers)
 }
 
 // TODO: Make this accept gstream as an input

@@ -1,37 +1,52 @@
-# export CPLUS_INCLUDE_PATH=/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4
-TARGET:=output_cv
-SRCS:=cv_main.cpp
-TARGET:=time_output_cv
-SRCS:=cv_time_test.cpp
-OBJS:=$(SRCS:.cpp=.o)
+CFLAGS = `pkg-config --cflags opencv`
+LIBS = `pkg-config --libs opencv`
 
-CV_CFLAGS := $(shell pkg-config --cflags opencv4)
-CV_LDFLAGS := $(shell pkg-config --libs opencv4)
+cv_main: cv_main.cpp 
+	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
 
-# CV_CFLAGS = -I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/opencv2
- #-I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/
+time_test: cv_time_test.cpp 
+	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
+
+# test: test.cpp
+	# g++ $(CFLAGS) $(LIBS) -o $@ $<
+
+clean: 
+	$(RM) computer_vision.o
+
+# # export CPLUS_INCLUDE_PATH=/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4
+# TARGET:=output_cv
+# SRCS:=cv_main.cpp
+# TARGET:=time_output_cv
+# SRCS:=cv_time_test.cpp
+# OBJS:=$(SRCS:.cpp=.o)
+
+# CV_CFLAGS := $(shell pkg-config --cflags opencv4)
 # CV_LDFLAGS := $(shell pkg-config --libs opencv4)
 
-# CFLAGS = `pkg-config --cflags opencv`
-# LIBS = `pkg-config --libs opencv`
+# # CV_CFLAGS = -I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/opencv2
+#  #-I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/
+# # CV_LDFLAGS := $(shell pkg-config --libs opencv4)
 
-INCLUDE_DIRS:=.. $(ZED_INCLUDE) /inc
-# CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(CV_CFLAGS)
-CFLAGS:=-g -O0 $(CV_CFLAGS)
-LALSA:= -lasound -lpthread -lrt -ldl -lm
+# # CFLAGS = `pkg-config --cflags opencv`
+# # LIBS = `pkg-config --libs opencv`
 
-.PHONY: clean
+# INCLUDE_DIRS:=.. $(ZED_INCLUDE) /inc
+# # CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(CV_CFLAGS)
+# CFLAGS:=-g -O0 $(CV_CFLAGS)
+# LALSA:= -lasound -lpthread -lrt -ldl -lm
 
-all: $(TARGET)
+# .PHONY: clean
 
-$(TARGET): $(OBJS)
-	$(CXX) -o $@ $(CV_LDFLAGS) $^ -lm
+# all: $(TARGET)
 
-%.o: %.cpp %.h
-	$(CXX) $(CFLAGS) -c $< 
+# $(TARGET): $(OBJS)
+# 	$(CXX) -o $@ $(CV_LDFLAGS) $^ -lm
 
-clean:
-	rm -rf $(OBJS) $(TARGET) *.o
+# %.o: %.cpp %.h
+# 	$(CXX) $(CFLAGS) -c $< 
+
+# clean:
+# 	rm -rf $(OBJS) $(TARGET) *.o
 
 ########################################### Uncomment everything above
 
