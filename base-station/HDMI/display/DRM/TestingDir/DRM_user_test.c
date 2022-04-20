@@ -11,6 +11,7 @@
 
 #include "DRM_user_test.h"
 
+
 #define PIXEL(x, y) ((y * IMG_W * 3) + (x * 3))
 
 
@@ -28,6 +29,7 @@ int CRTC_FB;
 //Pointer to memory mapped region for writing to card
 //moved to struct
 //void *map;
+
 
 
 
@@ -128,12 +130,16 @@ void *drm_map(int fd, struct buf_context *myBuf, int id)
     printf("before add fb\n");
     ret = drmModeAddFB(fd, (uint32_t)myBuf->crereq.width, (uint32_t)myBuf->crereq.height, 24,
                        myBuf->crereq.bpp, myBuf->crereq.pitch, myBuf->crereq.handle, fb);
+
     if (ret)
     {
         printf("Failed to create DRM buffer\n");
         printf("ret: %d\n", ret);
         return MAP_FAILED;
     }
+
+
+
 
     // Clear mreq
     memset(&myBuf->mreq, 0, sizeof(myBuf->mreq));
@@ -174,6 +180,7 @@ void drm_unmap(struct buf_context *myBuf)
 {
     munmap(myBuf->map, myBuf->crereq.size);
 }
+
 void print_info()
 {
     //Printing information from libdrm structs, filled in drm_init()
@@ -217,6 +224,7 @@ void draw_pixel(int x, int y, uint32_t ARGB, struct buf_context *myBuf)
     //Local pointer to point to memory mapped display region
     uint32_t *pixelPtr;
     pixelPtr = (uint32_t *)(myBuf->map);
+
 
     //Advance pixelPtr to correct row
     pixelPtr += mode->hdisplay * y;
@@ -308,5 +316,4 @@ void pageFlip(int fd, struct buf_context *myBuf){
             printf("other page flip error\n");
         }
     }
-
 }

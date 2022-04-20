@@ -14,20 +14,94 @@
 #include "../common_headers/cv_structs.h"
 #include "inc/draw_bounding_box.h"
 #include "inc/drawtext.h"
-#include "rtsp-rx/imagelib.h"
+#include "inc/imagelib.h"
+#include "inc/DRM_user.h"
+
+
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
 // #include "rendering.h"
-// - bounding_box_colors[] = {red, orange, yelow, light_green, green, teal, blue, violet, grey};
+enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, orange = 0xffa500, yellow = 0xffff00, light_green = 0xaaff00, green = 0x00ff00, cyan = 0x00ffff, blue = 0x0000ff, violet = 0xff00ff, grey = 0xaaaaaa};
+#define MONITOR_H 1080
+#define MONITOR_W 1920
+#define CAM_SEL_BOX_DIM 150
+#define CAM_SEL_BOX_X 100
+#define CAM_SEL_BOX_Y 750
+#define CAM_SEL_BOX_RAD 10
+
+//general locations of objects to draw
+#define IMAGE_TOP_LEFT_X 100
+#define IMAGE_TOP_LEFT_Y 100
+#define IMAGE_WIDTH MONITOR_W/2
+#define IMAGE_HEIGHT MONITOR_H/2
+#define TITLE_X MONITOR_W/2
+#define TITLE_Y 50
+#define ZONE_STATUS_TOP_LEFT_X MONITOR_W/2 + 200
+#define ZONE_STATUS_TOP_LEFT_Y IMAGE_TOP_LEFT_Y
+#define RIGHT_BOX_H 200
+#define RIGHT_BOX_W 400
+#define PEOPLE_BOX_TOP_LEFT_X ZONE_STATUS_TOP_LEFT_X
+#define PEOPLE_BOX_TOP_LEFT_Y ZONE_STATUS_TOP_LEFT_Y + 300
+#define TOGGLE_OPT_BOX_TOP_LEFT_X ZONE_STATUS_TOP_LEFT_X
+#define TOGGLE_OPT_BOX_TOP_LEFT_Y PEOPLE_BOX_TOP_LEFT_Y + 300
 
 /**
  * @brief draws the background of the GUI (static elements)
  * 
  */
 void show_background() {
-    // TODO: draw shape/text functions for static elements of the GUI
+    //top name
+    draw_text_scale(TITLE_X, TITLE_Y, "Security System", light_green, 4);
+    //camera frame border
+    draw_boundingbox(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, white);
+    
+    //shown box and people status block
+    draw_boundingbox(TOGGLE_OPT_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
+    draw_text_scale(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, "Show Boxes: ", light_green, 2);
+    draw_circle_filled(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, CAM_SEL_BOX_RAD, green);
+    draw_text_scale(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, "Show Person #: ", light_green, 2);
+    draw_circle_filled(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, CAM_SEL_BOX_RAD, green);
 
     
+    //camera status boxes
+    // draw_boundingbox(100, 750, 150, 150, 0xff0000);
+    // draw_text_scale(175, 825, "1", 0x00ffff, 10);
+    // draw_circle_filled(100, 750, 10, 0xff0000);
+
+
+    // draw_boundingbox(300, 750, 150, 150, 0xff0000);
+    // draw_text_scale(375, 825, "2", 0x00ffff, 10);
+    // draw_circle_filled(300, 750, 10, 0xff0000);
+
+
+    // draw_boundingbox(500, 750, 150, 150, 0xff0000);
+    // draw_text_scale(575, 825, "3", 0x00ffff, 10);
+    // draw_circle_filled(500, 750, 10, 0x00ff00);
+
+
+
+    // //temp testing of draw image - delete later
+    // // Using image struct from imagelib.h and fill with data for now
+    // int IMG_W = 1920;
+    // int IMG_H = 1080;
+    // struct image *img = create_image(IMGENC_RGB, IMG_W, IMG_H);
+    // for (int i = 0; i<IMG_H; i++) {
+    //    for (int j = 0; j<IMG_W; j++) {
+    //        img->buf[i + j + 0] = i % 255;
+    //        img->buf[i + j + 1] = 50;
+    //        img->buf[i + j + 2] = j % 255;
+    //    }   
+    // }
+    // // draw image to screen using draw pixel
+    // for each box, draw a rectangle bounding box
+    // for (int x = TOP_LINE; x < (TOP_LINE + MONITOR_W / 2); x++) {
+    //     for (int y = 100; y < (TOP_LINE + MONITOR_H / 2); y++) {
+    //         unsigned int color = (img->buf[x + y] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
+    //         draw_pixel(x,y,color);
+    //     }
+    // }
+
+    // free_image(img);   
 }
 
 /**
@@ -59,6 +133,12 @@ void show_bounding_box(struct system_status * system) {
     struct camera_module * active_camera = &system->cameras[system->guiState];
     struct cv_data * camera_metadata = &active_camera->cvMetadata;
 
+    //people count block
+    draw_boundingbox(PEOPLE_BOX_TOP_LEFT_X, PEOPLE_BOX_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
+    draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 50, "Number of People", violet, 2);
+    int camera_num_display = camera_metadata->num_bbox + 48;
+    draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 100, (char *)&camera_num_display, 0x00ff00, 3);
+
     // loop through each bounding box and draw
     int b;
     for (b = 0; b < camera_metadata->num_bbox; b ++) {
@@ -67,7 +147,7 @@ void show_bounding_box(struct system_status * system) {
                           box_data->y_coord,
                           box_data->x_len,
                           box_data->y_len,
-                          0xffffff //bounding_box_colors[b]
+                          red
                           );
     }
 }
@@ -80,15 +160,57 @@ void show_bounding_box(struct system_status * system) {
 void show_camera_info(struct system_status * system) {
     // get the current camera information from the struct
     struct camera_module * active_camera = &system->cameras[system->guiState];
-
+    //zone status block
+    draw_boundingbox(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
+    draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
     if (active_camera->detection) {
         // draw "ZONE OCCUPIED"
+        draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", red, 3);
     } else {
         // draw "ZONE VACANT"
+        draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", green, 3);
+    }
+
+    char num_str[2];
+    int status_color;
+
+    for (int i = 0; i < system->numberOfCameras; i++) {
+
+        if (i == system->guiState) {
+            draw_boundingbox(CAM_SEL_BOX_X + (i * 200) - 3,
+                             CAM_SEL_BOX_Y - 3,
+                             CAM_SEL_BOX_DIM + 6,
+                             CAM_SEL_BOX_DIM + 6,
+                             red);
+        }
+
+        draw_rectangle_filled(CAM_SEL_BOX_X + (i * 200),
+                              CAM_SEL_BOX_Y,
+                              CAM_SEL_BOX_DIM,
+                              CAM_SEL_BOX_DIM,
+                              grey);
+
+        sprintf(num_str, "%d", i+1);
+        draw_text_scale(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_DIM / 2),
+                        CAM_SEL_BOX_Y + (CAM_SEL_BOX_DIM / 2),
+                        num_str,
+                        black, 10);
+
+        if (system->cameras[i].status) {
+            status_color = green;
+        } else {
+            status_color = red;
+        }
+
+        draw_circle_filled(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_RAD / 2),
+                           CAM_SEL_BOX_Y + (CAM_SEL_BOX_RAD / 2),
+                           CAM_SEL_BOX_RAD,
+                           status_color);
     }
 
     if (active_camera->status) {
         // draw "on"
+
     } else {
         // draw "off"
     }
@@ -121,11 +243,18 @@ void show_camera_options(struct system_status * system) {
  */
 void render(struct system_status * system) {
     // TODO: figure out how to get pointer to system management struct
+    //init DRM
+    int fd, ret;
+    fd = drm_open();
+    drm_init(fd);
+    map = drm_map(fd);
+
+    print_info();
     while (1) {
 
         // draw GUI elements
         show_background();
-        show_camera_frame(system);
+      //  show_camera_frame(system);
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
@@ -134,7 +263,44 @@ void render(struct system_status * system) {
 
 int main() {
     // run indefinitely
-    struct system_status * system;
+    struct system_status * system = malloc(sizeof(struct system_status));
+    struct camera_module * cameras = malloc(sizeof(struct camera_module) * 3);
+    struct coordinate_data * zone_data = malloc(sizeof(struct coordinate_data));
+    struct coordinate_data * cv_dat_1 = malloc(sizeof(struct coordinate_data));
+    struct coordinate_data * cv_dat_2 = malloc(sizeof(struct coordinate_data));
+    struct cv_data * computer_v = malloc(sizeof(struct cv_data));
+
+    zone_data->x_coord = 120;
+    zone_data->y_coord = 120;
+    zone_data->x_len = 200;
+    zone_data->y_len = 200;
+
+    cv_dat_1->x_coord = 400;
+    cv_dat_1->y_coord = 200;
+    cv_dat_1->x_len = 100;
+    cv_dat_1->y_len = 150;
+
+    cv_dat_2->x_coord = 700;
+    cv_dat_2->y_coord = 400;
+    cv_dat_2->x_len = 100;
+    cv_dat_2->y_len = 150;
+
+    computer_v->num_bbox = 2;
+    computer_v->box_data[0] = *cv_dat_1;
+    computer_v->box_data[1] = *cv_dat_2;
+
+    cameras[0].cameraNumber = 0;
+    cameras[0].sysManPortNumber = 8080;
+    cameras[0].streamPortNumber = 9090;
+
+    cameras[0].status = 1;
+    cameras[0].detection = 1;
+    cameras[0].forbiddenZone = *zone_data;
+    cameras[0].cvMetadata = *computer_v;
+
+    system->numberOfCameras = 3;
+    system->guiState = 0;
+    system->cameras = cameras;
 
     render(system);
     

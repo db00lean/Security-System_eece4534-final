@@ -12,6 +12,7 @@ int main()
     printf("inside main\n");
 
     int fd, ret;
+    struct buf_context bufs[2];
     fd = drm_open();
     drmSetMaster(fd);
 
@@ -57,5 +58,4 @@ int main()
 
     drm_unmap(myBuf0);
     drm_unmap(myBuf1);
-
 }

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "imagelib.h"
+#include "../inc/imagelib.h"
 
 int bytes_per_pixel(enum img_enc enc) {
   switch (enc) {
