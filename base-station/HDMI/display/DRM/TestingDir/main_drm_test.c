@@ -23,24 +23,31 @@ int main()
     //print_info();
     demo(myBuf0);
 
-    printf("\n\nwaiting for char on framebuffer 0\n\n");
-    getchar();
-    getchar();
+    printf("\n\nwaiting for char on framebuffer %d\n\n", myBuf0->fb);
+    
 
     myBuf1->map = drm_map(myBuf1->fd, myBuf1, 1);
     demo2(myBuf1);
-    printf("\n\nwaiting for char on framebuffer 0\n\n");
-    getchar();
-    getchar(); 
+    printf("\n\nwaiting for char on framebuffer %d\n\n", myBuf1->fb);
+    
+   
 
-    demo(myBuf0);
-    pageFlip(fd, myBuf0);
-    getchar();
-    getchar(); 
-    demo2(myBuf1);
-    pageFlip(fd, myBuf1);
+    int i =0;
+    while(1){
+        if(i == 0){
+             pageFlip(fd, myBuf0);
+             i = 1;
+        }
+        else{
+             pageFlip(fd, myBuf1);
+             i = 0;
+        }
+     usleep(1000000/2);
 
-     usleep(1000000);
+    }
+
+    
+
     // pageFlip(myBuf1);
 
 
