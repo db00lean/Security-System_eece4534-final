@@ -1,30 +1,61 @@
+
+#include <stdio.h>
+#include <stdlib.h>
 #include "./DRM_user_test.h"
 
-int main(){
+
+int main()
+{
+    struct buf_context *myBuf0 = malloc(sizeof(struct buf_context));
+    struct buf_context *myBuf1 = malloc(sizeof(struct buf_context));
+
+    printf("inside main\n");
 
     int fd, ret;
     struct buf_context bufs[2];
     fd = drm_open();
+    drmSetMaster(fd);
+
+    myBuf0->fd=fd;
+    myBuf1->fd=fd;
+
     drm_init(fd);
-    makeFB(fd, &bufs[0]);
+    myBuf0->map = drm_map(myBuf0->fd, myBuf0, 0);
+    //print_info();
+    demo(myBuf0);
 
-    //makeFB(fd, &bufs[1]);
-    //map = drm_map(fd);
+    printf("\n\nwaiting for char on framebuffer %d\n\n", myBuf0->fb);
+    
 
-    print_info();
-    printf("before demo 1\n");
-    demo(bufs[0]);
-    getchar();
-    printf("after demo 1\n\n");
+    myBuf1->map = drm_map(myBuf1->fd, myBuf1, 1);
+    demo2(myBuf1);
+    printf("\n\nwaiting for char on framebuffer %d\n\n", myBuf1->fb);
+    
+   
+
+    int i =0;
+    while(1){
+        if(i == 0){
+             pageFlip(fd, myBuf0);
+             i = 1;
+        }
+        else{
+             pageFlip(fd, myBuf1);
+             i = 0;
+        }
+     usleep(1000000/2);
+
+    }
+
+    
+
+    // pageFlip(myBuf1);
 
 
-    /*
-    // getchar();
-    // pageFlip(fd, &bufs[1]);
-    // printf("before demo 2\n");
-    // demo2(bufs[1]);
-    // printf("after demo 2\n");
-    // getchar();
-    // pageFlip(fd, &bufs[0]);
-    */
+
+    drm_close();
+    drmDropMaster(fd);
+
+    drm_unmap(myBuf0);
+    drm_unmap(myBuf1);
 }
