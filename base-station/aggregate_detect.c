@@ -26,10 +26,9 @@ int detect(struct coordinate_data rzone_data, struct coordinate_data box_data) {
 }
 
 // Sets the detection field on the camera module to 1 if someone is within the
-// restricted zone Input: cam as the camera module with the suspected person
-// Input: bounding box input in system_management.h
+// restricted zone 
+// Input: cam as the camera module with the suspected person
 void aggregate_detect(struct camera_module *cam) {
-  // cam.detection = detect(cam.forbiddenZone, cam.cvMetadata.box_data[0]);
   int detection = 0;
   for (int ii = 0; ii < cam->cvMetadata.num_bbox; ii++) {
     detection |= detect(cam->forbiddenZone, cam->cvMetadata.box_data[ii]);
@@ -38,22 +37,17 @@ void aggregate_detect(struct camera_module *cam) {
     printf("detection box %d: %d\n", ii, detection);
   }
   cam->detection = detection;
+}
 
-  // printf("\nMetadata for camera %d\n", cam->cameraNumber);
-  // printf("number of bbox: %d\n", cam->cvMetadata.num_bbox);
-  // // printf("timestamp: %ld\n",cam.cvMetadata.t);
-  // printf("box 0 xcoord: %d\n", cam->cvMetadata.box_data[0].x_coord);
-  // printf("box 0 ycoord: %d\n", cam->cvMetadata.box_data[0].y_coord);
-  // printf("box 0 x len: %d\n", cam->cvMetadata.box_data[0].x_len);
-  // printf("box 0 y len: %d\n", cam->cvMetadata.box_data[0].y_len);
-  // printf("box 1 xcoord: %d\n", cam->cvMetadata.box_data[1].x_coord);
-  // printf("box 1 y coord: %d\n", cam->cvMetadata.box_data[1].y_coord);
-  // printf("box 1 x len: %d\n", cam->cvMetadata.box_data[1].x_len);
-  // printf("box 1 y len: %d\n", cam->cvMetadata.box_data[1].y_len);
-  // printf("detection: %d\n", cam->detection);
-  // printf("Forbidden zone: %d, %d, %d, %d\n", cam.forbiddenZone.x_coord,
-  // cam.forbiddenZone.y_coord, cam.forbiddenZone.x_len,
-  // cam.forbiddenZone.y_len);
+void area_aggregate_detect(struct system_status *state, int cam_id) {
+  int detection = 0;
+  aggregate_detect(&state->cameras[cam_id]);
+
+  for (int ii = 0; ii < state->numberOfCameras; ii++) {
+    // TODO add in check about ID of bounding boxes
+    detection |= state->cameras[ii].detection;
+  }
+  state->detection = detection;
 }
 
 // Main for testing purposes
@@ -74,7 +68,6 @@ void aggregate_detect(struct camera_module *cam) {
 //     };
 //     cam.cvMetadata = metadata;
 
-//     aggregate_detect(cam);
 // }
 
 #endif
