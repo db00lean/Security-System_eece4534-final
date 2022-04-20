@@ -20,21 +20,21 @@ int main()
 
     drm_init(fd);
     myBuf0->map = drm_map(myBuf0->fd, myBuf0, 0);
-    print_info();
+    //print_info();
     demo(myBuf0);
 
-    printf("\n\nwaiting for char on framebuffer %d\n\n", myBuf0->fb);
+    printf("\n\nwaiting for char on framebuffer 0\n\n");
     getchar();
     getchar();
 
     myBuf1->map = drm_map(myBuf1->fd, myBuf1, 1);
     demo2(myBuf1);
-    printf("\n\nwaiting for char on framebuffer %d\n\n", myBuf1->fb);
+    printf("\n\nwaiting for char on framebuffer 0\n\n");
     getchar();
     getchar(); 
 
     demo(myBuf0);
-    pageFlip(myBuf0);
+    pageFlip(fd, myBuf0);
     getchar();
     getchar(); 
     demo2(myBuf1);
