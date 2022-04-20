@@ -55,7 +55,7 @@ int drm_open()
     // Opening cards
     fd = open("/dev/dri/card0", O_RDWR);
 
-    if (fd == NULL)
+    if (fd == -1)
     {
         return -1;
     }

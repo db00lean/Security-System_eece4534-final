@@ -20,7 +20,7 @@ int main()
 
     drm_init(fd);
     myBuf0->map = drm_map(myBuf0->fd, myBuf0, 0);
-    print_info();
+    //print_info();
     demo(myBuf0);
 
     printf("\n\nwaiting for char on framebuffer %d\n\n", myBuf0->fb);
@@ -47,6 +47,7 @@ int main()
     }
 
     
+
     // pageFlip(myBuf1);
 
 

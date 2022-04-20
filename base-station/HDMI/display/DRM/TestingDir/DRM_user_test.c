@@ -82,6 +82,7 @@ int drm_init(int fd)
     }
     // point our "struct drmModeCrtc" information based on "CRTC_id" member defined within "struct drmModeEncoder" above
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
+    crtc = drmModeGetCrtc(fd, encode->crtc_id);
 
     // set "struct drmModeModeInfo" to the "struct drmModeModeInfo" member contained within "drmModeConnector"
     mode = conn->modes;
@@ -93,11 +94,16 @@ int drm_init(int fd)
 void *drm_map(int fd, struct buf_context *myBuf, int id)
 {
     // 32 bit memory location to store address of framebuffer
-    printf("inside drm map\n");
+    //printf("inside drm map\n");
     uint32_t *fb = malloc(sizeof(uint32_t));
-    printf("fb id %d\n", *fb);
+    //printf("fb id %d\n", *fb);
     fb = &myBuf->fb;
-    printf("fb id %d\n", *fb);
+    //printf("fb id %d\n", *fb);
+
+    printf("\n\n MAP getting crtc \n\n");
+    crtc = drmModeGetCrtc(fd, encode->crtc_id);
+    printf("crtc id %d\n", crtc->crtc_id);
+
 
     int ret;
 
