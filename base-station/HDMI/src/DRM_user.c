@@ -98,7 +98,6 @@ void *drm_map(int fd)
     memset(&crereq, 0, sizeof(crereq));
 
     // set members of crereq based on members of "drmModeModeInfo" obtained in drm_init()
-    printf("Hello from before segfault - %p\n", mode);
     crereq.height = mode->vdisplay;
     crereq.width = mode->hdisplay;
     crereq.bpp = 32;
