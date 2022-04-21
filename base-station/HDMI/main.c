@@ -10,13 +10,14 @@
  */
 
 // includes are placeholders, header files are currently located in separate branches
+#include "inc/gstreamer-rx.h"
+#include "inc/imagelib.h"
 #include "../common_headers/system_management.h"
 #include "../common_headers/cv_structs.h"
 #include "inc/draw_bounding_box.h"
 #include "inc/drawtext.h"
 #include "inc/imagelib.h"
 #include "inc/DRM_user.h"
-
 
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
@@ -74,8 +75,7 @@ void show_background(struct system_status * system) {
     struct camera_module * active_camera = &system->cameras[system->guiState];
 
     //camera boxes in bottom row
-    char num_str[2];
-    int status_color;
+    char num_str[10];
 
     for (int i = 0; i < system->numberOfCameras; i++) {
         draw_rectangle_filled(CAM_SEL_BOX_X + (i * 200),
@@ -106,17 +106,23 @@ void show_background(struct system_status * system) {
  * @param system Struct holding system information
  */
 void show_camera_frame(struct system_status * system) {
-    // // get the index of the active camera from the guistate
+    // get the index of the active camera from the guistate
     // int active_camera_no = system->guiState;
 
-    // // pass the camera number to get the frame corresponding to the active camera number
-    // char * frame = get_frame(active_camera_no);
+    // pass the camera number to get the frame corresponding to the active camera number
+    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_ARGB, IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    // // draw the image
-    // draw_image(frame);
+    // draw image to screen using draw pixel
+    for (int x = 0; x < IMAGE_WIDTH; x++) {
+      for (int y = 0; y < IMAGE_HEIGHT; y++) {
+            //uint32_t color = (img->buf[x + y + 0] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
+            uint32_t color = *((uint32_t*)img->buf + y * IMAGE_WIDTH + x);
+            draw_pixel(IMAGE_TOP_LEFT_X + x,IMAGE_TOP_LEFT_Y + y,color);
+        }
+    }
 
-    // // free the memory space of the frame
-    // free(frame);
+    // free the memory space of the frame
+    free_image(img);
 }
 
 /**
@@ -171,7 +177,6 @@ void show_camera_info(struct system_status * system) {
 
 
     //active camera red box outline
-    char num_str[2];
     int status_color;
 
     for (int i = 0; i < system->numberOfCameras; i++) {
@@ -232,7 +237,7 @@ void show_camera_options(struct system_status * system) {
 void render(struct system_status * system) {
     // TODO: figure out how to get pointer to system management struct
     //init DRM
-    int fd, ret;
+    int fd;
     fd = drm_open();
     drm_init(fd);
     map = drm_map(fd);
@@ -293,6 +298,9 @@ int main() {
     system->guiState = 0;
     system->cameras = cameras;
 
+    system->cameras[0].gstream_info = init_rx_camera("some string");
+
     render(system);
-    
+
+    cleanup_rx_camera(system->cameras[0].gstream_info);
 }

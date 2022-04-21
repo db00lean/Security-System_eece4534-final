@@ -1,3 +1,4 @@
+// Connor Northway
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,12 +60,21 @@ struct image *create_image(enum img_enc enc, int width, int height) {
   if (bpp == -1) {
     return NULL;
   }
-  char *buf = malloc(width * height * bpp);
+  size_t bytes_in_data = width * height * bpp;
+  char *buf = malloc(bytes_in_data);
   struct image *img = malloc(sizeof(struct image));
 
   *img = (struct image){
       .enc = enc, .time = 0, .width = width, .height = height, .buf = buf};
 
+  return img;
+}
+
+struct image *create_image_size(enum img_enc enc, size_t size) {
+  char *buf = malloc(size);
+  struct image *img = malloc(sizeof(struct image));
+  *img = (struct image){
+      .enc = enc, .time = 0, .width = 0, .height = 0, .buf = buf};
   return img;
 }
 
