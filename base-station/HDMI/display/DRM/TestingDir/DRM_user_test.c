@@ -90,7 +90,24 @@ int drm_init(int fd)
     mode = conn->modes;
 
 
+
     CRTC_FB = crtc->crtc_id;
+    current_buff = 0;
+    //Inits frame buffers
+    int i = 0;
+    for (i = 0; i < BUFF_AMOUNTS; i++) {
+        bufs[i] = malloc(sizeof(struct buf_context));
+
+
+        bufs[i]->fd = fd;
+
+
+
+        bufs[i]->map = drm_map(bufs[i]->fd, bufs[i], i);
+        //print_info();
+
+    }
+
     return 0;
 }
 void *drm_map(int fd, struct buf_context *myBuf, int id)
@@ -219,11 +236,14 @@ int drm_close()
 
     return 0;
 }
-void draw_pixel(int x, int y, uint32_t ARGB, struct buf_context *myBuf)
+void draw_pixel(int x, int y, uint32_t ARGB)
 {
+
+
     //Local pointer to point to memory mapped display region
     uint32_t *pixelPtr;
-    pixelPtr = (uint32_t *)(myBuf->map);
+
+    pixelPtr = (uint32_t * )(bufs[current_buff]->map);
 
 
     //Advance pixelPtr to correct row
@@ -233,7 +253,7 @@ void draw_pixel(int x, int y, uint32_t ARGB, struct buf_context *myBuf)
 
     *pixelPtr = ARGB;
 }
-void demo(struct buf_context *myBuf)
+void demo()
 {
     int y, x;
     //Loop to iterate through rows
@@ -245,22 +265,22 @@ void demo(struct buf_context *myBuf)
             //Draw top 3rd of screen red
             if (x < (mode->hdisplay / 3))
             {
-                draw_pixel(x, y, colors[0], myBuf);
+                draw_pixel(x, y, colors[0]);
             }
                 //Draw middle 3rd of screen blue
             else if (x < (mode->hdisplay * 2 / 3))
             {
-                draw_pixel(x, y, colors[1], myBuf);
+                draw_pixel(x, y, colors[1]);
             }
                 //Draw bottom 3rd of screen green
             else
             {
-                draw_pixel(x, y, colors[2], myBuf);
+                draw_pixel(x, y, colors[2]);
             }
         }
     }
 }
-void demo2(struct buf_context *myBuf)
+void demo2()
 {
     int y, x;
     //Loop to iterate through rows
@@ -272,37 +292,40 @@ void demo2(struct buf_context *myBuf)
             //Draw top 3rd of screen red
             if (x < (mode->hdisplay / 3))
             {
-                draw_pixel(x, y, colors[1], myBuf);
+                draw_pixel(x, y, colors[1]);
             }
                 //Draw middle 3rd of screen blue
             else if (x < (mode->hdisplay * 2 / 3))
             {
-                draw_pixel(x, y, colors[2], myBuf);
+                draw_pixel(x, y, colors[2]);
             }
                 //Draw bottom 3rd of screen green
             else
             {
-                draw_pixel(x, y, colors[0], myBuf);
+                draw_pixel(x, y, colors[0]);
             }
         }
     }
 }
 
-void pageFlip(int fd, struct buf_context *myBuf){
+void pageFlip(){
+
 
 
     printf("inside page flip\n");
     int ret;
+    int fd = bufs[current_buff]->fd;
     void *waiting;
     //unsigned int waiting(1);
     printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
 
+
     uint32_t *fb = malloc(sizeof(uint32_t));
     printf("fb id %d\n", *fb);
-    fb = &myBuf->fb;
+    fb = &bufs[current_buff]->fb;
 
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
-    ret = drmModeSetCrtc(myBuf->fd, crtc->crtc_id,  *fb,  0, 0, &conn->connector_id, 1, mode);
+    ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id,  *fb,  0, 0, &conn->connector_id, 1, mode);
 
 
     //ret = drmModePageFlip(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, waiting);
@@ -315,5 +338,25 @@ void pageFlip(int fd, struct buf_context *myBuf){
         else if (ret == -errno) {
             printf("other page flip error\n");
         }
+    }
+
+    if(current_buff == 0){
+        printf("switching, %d\n", current_buff);
+        current_buff = 1;
+    }
+    else{
+        printf("switching, %d\n", current_buff);
+        current_buff = 0;
+    }
+}
+
+void changeActiveBuffer(){
+    if(current_buff == 0){
+        printf("switching, %d\n", current_buff);
+        current_buff = 1;
+    }
+    else{
+        printf("switching, %d\n", current_buff);
+        current_buff = 0;
     }
 }

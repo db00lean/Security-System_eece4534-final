@@ -6,7 +6,7 @@
 #include <errno.h>
 
 #define BUFF_AMOUNTS 2
-#define SIXTYFPSMICROSECONDS 166667
+
 
 
 
@@ -29,6 +29,10 @@ struct buf_context{
     struct drm_mode_destroy_dumb dreq;
 };
 
+//all buf conexted
+struct buf_context *bufs[BUFF_AMOUNTS];
+//current frame buffer
+int current_buff;
 
 
 
@@ -45,14 +49,15 @@ void print_info();
 //Destroy DRM info structs
 int drm_close();
 //Draw pixel at coordinates (x, y) with alpha "A", red "R", green "G", blue "B"
-void draw_pixel(int x, int y, uint32_t ARGB, struct buf_context *myBuf);
+void draw_pixel(int x, int y, uint32_t ARGB);
 //Demo function to fill the screen with 3 rectangles
-void demo(struct buf_context* buf);
+void demo();
 //demo 2
 void demo2();
 //PageFlip
-void pageFlip(int fd, struct buf_context* bufs);
-
+void pageFlip();
+//Changes current buffer (doesn't display) only use if you what you're doing to not get unsync
+void changeActiveBuffer();
 /*
     drmSetMaster(fd);
     // clear crtc
@@ -61,8 +66,6 @@ void pageFlip(int fd, struct buf_context* bufs);
     drmDropMaster(fd);
 */
 
-//page flip
-void pageFlip(int fd, struct buf_context *bufs);
 
 
 #endif
