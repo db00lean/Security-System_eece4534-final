@@ -21,9 +21,11 @@ system_status securitySystem = {
 };
 
 void stop_threads(int _sig) {
-  securitySystem.running = 0;
-  printf("\n[ Main ] - Recevied SIGINT, terminating threads...\n");
-  printf("[ Main ] - Press any button on the ZedBoard to terminate the button thread...\n");
+  if (securitySystem.running) {
+    securitySystem.running = 0;
+    printf("\n[ Main ] - Terminating threads...\n");
+    printf("[ Main ] - Press any button on the ZedBoard to terminate the button thread...\n");
+  }
 }
 
 // dump all data for the system
@@ -108,6 +110,7 @@ int main(int argc, char **argv) {
   while(securitySystem.running) {
     msg = receive_msg(networkServer->responder);
     if (msg == NULL) {
+      printf("[ Main ] - Received NULL msg\n");
       continue;
     }
 

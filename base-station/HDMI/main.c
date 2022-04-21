@@ -17,8 +17,7 @@
 #include "inc/drawtext.h"
 #include "inc/imagelib.h"
 #include "inc/DRM_user.h"
-
-
+#include <sys/mman.h>
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
 // #include "rendering.h"
@@ -248,8 +247,25 @@ void render(struct system_status * system) {
     //init DRM
     int fd, ret;
     fd = drm_open();
-    drm_init(fd);
+    if (fd == -1) {
+        printf("[ HDMI ] - Could not open DRM...\n");
+        stop_threads(0);
+        return; 
+    }
+
+    ret = drm_init(fd);
+    if (ret != 0) {
+        printf("[ HDMI ] - Could not initialize DRM...\n"); 
+        stop_threads(0);
+        return;
+    }
+
     map = drm_map(fd);
+    if (map == MAP_FAILED) {
+        printf("[ HDMI ] - Could not map DRM...\n");
+        stop_threads(0);
+        return;
+    }
 
     print_info();
     while (system->running) {

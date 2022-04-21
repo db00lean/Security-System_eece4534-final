@@ -49,19 +49,9 @@ uint32_t const colors[] = {red, green, blue};
 
 int drm_open()
 {
-
-    int fd, flags;
-
-    // Opening cards
-    fd = open("/dev/dri/card0", O_RDWR);
-
-    if (fd == NULL)
-    {
-        return -1;
-    }
-
-    return fd;
+    return open("/dev/dri/card0", O_RDWR);
 }
+
 int drm_init(int fd)
 {
     // point our "struct drmModeRes" -- contains information about current display configuration
@@ -69,7 +59,7 @@ int drm_init(int fd)
 
     if (res == NULL)
     {
-        printf("Failed to get resources");
+        printf("[ HDMI ] - Failed to get resources");
         return -1;
     }
     // point our "struct drmModeConnector" based on "connector" member defined within "struct drmModeRes" above
@@ -77,8 +67,7 @@ int drm_init(int fd)
 
     if (conn == NULL)
     {
-        printf("Can't find connector");
-        printf("Can't find connector");
+        printf("[ HDMI ] - Can't find connector\n");
         return -1;
     }
     // point our "struct drmModeEncoder" encoder information based on "encoder" member defined within "struct drmModeRes" above
@@ -86,7 +75,7 @@ int drm_init(int fd)
 
     if (encode->encoder_id != conn->encoder_id)
     {
-        printf("error with encoder and connector IDs");
+        printf("[ HDMI ] - error with encoder and connector IDs\n");
         return -1;
     }
     // point our "struct drmModeCrtc" information based on "CRTC_id" member defined within "struct drmModeEncoder" above
@@ -105,11 +94,11 @@ void *drm_map(int fd)
     int ret;
     // struct to create dumb buffer
 
-
     // clear crereq before setting members
     memset(&crereq, 0, sizeof(crereq));
 
     // set members of crereq based on members of "drmModeModeInfo" obtained in drm_init()
+    printf("Hello from before segfault - %p\n", mode);
     crereq.height = mode->vdisplay;
     crereq.width = mode->hdisplay;
     crereq.bpp = 32;
