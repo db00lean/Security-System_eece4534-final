@@ -76,7 +76,6 @@ void show_background(struct system_status * system) {
 
     //camera boxes in bottom row
     char num_str[10];
-    int status_color;
 
     for (int i = 0; i < system->numberOfCameras; i++) {
         draw_rectangle_filled(CAM_SEL_BOX_X + (i * 200),
@@ -178,7 +177,6 @@ void show_camera_info(struct system_status * system) {
 
 
     //active camera red box outline
-    char num_str[10];
     int status_color;
 
     for (int i = 0; i < system->numberOfCameras; i++) {
