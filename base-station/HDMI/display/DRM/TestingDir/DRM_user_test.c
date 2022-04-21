@@ -247,12 +247,12 @@ void demo(struct buf_context *myBuf)
             {
                 draw_pixel(x, y, colors[0], myBuf);
             }
-            //Draw middle 3rd of screen blue
+                //Draw middle 3rd of screen blue
             else if (y < (mode->vdisplay * 2 / 3))
             {
                 draw_pixel(x, y, colors[1], myBuf);
             }
-            //Draw bottom 3rd of screen green
+                //Draw bottom 3rd of screen green
             else
             {
                 draw_pixel(x, y, colors[2], myBuf);
@@ -274,12 +274,12 @@ void demo2(struct buf_context *myBuf)
             {
                 draw_pixel(x, y, colors[1], myBuf);
             }
-            //Draw middle 3rd of screen blue
+                //Draw middle 3rd of screen blue
             else if (y < (mode->vdisplay * 2 / 3))
             {
                 draw_pixel(x, y, colors[2], myBuf);
             }
-            //Draw bottom 3rd of screen green
+                //Draw bottom 3rd of screen green
             else
             {
                 draw_pixel(x, y, colors[0], myBuf);

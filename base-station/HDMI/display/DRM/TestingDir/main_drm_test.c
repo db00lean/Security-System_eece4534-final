@@ -15,29 +15,32 @@ int main()
     int fd, ret;
     struct buf_context *bufs[BUFF_AMOUNTS];
 
-    int i = 0;
-    for (i = 0; i < BUFF_AMOUNTS; i++){
-        bufs[i] = malloc(sizeof(struct buf_context));
-    }
-
     fd = drm_open();
     drmSetMaster(fd);
 
-    bufs[0]->fd=fd;
-    bufs[1]->fd=fd;
+    int i = 0;
+    for (i = 0; i < BUFF_AMOUNTS; i++) {
+        bufs[i] = malloc(sizeof(struct buf_context));
 
-    drm_init(fd);
-    bufs[0]->map = drm_map(bufs[0]->fd, bufs[0], 0);
-    //print_info();
+
+        bufs[i]->fd = fd;
+
+
+        drm_init(fd);
+        bufs[i]->map = drm_map(bufs[i]->fd, bufs[i], i);
+        //print_info();
+
+    }
+
+
     demo(bufs[0]);
 
-    printf("\n\nwaiting for char on framebuffer %d\n\n", bufs[0]->fb);
 
 
-    bufs[1]->map = drm_map( bufs[1]->fd,  bufs[1], 1);
+
+
     demo2( bufs[1]);
-    printf("\n\nwaiting for char on framebuffer %d\n\n", bufs[1]->fb);
-    
+
    
 
     i =0;
