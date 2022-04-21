@@ -46,7 +46,7 @@ struct camera_rx * init_rx_camera(char* uri) {
   //     NULL);
   cam->pipeline = gst_parse_launch(
       "rtspsrc location=rtsp://129.10.156.133:8554/test ! rtpjpegdepay ! "
-      "decodebin ! appsink name=sink",
+      "decodebin ! appsink name=sink max-buffers=10,drop=true",
       NULL);
 
   gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);

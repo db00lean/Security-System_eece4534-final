@@ -116,8 +116,8 @@ void show_camera_frame(struct system_status * system) {
     // draw image to screen using draw pixel
     for (int x = 0; x < IMAGE_WIDTH; x++) {
       for (int y = 0; y < IMAGE_HEIGHT; y++) {
-            unsigned int color = (img->buf[x + y] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
-            color = *((uint32_t*)img->buf + y * IMAGE_WIDTH + x);
+            //uint32_t color = (img->buf[x + y + 0] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
+            uint32_t color = *((uint32_t*)img->buf + y * IMAGE_WIDTH + x);
             draw_pixel(IMAGE_TOP_LEFT_X + x,IMAGE_TOP_LEFT_Y + y,color);
         }
     }
