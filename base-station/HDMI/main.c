@@ -269,6 +269,6 @@ void* hdmi_main(void* thread_args) {
     struct system_status *system = (system_status*) thread_args; 
 
     render(system);
+    printf("[ HDMI ] - Exiting HDMI thread...\n");
     return NULL;
-    
 }

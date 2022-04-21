@@ -28,7 +28,7 @@ void print_sys_fzones(system_status* system) {
     camera_module* cam;  
     for (ii = 0; ii < system->numberOfCameras; ii++) {
         cam = system->cameras + ii;
-        printf("[%d] - { X: %d, Y: %d }\n", ii, cam->forbiddenZone.x_coord, cam->forbiddenZone.y_coord);
+        printf("\t[%d] - { X: %d, Y: %d }\n", ii, cam->forbiddenZone.x_coord, cam->forbiddenZone.y_coord);
     }
 }
 
@@ -151,7 +151,7 @@ void exec_action(struct button_actions* actions, int n_actions, button_value btn
 
     if (actions == NULL || system == NULL || mode >= n_actions) {
 #ifdef DEBUG
-        puts("[ Btn Listener ] - Err when executing action: invalid args");
+        puts("[ Btns ] - Err when executing action: invalid args");
 #endif
         return; 
     }
@@ -184,27 +184,28 @@ void* run_button_client(void* thread_args) {
 
     err = init_zedbtn_pollfd(&zedbtns_pfd);
     if (err) {
-        puts("[ Btn Listener ] - Could not open zedbtn character device file.\n");
+        stop_threads(-1); //arg does not matter
+        puts("[ Btns ] - Could not open zedbtn character device file.\n");
         return NULL;
     }
 
-    puts("[ Btn Listener ] - Hello from button listener thread!\n");
+    puts("[ Btns ] - Hello from button listener thread!\n");
 
     while(system->running) {
 #ifdef DEBUG
-        printf("[ Btn Listener ] - Going to sleep until button is pressed...\n");
+        printf("[ Btns ] - Going to sleep until button is pressed...\n");
 #endif
 
         poll(&zedbtns_pfd, 1, -1);
 
 #ifdef DEBUG
-        printf("[ Btn Listener ] - Woken up...\n");
+        printf("[ Btns ] - Woken up...\n");
 #endif
 
         if (system->running && CAN_READ_PFD(zedbtns_pfd)) {
             bytes_read = read(zedbtns_pfd.fd, btn_val_buffer, BUTTON_BUFFER_MAX_SIZE);
 #ifdef DEBUG
-            printf("[ Btn Listener ] - Read button values - bytes_read = %d\n", bytes_read);
+            printf("[ Btns ] - Read button values - bytes_read = %d\n", bytes_read);
 #endif
 
             for (i = 0; i < BUTTON_BUFFER_MAX_SIZE && btn_val_buffer[i] != 0; i++) {
@@ -218,7 +219,7 @@ void* run_button_client(void* thread_args) {
     }
 
     close(zedbtns_pfd.fd);
-    puts("[ Btn Listener ] - Exiting button listener thread.");
+    puts("[ Btns ] - Exiting button listener thread...");
     return NULL;
 }
 

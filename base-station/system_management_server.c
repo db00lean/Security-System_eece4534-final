@@ -22,6 +22,8 @@ system_status securitySystem = {
 
 void stop_threads(int _sig) {
   securitySystem.running = 0;
+  printf("\n[ Main ] - Recevied SIGINT, terminating threads...\n");
+  printf("[ Main ] - Press any button on the ZedBoard to terminate the button thread...\n");
 }
 
 // dump all data for the system
@@ -105,6 +107,10 @@ int main(int argc, char **argv) {
   // get metadata from the network
   while(securitySystem.running) {
     msg = receive_msg(networkServer->responder);
+    if (msg == NULL) {
+      continue;
+    }
+
     securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
     printf("Received message\n");
     printf("active camera: %i\n", securitySystem.guiState);
@@ -123,6 +129,8 @@ int main(int argc, char **argv) {
 
   free(securitySystem.cameras);
   free(networkServer);
+
+  printf("[ Main ] - Security camera system exited successfully. Bye!\n");
 
   return 0;
 }
