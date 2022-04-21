@@ -12,7 +12,7 @@ DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
 .PHONY: sysman_server button_listener clean
 
 sysman_server: management_server.o agg_detect.o button_client.o
-	(cd ../network && make server.o)
+	(cd ../network && make clean && make server.o)
 	(cd HDMI && make hdmi-lib.a)
 	$(CC) -o sysman_server system_management_server.o aggregate_detect.o button_client.o ../network/server.o ../network/client.o ../network/packet.o ./HDMI/hdmi-lib.a $(DRM_LDFLAGS) $(LIBS)
 

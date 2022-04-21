@@ -32,6 +32,7 @@ struct stream_args {
 
 // stream thread main function
 void *stream(void *thread_args) {
+  printf("hi from stream\n");
   struct stream_args *args = (struct stream_args *)thread_args;
   stream_server(args->argc, args->argv);
   return 0;
@@ -104,6 +105,7 @@ int main(int argc, char *argv[]) {
 
 
   // ### cleanup ###
+  pthread_join(stream_thread, NULL);
   pthread_join(cv_main_thread, NULL);
   pthread_mutex_destroy(&mutex);
   free(c);
