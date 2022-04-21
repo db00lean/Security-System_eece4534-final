@@ -30,7 +30,8 @@ int detect(struct coordinate_data rzone_data, struct coordinate_data box_data) {
 // Input: cam as the camera module with the suspected person
 void aggregate_detect(struct camera_module *cam) {
   int detection = 0;
-  for (int ii = 0; ii < cam->cvMetadata.num_bbox; ii++) {
+  int ii;
+  for (ii = 0; ii < cam->cvMetadata.num_bbox; ii++) {
     detection |= detect(cam->forbiddenZone, cam->cvMetadata.box_data[ii]);
     printf("\nMetadata for camera %d\n", cam->cameraNumber);
     printf("number of bbox: %d\n", cam->cvMetadata.num_bbox);
@@ -40,12 +41,13 @@ void aggregate_detect(struct camera_module *cam) {
 }
 
 void area_aggregate_detect(struct system_status *state, int cam_id) {
-  int detection = 0;
+  int detection = 1;
   aggregate_detect(&state->cameras[cam_id]);
 
-  for (int ii = 0; ii < state->numberOfCameras; ii++) {
+  int ii;
+  for (ii = 0; ii < state->numberOfCameras; ii++) {
     // TODO add in check about ID of bounding boxes
-    detection |= state->cameras[ii].detection;
+    detection &= state->cameras[ii].detection;
   }
   state->detection = detection;
 }
@@ -53,21 +55,46 @@ void area_aggregate_detect(struct system_status *state, int cam_id) {
 // Main for testing purposes
 #ifdef DEBUG
 // int main(int argc, char **argv) {
-//     struct camera_module cam;
-//     struct cv_data metadata = {
-//         .num_bbox = 2,
-//         .t = 1020,
-//         .box_data[0].x_coord = 5,
-//         .box_data[0].y_coord = 5,
-//         .box_data[0].x_len = 10,
-//         .box_data[0].y_len = 10,
-//         .box_data[1].x_coord = 0,
-//         .box_data[1].y_coord = 16,
-//         .box_data[1].x_len = 20,
-//         .box_data[1].y_len = 10,
-//     };
-//     cam.cvMetadata = metadata;
+//   struct coordinate_data fz = {
+//     .x_coord = 10,
+//     .y_coord = 10,
+//     .x_len = 10,
+//     .y_len = 10,
+//   };
 
+//   struct cv_data metadata1 = {
+//       .num_bbox = 1,
+//       // .t = 1020,
+//       .box_data[0].x_coord = 5,
+//       .box_data[0].y_coord = 5,
+//       .box_data[0].x_len = 10,
+//       .box_data[0].y_len = 10,
+//   };
+
+//   struct cv_data metadata2 = {
+//       .num_bbox = 1,
+//       .box_data[0].x_coord = 21,
+//       .box_data[0].y_coord = 21,
+//       .box_data[0].x_len = 20,
+//       .box_data[0].y_len = 10,
+//   };
+
+//   struct system_status system = {
+//     .numberOfCameras = 2,
+//   };
+//   system.cameras = (camera_module*) malloc(system.numberOfCameras * sizeof(camera_module));
+  
+//   system.cameras[0].cameraNumber = 0;
+//   system.cameras[0].forbiddenZone = fz;
+//   system.cameras[0].cvMetadata = metadata1;
+
+//   system.cameras[1].cameraNumber = 1;
+//   system.cameras[1].forbiddenZone = fz;
+//   system.cameras[1].cvMetadata = metadata2;
+
+//   area_aggregate_detect(&system, 0);
+//   area_aggregate_detect(&system, 1);
+//   printf("System detection: %d, cam1: %d, cam2:%d\n", system.detection, system.cameras[0].detection, system.cameras[1].detection);
 // }
 
 #endif
