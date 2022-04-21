@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "./DRM_user_test.h"
 
-#define BUFF_AMOUNTS 2
+
 
 int main()
 {
@@ -13,6 +13,7 @@ int main()
     printf("inside main\n");
 
     int fd, ret;
+
     struct buf_context *bufs[BUFF_AMOUNTS];
 
     fd = drm_open();
@@ -46,14 +47,16 @@ int main()
     i =0;
     while(1){
         if(i == 0){
+            demo(bufs[0]);
              pageFlip(fd,  bufs[0]);
              i = 1;
         }
         else{
+            demo2( bufs[1]);
              pageFlip(fd,  bufs[1]);
              i = 0;
         }
-     usleep(1000000/2);
+     usleep(SIXTYFPSMICROSECONDS);
 
     }
 

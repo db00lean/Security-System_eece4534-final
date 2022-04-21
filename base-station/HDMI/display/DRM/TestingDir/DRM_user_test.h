@@ -5,6 +5,8 @@
 #include <xf86drmMode.h>
 #include <errno.h>
 
+#define BUFF_AMOUNTS 2
+#define SIXTYFPSMICROSECONDS 166667
 
 
 
