@@ -339,7 +339,8 @@ void print_controls_info()
                              V4L2_CID_CONTRAST,
                              V4L2_CID_PAN_RELATIVE,
                              V4L2_CID_TILT_RELATIVE,
-                             V4L2_CID_ZOOM_RELATIVE};
+                             V4L2_CID_ZOOM_RELATIVE,
+                             USBDEVFS_RESET};
 
     char* ctrl_names[] = {"V4L2_CID_HFLIP",
                              "V4L2_CID_VFLIP",
@@ -348,7 +349,8 @@ void print_controls_info()
                              "V4L2_CID_CONTRAST",
                              "V4L2_CID_PAN_RELATIVE",
                              "V4L2_CID_TILT_RELATIVE",
-                             "V4L2_CID_ZOOM_RELATIVE"};
+                             "V4L2_CID_ZOOM_RELATIVE",
+                             "USBDEVFS_RESET"};
 
     for (int i = 0; i < sizeof(supported_ctrls) / sizeof(int); i++)
     {
