@@ -1,4 +1,3 @@
-
 #ifndef __DRM_USER__
 #define __DRM_USER__
 #include <stdint.h>
@@ -6,6 +5,8 @@
 #include <xf86drmMode.h>
 #include <errno.h>
 
+#define BUFF_AMOUNTS 2
+#define SIXTYFPSMICROSECONDS 166667
 
 
 
@@ -15,17 +16,17 @@
 //void *map;
 
 struct buf_context{
-	void *map;
-	int fd;
+    void *map;
+    int fd;
     uint32_t fb;
-	// struct to create dumb buffer
-	struct drm_mode_create_dumb crereq;
+    // struct to create dumb buffer
+    struct drm_mode_create_dumb crereq;
 
-	// struct to create memory mapping for dumb buffer
-	struct drm_mode_map_dumb mreq;
+    // struct to create memory mapping for dumb buffer
+    struct drm_mode_map_dumb mreq;
 
-	// struct to destroy dumb buffer
-	struct drm_mode_destroy_dumb dreq;
+    // struct to destroy dumb buffer
+    struct drm_mode_destroy_dumb dreq;
 };
 
 
@@ -53,14 +54,10 @@ void demo2();
 void pageFlip(int fd, struct buf_context* bufs);
 
 /*
-
     drmSetMaster(fd);
-
     // clear crtc
     drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
-
     drmModeSetCrtc(fd, crtc->crtc_id, fb, 0, 0, &conn->connector_id, 1, mode);
-
     drmDropMaster(fd);
 */
 
