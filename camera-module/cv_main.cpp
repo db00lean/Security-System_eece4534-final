@@ -103,6 +103,7 @@ cv_data GenerateBBoxes(cv::Mat image)
 
 // Should make SetupDarknet return a struct that contains setup data
 // This struct should contain the loaded cfg info to pass into GenerateBBoxes()
+// SHOULD BE TYPE "network" FOR NOW
 network SetupDarknet(char *cfgfile, char *weightfile)
 {
   // Unsure if the following code will be needed:
@@ -112,7 +113,14 @@ network SetupDarknet(char *cfgfile, char *weightfile)
   // char **names = get_labels_custom(name_list, &names_size); // get_labels(name_list);
 
   // Need to move loading weights to a spot that only executes it once
-  network net = parse_network_cfg_custom(cfgfile, 1, 1); // set batch=1
+  // parse_network_cfg_custom()
+  // network net = *parse_network_cfg(cfgfile); // set batch=1
+
+  // network *load_network(char *cfg, char *weights, int clear)
+  network net = *load_network(cfgfile, weightfile, 0);
+
+  // Need to do load_weights() as well?
+
   // if (weightfile)
   // {
   //   load_weights(&net, weightfile);
@@ -122,6 +130,7 @@ network SetupDarknet(char *cfgfile, char *weightfile)
   // Should be a good reference for what is needed to actually set up darknet
   // void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh,
   //    float hier_thresh, int dont_show, int ext_output, int save_labels, char *outfile, int letter_box, int benchmark_layers)
+  return net;
 }
 
 // TODO: Make this accept gstream as an input

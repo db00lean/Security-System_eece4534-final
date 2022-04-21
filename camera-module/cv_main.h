@@ -3,6 +3,7 @@
 
 #include "../common_headers/cv_structs.h"
 #include <darknet.h> // The main "darknet.h" file. Should update this to work with makefile
+// #include <darknet/parser.h>
 // #include <darknet.h/include/parser.h>
 
 // Not sure if any opencv needs a direct import besides opencv2/core/mat.hpp and maybe opencv2/opencv.hpp?

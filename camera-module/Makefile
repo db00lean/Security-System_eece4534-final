@@ -2,7 +2,7 @@ CFLAGS = `pkg-config --cflags opencv`
 LIBS = `pkg-config --libs opencv`
 
 cv_main: cv_main.cpp 
-	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
+	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv` -ldarknet
 
 time_test: cv_time_test.cpp 
 	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
