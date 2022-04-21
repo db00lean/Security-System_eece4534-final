@@ -240,12 +240,15 @@ void render(struct system_status * system) {
     int fd;
     fd = drm_open();
     drm_init(fd);
-    map = drm_map(fd);
+  //  map = drm_map(fd);
 
     print_info();
 
     //draw static elements
     show_background(system);
+    changeActiveBuffer();
+    show_background(system);
+    changeActiveBuffer();
 
     //draw dynamic elements repeatedly
     while (1) {
@@ -253,7 +256,8 @@ void render(struct system_status * system) {
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
-        //page flip here
+        g_usleep(166667);
+        pageFlip();
     }
 }
 
