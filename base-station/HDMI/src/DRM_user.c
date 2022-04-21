@@ -209,7 +209,7 @@ int drm_close()
 
     return 0;
 }
-inline void draw_pixel(int x, int y, uint32_t ARGB)
+void draw_pixel(int x, int y, uint32_t ARGB)
 {
     //Local pointer to point to memory mapped display region
     uint32_t *pixelPtr;

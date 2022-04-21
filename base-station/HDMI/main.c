@@ -131,6 +131,7 @@ void show_bounding_box(struct system_status * system) {
 
     //people count number - dynamic
     int camera_num_display = camera_metadata->num_bbox + 48;
+    draw_rectangle_filled(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 - 12, PEOPLE_BOX_TOP_LEFT_Y + 88, 24, 24, black);
     draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 100, (char *)&camera_num_display, 0x00ff00, 3);
 
     // loop through each bounding box and draw
@@ -157,9 +158,13 @@ void show_camera_info(struct system_status * system) {
 
     //zone status - dynamic
     if (active_camera->detection) {
+        //first clear old text
+        draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", black, 3);
         // draw "ZONE OCCUPIED"
         draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", red, 3);
     } else {
+        //first clear old text
+        draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", black, 3);
         // draw "ZONE VACANT"
         draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", green, 3);
     }
