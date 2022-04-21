@@ -49,7 +49,7 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
  * @brief draws the background of the GUI (static elements)
  * 
  */
-void show_background() {
+void show_background(struct system_status * system) {
     //top name
     draw_text_scale(TITLE_X, TITLE_Y, "Security System", light_green, 4);
     //camera frame border
@@ -62,46 +62,42 @@ void show_background() {
     draw_text_scale(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, "Show Person #: ", light_green, 2);
     draw_circle_filled(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, CAM_SEL_BOX_RAD, green);
 
-    
-    //camera status boxes
-    // draw_boundingbox(100, 750, 150, 150, 0xff0000);
-    // draw_text_scale(175, 825, "1", 0x00ffff, 10);
-    // draw_circle_filled(100, 750, 10, 0xff0000);
+    //people count block and label
+    draw_boundingbox(PEOPLE_BOX_TOP_LEFT_X, PEOPLE_BOX_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
+    draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 50, "Number of People", violet, 2);
 
+    //zone status block and label
+    draw_boundingbox(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
+    draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
 
-    // draw_boundingbox(300, 750, 150, 150, 0xff0000);
-    // draw_text_scale(375, 825, "2", 0x00ffff, 10);
-    // draw_circle_filled(300, 750, 10, 0xff0000);
+    // get the current camera information from the struct
+    struct camera_module * active_camera = &system->cameras[system->guiState];
 
+    //camera boxes in bottom row
+    char num_str[2];
+    int status_color;
 
-    // draw_boundingbox(500, 750, 150, 150, 0xff0000);
-    // draw_text_scale(575, 825, "3", 0x00ffff, 10);
-    // draw_circle_filled(500, 750, 10, 0x00ff00);
+    for (int i = 0; i < system->numberOfCameras; i++) {
+        draw_rectangle_filled(CAM_SEL_BOX_X + (i * 200),
+                              CAM_SEL_BOX_Y,
+                              CAM_SEL_BOX_DIM,
+                              CAM_SEL_BOX_DIM,
+                              grey);
 
+        sprintf(num_str, "%d", i+1);
+        draw_text_scale(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_DIM / 2),
+                        CAM_SEL_BOX_Y + (CAM_SEL_BOX_DIM / 2),
+                        num_str,
+                        black, 10);
+    }
 
+    if (active_camera->status) {
+        // draw "on"
 
-    // //temp testing of draw image - delete later
-    // // Using image struct from imagelib.h and fill with data for now
-    // int IMG_W = 1920;
-    // int IMG_H = 1080;
-    // struct image *img = create_image(IMGENC_RGB, IMG_W, IMG_H);
-    // for (int i = 0; i<IMG_H; i++) {
-    //    for (int j = 0; j<IMG_W; j++) {
-    //        img->buf[i + j + 0] = i % 255;
-    //        img->buf[i + j + 1] = 50;
-    //        img->buf[i + j + 2] = j % 255;
-    //    }   
-    // }
-    // // draw image to screen using draw pixel
-    // for each box, draw a rectangle bounding box
-    // for (int x = TOP_LINE; x < (TOP_LINE + MONITOR_W / 2); x++) {
-    //     for (int y = 100; y < (TOP_LINE + MONITOR_H / 2); y++) {
-    //         unsigned int color = (img->buf[x + y] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
-    //         draw_pixel(x,y,color);
-    //     }
-    // }
+    } else {
+        // draw "off"
+    }
 
-    // free_image(img);   
 }
 
 /**
@@ -133,10 +129,9 @@ void show_bounding_box(struct system_status * system) {
     struct camera_module * active_camera = &system->cameras[system->guiState];
     struct cv_data * camera_metadata = &active_camera->cvMetadata;
 
-    //people count block
-    draw_boundingbox(PEOPLE_BOX_TOP_LEFT_X, PEOPLE_BOX_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
-    draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 50, "Number of People", violet, 2);
+    //people count number - dynamic
     int camera_num_display = camera_metadata->num_bbox + 48;
+    draw_rectangle_filled(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 - 12, PEOPLE_BOX_TOP_LEFT_Y + 88, 24, 24, black);
     draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 100, (char *)&camera_num_display, 0x00ff00, 3);
 
     // loop through each bounding box and draw
@@ -160,17 +155,22 @@ void show_bounding_box(struct system_status * system) {
 void show_camera_info(struct system_status * system) {
     // get the current camera information from the struct
     struct camera_module * active_camera = &system->cameras[system->guiState];
-    //zone status block
-    draw_boundingbox(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
-    draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
+
+    //zone status - dynamic
     if (active_camera->detection) {
+        //first clear old text
+        draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", black, 3);
         // draw "ZONE OCCUPIED"
         draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", red, 3);
     } else {
+        //first clear old text
+        draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", black, 3);
         // draw "ZONE VACANT"
         draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", green, 3);
     }
 
+
+    //active camera red box outline
     char num_str[2];
     int status_color;
 
@@ -183,19 +183,14 @@ void show_camera_info(struct system_status * system) {
                              CAM_SEL_BOX_DIM + 6,
                              red);
         }
-
-        draw_rectangle_filled(CAM_SEL_BOX_X + (i * 200),
-                              CAM_SEL_BOX_Y,
-                              CAM_SEL_BOX_DIM,
-                              CAM_SEL_BOX_DIM,
-                              grey);
-
-        sprintf(num_str, "%d", i+1);
-        draw_text_scale(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_DIM / 2),
-                        CAM_SEL_BOX_Y + (CAM_SEL_BOX_DIM / 2),
-                        num_str,
-                        black, 10);
-
+        else {
+                draw_boundingbox(CAM_SEL_BOX_X + (i * 200) - 3,
+                             CAM_SEL_BOX_Y - 3,
+                             CAM_SEL_BOX_DIM + 6,
+                             CAM_SEL_BOX_DIM + 6,
+                             black);        
+        }
+        //camera status circles
         if (system->cameras[i].status) {
             status_color = green;
         } else {
@@ -206,13 +201,6 @@ void show_camera_info(struct system_status * system) {
                            CAM_SEL_BOX_Y + (CAM_SEL_BOX_RAD / 2),
                            CAM_SEL_BOX_RAD,
                            status_color);
-    }
-
-    if (active_camera->status) {
-        // draw "on"
-
-    } else {
-        // draw "off"
     }
 
     // draw the forbidden zone as an overlay on the camera
@@ -250,14 +238,17 @@ void render(struct system_status * system) {
     map = drm_map(fd);
 
     print_info();
-    while (1) {
 
-        // draw GUI elements
-        show_background();
-      //  show_camera_frame(system);
+    //draw static elements
+    show_background(system);
+
+    //draw dynamic elements repeatedly
+    while (1) {
+        show_camera_frame(system);
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
+        //page flip here
     }
 }
 
