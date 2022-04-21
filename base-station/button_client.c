@@ -21,13 +21,6 @@
 #include "../common_headers/system_management.h"
 #include "../common_headers/button_client.h"
 
-char run_button_listener = 1;
-
-void stop_button_listener(int _sig) {
-    run_button_listener = 0;
-    puts("[ Btn Listener ] - Press any button on the ZedBoard to terminate process...");
-}
-
 /* Button action helpers */
 
 void print_sys_fzones(system_status* system) {
@@ -197,7 +190,7 @@ void* run_button_client(void* thread_args) {
 
     puts("[ Btn Listener ] - Hello from button listener thread!\n");
 
-    while(run_button_listener) {
+    while(system->running) {
 #ifdef DEBUG
         printf("[ Btn Listener ] - Going to sleep until button is pressed...\n");
 #endif
@@ -208,7 +201,7 @@ void* run_button_client(void* thread_args) {
         printf("[ Btn Listener ] - Woken up...\n");
 #endif
 
-        if (run_button_listener && CAN_READ_PFD(zedbtns_pfd)) {
+        if (system->running && CAN_READ_PFD(zedbtns_pfd)) {
             bytes_read = read(zedbtns_pfd.fd, btn_val_buffer, BUTTON_BUFFER_MAX_SIZE);
 #ifdef DEBUG
             printf("[ Btn Listener ] - Read button values - bytes_read = %d\n", bytes_read);

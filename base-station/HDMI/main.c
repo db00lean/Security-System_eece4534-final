@@ -252,7 +252,7 @@ void render(struct system_status * system) {
     map = drm_map(fd);
 
     print_info();
-    while (1) {
+    while (system->running) {
 
         // draw GUI elements
         show_background();

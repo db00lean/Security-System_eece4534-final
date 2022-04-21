@@ -93,15 +93,6 @@ void exec_action(struct button_actions* actions, int n_actions, button_value btn
 void* run_button_client(void* thread_args);
 
 /**
- * @brief Stops execution of the button listener thread in response to SIGINT (or any other signal, really). 
- *        Make sure to pass this to the signal syscall (see man 2 signal)
- *        Otherwise, button listener thread will not clean up properly!
- * 
- * @param _sig - Signal (as an integer). Unused, hence the prefix with "_" 
- */
-void stop_button_listener(int _sig);
-
-/**
  * @brief Adds a delta to the forbidden zone coordinates of the current active camera.
  *        For increments (increment_fz_x and increment_fz_y): FZ_INC_DELTA is used. 
  *        For decrements (decrement_fz_x and decrement_fz_y): FZ_DEC_DELTA is used.

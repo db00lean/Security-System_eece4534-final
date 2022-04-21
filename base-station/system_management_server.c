@@ -16,23 +16,12 @@
 // global variable to track the system charateristics
 system_status securitySystem = {
     .numberOfCameras = 0,
-    .menuMode = 0
+    .menuMode = 0,
+    .running = 1
 };
 
-struct coordinate_data get_forbidden_zone(system_status* system) {
-  struct coordinate_data fz;
-  pthread_mutex_lock(&system->lock);
-  fz = system->cameras[system->guiState].forbiddenZone;
-  pthread_mutex_unlock(&system->lock);
-  return fz; 
-}
-
-camera_module* get_active_camera(system_status* system) {
-  camera_module* cam;
-  pthread_mutex_lock(&system->lock);
-  cam = &(system->cameras[system->guiState]);
-  pthread_mutex_unlock(&system->lock);
-  return cam;
+void stop_threads(int _sig) {
+  securitySystem.running = 0;
 }
 
 // dump all data for the system
@@ -86,7 +75,7 @@ int main(int argc, char **argv) {
   // for button presse thread
   pthread_t btn_listener_thread;
   pthread_mutex_init(&securitySystem.lock, 0);
-  signal(SIGINT, stop_button_listener);
+  signal(SIGINT, stop_threads);
   // for HDMI thread
   pthread_t hdmi_thread;
 
@@ -114,7 +103,7 @@ int main(int argc, char **argv) {
   pthread_create(&hdmi_thread, NULL, hdmi_main ,&securitySystem);
 
   // get metadata from the network
-  while(1) {
+  while(securitySystem.running) {
     msg = receive_msg(networkServer->responder);
     securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
     printf("Received message\n");
@@ -129,9 +118,10 @@ int main(int argc, char **argv) {
 
   // cleanup
   pthread_mutex_destroy(&securitySystem.lock);
-  free(securitySystem.cameras);
   pthread_join(btn_listener_thread, NULL);
   pthread_join(hdmi_thread, NULL);
+
+  free(securitySystem.cameras);
   free(networkServer);
 
   return 0;
