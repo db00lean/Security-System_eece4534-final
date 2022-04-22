@@ -34,6 +34,7 @@ typedef struct system_status {
   camera_module *cameras;
   uint8_t menuMode; // determines which set of button actions to execute
   pthread_mutex_t lock; // protects this structure.
+  int detection; // Signifies if the entire system detects a person
 } system_status;
 
 /**

@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
     printf("Data length: %i\n", msg->len);
 
     // Perform a detection of whether or not a person is in the FZ on camera n
-    aggregate_detect(&securitySystem.cameras[0]);
+    area_aggregate_detect(&securitySystem, 0);
   }
 
   // cleanup
