@@ -307,6 +307,17 @@ void demo2()
         }
     }
 }
+void changeActiveBuffer(){
+    if(current_buff == 0){
+        printf("switching, %d\n", current_buff);
+        current_buff = 1;
+    }
+    else{
+        printf("switching, %d\n", current_buff);
+        current_buff = 0;
+    }
+}
+
 
 void pageFlip(){
 
@@ -325,6 +336,7 @@ void pageFlip(){
     fb = &bufs[current_buff]->fb;
 
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
+    ret =  drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0, NULL, 0, NULL);
     ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id,  *fb,  0, 0, &conn->connector_id, 1, mode);
 
 
@@ -340,23 +352,6 @@ void pageFlip(){
         }
     }
 
-    if(current_buff == 0){
-        printf("switching, %d\n", current_buff);
-        current_buff = 1;
-    }
-    else{
-        printf("switching, %d\n", current_buff);
-        current_buff = 0;
-    }
+   changeActiveBuffer();
 }
 
-void changeActiveBuffer(){
-    if(current_buff == 0){
-        printf("switching, %d\n", current_buff);
-        current_buff = 1;
-    }
-    else{
-        printf("switching, %d\n", current_buff);
-        current_buff = 0;
-    }
-}
