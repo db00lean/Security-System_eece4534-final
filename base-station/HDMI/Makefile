@@ -26,6 +26,9 @@ $(TARGET): $(OBJS)
 %.o: %.c %.h
 	$(CC) $(CFLAGS) $(GST_CFLAGS) -c $<
 
+hdmi-lib.a: $(OBJS)
+	ar -q hdmi-lib.a $(OBJS)
+
 clean:
 	rm -rf $(OBJS) $(TARGET) *.o
 
