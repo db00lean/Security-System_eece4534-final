@@ -1,52 +1,51 @@
-CFLAGS = `pkg-config --cflags opencv`
-LIBS = `pkg-config --libs opencv`
+# CFLAGS = `pkg-config --cflags opencv`
+# LIBS = `pkg-config --libs opencv`
 
-cv_main: cv_main.cpp 
-	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv` -ldarknet
+# cv_main: cv_main.cpp 
+# 	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv` -ldarknet
 
-time_test: cv_time_test.cpp 
-	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
+# time_test: cv_time_test.cpp 
+# 	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
 
-# test: test.cpp
-	# g++ $(CFLAGS) $(LIBS) -o $@ $<
+# # test: test.cpp
+# 	# g++ $(CFLAGS) $(LIBS) -o $@ $<
 
-clean: 
-	$(RM) computer_vision.o
+# clean: 
+# 	$(RM) computer_vision.o
 
 # # export CPLUS_INCLUDE_PATH=/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4
-# TARGET:=output_cv
-# SRCS:=cv_main.cpp
+TARGET:=output_cv
+SRCS:=cv_main.cpp
 # TARGET:=time_output_cv
 # SRCS:=cv_time_test.cpp
-# OBJS:=$(SRCS:.cpp=.o)
+OBJS:=$(SRCS:.cpp=.o)
 
-# CV_CFLAGS := $(shell pkg-config --cflags opencv4)
-# CV_LDFLAGS := $(shell pkg-config --libs opencv4)
+CFLAGS := $(shell pkg-config --cflags opencv4) -O
+LDFLAGS := $(shell pkg-config --libs opencv4)
 
-# # CV_CFLAGS = -I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/opencv2
-#  #-I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/
-# # CV_LDFLAGS := $(shell pkg-config --libs opencv4)
+# CFLAGS = -I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/opencv2
+ #-I/home/johnp/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/usr/include/opencv4/
+# LDFLAGS := $(shell pkg-config --libs opencv4)
 
-# # CFLAGS = `pkg-config --cflags opencv`
-# # LIBS = `pkg-config --libs opencv`
+# CFLAGS = `pkg-config --cflags opencv`
+# LIBS = `pkg-config --libs opencv`
 
-# INCLUDE_DIRS:=.. $(ZED_INCLUDE) /inc
-# # CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(CV_CFLAGS)
-# CFLAGS:=-g -O0 $(CV_CFLAGS)
-# LALSA:= -lasound -lpthread -lrt -ldl -lm
+INCLUDE_DIRS:=.. $(ZED_INCLUDE) /inc
+# CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O0 $(CFLAGS)
+# CFLAGS:=-g -O0 $(CFLAGS)
 
-# .PHONY: clean
+.PHONY: clean
 
-# all: $(TARGET)
+all: $(TARGET)
 
-# $(TARGET): $(OBJS)
-# 	$(CXX) -o $@ $(CV_LDFLAGS) $^ -lm
+$(TARGET): $(OBJS)
+	$(CXX) -o $@ $(LDFLAGS) $^ -lm
 
-# %.o: %.cpp %.h
-# 	$(CXX) $(CFLAGS) -c $< 
+%.o: %.cpp %.h
+	$(CXX) $(LDFLAGS) $(CFLAGS) -c $< 
 
-# clean:
-# 	rm -rf $(OBJS) $(TARGET) *.o
+clean:
+	rm -rf $(OBJS) $(TARGET) *.o
 
 ########################################### Uncomment everything above
 

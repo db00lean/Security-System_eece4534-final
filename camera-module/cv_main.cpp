@@ -1,5 +1,8 @@
 #include "cv_main.h"
+
+#if DEBUG_MODE_CV
 #include <iostream>
+#endif
 
 // NOTE: Not sure if the current import for darknet.h requires something like dn::do_function()
 // or if it could just be referenced directly as do_function()
@@ -13,10 +16,13 @@
 
 // Loads an image into the image buffer
 // TODO: Convert ImportFrame() to C++
+#if DO_CV
 cv::Mat ImportFrame()
 {
+#if DEBUG_MODE_CV
   // TODO: Implement ImportFrame()
   std::cout << "Importing frame\n";
+#endif
 
   // Read the image file as
   // imread("default.jpg");
@@ -30,12 +36,16 @@ cv::Mat ImportFrame()
   // TODO: Fix error handling on merge with cv_main
   if (image.empty())
   {
+#if DEBUG_MODE_CV
     std::cout << "Invalid Image\n";
+#endif
   }
 
   return image;
 }
+#endif
 
+#if DO_CV
 cv_data GenerateBBoxes(cv::Mat image)
 {
   // https://docs.opencv.org/3.4/d1/de5/classcv_1_1CascadeClassifier.html#a90fe1b7778bed4a27aa8482e1eecc116
@@ -44,35 +54,38 @@ cv_data GenerateBBoxes(cv::Mat image)
   std::vector<cv::Rect> bboxes;
   std::vector<double> found_weights; // Accuracy of model -- for internal use for the moment
 
+#if USE_DARKNET == 0
   // HOG Descriptors work, but are too slow for the Xilinx board
   // HOG (Histogram of Oriented Gradients) should deal with detection
   // Might swap to boundingRect(thresh) --> Need to look into accuracy/resource usage of both
-
   // HOG Descriptor code BEGIN
-  // cv::HOGDescriptor hog;
-  // hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
+  cv::HOGDescriptor hog;
+  hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
 
-  // // Uncalibrated, unscaled hog (Histogram of Oriented Gradients) --> Probably too expensive currently; TODO: REDUCE
-  // hog.detectMultiScale(image, bboxes, found_weights, 0.0, cv::Size(8, 8), cv::Size(16, 16), 1.05, 2.0, false);
-  /*
-  detectMultiScale(InputArray img,
-                  std::vector< Rect > & foundLocations,
-                  std::vector< double > & 	foundWeights,
-                  double 	hitThreshold = 0,
-                  Size 	winStride = Size(),
-                  Size 	padding = Size(),
-                  double 	scale = 1.05,
-                  double 	groupThreshold = 2.0,
-                  bool 	useMeanshiftGrouping = false
-                  )		const
-  */
-  // HOG Descriptor code END
+  // Uncalibrated, unscaled hog (Histogram of Oriented Gradients) --> Probably too expensive currently; TODO: REDUCE
+  hog.detectMultiScale(image, bboxes, found_weights, 0.0, cv::Size(8, 8), cv::Size(16, 16), 1.05, 2.0, false);
+/*
+detectMultiScale(InputArray img,
+                std::vector< Rect > & foundLocations,
+                std::vector< double > & 	foundWeights,
+                double 	hitThreshold = 0,
+                Size 	winStride = Size(),
+                Size 	padding = Size(),
+                double 	scale = 1.05,
+                double 	groupThreshold = 2.0,
+                bool 	useMeanshiftGrouping = false
+                )		const
+*/
+// HOG Descriptor code END
+#endif
 
   // TODO: Add error Handling
+#if DEBUG_MODE_CV
   if (err < 0)
   {
     std::cout << "Unable to generate bounding boxes\n";
   }
+#endif
 
   int num_box = 0;
   for (auto &element : bboxes)
@@ -93,14 +106,19 @@ cv_data GenerateBBoxes(cv::Mat image)
     cv_data_output.num_bbox = num_box;
     if (num_box >= MAX_B_BOXES)
     {
+#if DEBUG_MODE_CV
       std::cout << "More people detected than MAX_B_BOXES limit\n";
+#endif
       break;
     }
   }
 
   return cv_data_output;
 }
+#endif
 
+#if DO_CV
+#if USE_DARKNET
 // Should make SetupDarknet return a struct that contains setup data
 // This struct should contain the loaded cfg info to pass into GenerateBBoxes()
 // SHOULD BE TYPE "network" FOR NOW
@@ -132,21 +150,37 @@ network SetupDarknet(char *cfgfile, char *weightfile)
   //    float hier_thresh, int dont_show, int ext_output, int save_labels, char *outfile, int letter_box, int benchmark_layers)
   return net;
 }
+#endif
+#endif
 
 // TODO: Make this accept gstream as an input
 // Gets the newest frame from a stream  // TOOO: Make "gstream camera_stream" an input
 // Creates/returns coordinates of bounding boxes of people detected in the frame
 cv_data GetBBoxesFromFrame()
 {
-  cv::Mat frame; // Could consolidate this into one mega-line, but this looks cleaner
-
+#if DO_CV
+  cv::Mat frame;         // Could consolidate this into one mega-line, but this looks cleaner
   frame = ImportFrame(); // TODO: Update ImportFrame() to get frame from gstream; accepts "gstream camera_stream" as argument
   return GenerateBBoxes(frame);
+#else
+  // Hard-code 4 bounding boxes
+  struct cv_data cv_data_output;
+  cv_data_output.num_bbox = 4;
+  for (int i = 0; i < 4; i++)
+  {
+    cv_data_output.box_data[i].x_coord = 240 * i;
+    cv_data_output.box_data[i].y_coord = 80 * i;
+    cv_data_output.box_data[i].x_len = 60;
+    cv_data_output.box_data[i].y_len = 100;
+  }
+  return cv_data_output;
+#endif
 }
 
 int main()
 {
   struct cv_data cv_data_current;
+#if DO_CV
   cv::Mat image;
   image = ImportFrame();
 
@@ -156,7 +190,11 @@ int main()
   }
 
   cv_data_current = GenerateBBoxes(image);
+#else
+  cv_data_current = GetBBoxesFromFrame();
+#endif
 
+#if DEBUG_MODE_CV
   for (int i = 0; i < cv_data_current.num_bbox; i++)
   {
     std::cout << "box " << i << ": ";
@@ -165,6 +203,7 @@ int main()
     std::cout << "x_len = " << cv_data_current.box_data[i].x_len << "    ";
     std::cout << "y_len = " << cv_data_current.box_data[i].y_len << "\n";
   }
+#endif
 
   return 0;
 }
