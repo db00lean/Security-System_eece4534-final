@@ -337,8 +337,11 @@ void pageFlip(){
     //printf("fb id %d\n", *fb);
     fb = &bufs[current_buff]->fb;
 
+    usleep(1000);
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
-    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0, NULL, 0, NULL);
+    //drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0, NULL, 0, NULL);
+
+    usleep(1000);
     ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id,  *fb,  0, 0, &conn->connector_id, 1, mode);
 
 
