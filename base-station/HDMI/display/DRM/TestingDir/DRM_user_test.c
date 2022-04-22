@@ -308,6 +308,53 @@ void demo2()
     }
 }
 
+void draw_map(int x_start, int y_start, int x_length, int y_length, uint32_t *ARGB)
+{
+    //Local pointer to point to memory mapped display region
+    
+    uint32_t *pixelPtr;
+    uint32_t row_count=0;
+    //pixelPtr = (uint32_t *)(myBuf->map);
+    pixelPtr = (uint32_t)(bufs[current_buff]->map);
+    
+    //Advance pixelPtr to correct row
+    pixelPtr += mode->hdisplay * y_start;
+    //Advance pixelPtr to correct column
+    pixelPtr += x_start;
+
+    printf("inside draw map \n");
+
+    while(row_count < y_length)
+    {
+       // printf("mem copying\n");
+        memcpy(pixelPtr, ARGB, x_length*4);
+        pixelPtr += mode->hdisplay;
+        ARGB += x_length;
+        row_count++;
+    }
+}
+
+void demoMap()
+{
+    int y;
+
+    uint32_t array_size = mode->hdisplay*mode->vdisplay;
+    uint32_t color_image[array_size];
+
+    for(int i=0; i<array_size/3; i++){
+        color_image[i] = red;
+    }
+    for(int j=array_size/3; j<array_size*2/3; j++){
+        color_image[j] = blue;
+    }
+    for(int k=array_size*2/3; k<array_size; k++){
+        color_image[k] = green;
+    }
+
+
+    draw_map(0, 0, mode->hdisplay, mode->vdisplay, color_image);
+}
+
 void pageFlip(){
 
 
