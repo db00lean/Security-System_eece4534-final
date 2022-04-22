@@ -336,12 +336,12 @@ void pageFlip() {
     
 
     //printf("fb id %d\n", *fb);
-    framebuffers[current_buff]; = &bufs[current_buff]->fb;
+    framebuffers[current_buff] = &bufs[current_buff]->fb;
 
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
 //    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0,  NULL, 1, NULL);
 //
-    ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id, *fb, 0, 0, &conn->connector_id, 1, mode);
+    ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id, *framebuffers[current_buff], 0, 0, &conn->connector_id, 1, mode);
 
     //ret = drmModePageFlip(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, waiting);
     if (ret) {
@@ -355,5 +355,4 @@ void pageFlip() {
 
     changeActiveBuffer();
 
-}
 }
