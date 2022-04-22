@@ -53,7 +53,7 @@ int drm_close();
 //Draw pixel at coordinates (x, y) with alpha "A", red "R", green "G", blue "B"
 void draw_pixel(int x, int y, uint32_t ARGB);
 //Draw pixel maps
-void draw_map(int x_start, int y_start, int x_length, int y_length, uint32_t *ARGB)
+void draw_map(int x_start, int y_start, int x_length, int y_length, uint32_t *ARGB);
 //Demo function to fill the screen with 3 rectangles
 void demo();
 //demo 2

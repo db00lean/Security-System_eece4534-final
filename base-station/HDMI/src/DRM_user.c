@@ -315,14 +315,14 @@ void draw_map(int x_start, int y_start, int x_length, int y_length, uint32_t *AR
     uint32_t *pixelPtr;
     uint32_t row_count=0;
     //pixelPtr = (uint32_t *)(myBuf->map);
-    pixelPtr = (uint32_t)(bufs[current_buff]->map);
+    pixelPtr = (uint32_t *)(bufs[current_buff]->map);
     
     //Advance pixelPtr to correct row
     pixelPtr += mode->hdisplay * y_start;
     //Advance pixelPtr to correct column
     pixelPtr += x_start;
 
-    printf("inside draw map \n");
+    //printf("inside draw map \n");
 
     while(row_count < y_length)
     {
