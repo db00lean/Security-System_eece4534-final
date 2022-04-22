@@ -308,6 +308,31 @@ void demo2()
         }
     }
 }
+void draw_map(int x_start, int y_start, int x_length, int y_length, uint32_t *ARGB)
+{
+    //Local pointer to point to memory mapped display region
+    
+    uint32_t *pixelPtr;
+    uint32_t row_count=0;
+    //pixelPtr = (uint32_t *)(myBuf->map);
+    pixelPtr = (uint32_t)(bufs[current_buff]->map);
+    
+    //Advance pixelPtr to correct row
+    pixelPtr += mode->hdisplay * y_start;
+    //Advance pixelPtr to correct column
+    pixelPtr += x_start;
+
+    printf("inside draw map \n");
+
+    while(row_count < y_length)
+    {
+       // printf("mem copying\n");
+        memcpy(pixelPtr, ARGB, x_length*4);
+        pixelPtr += mode->hdisplay;
+        ARGB += x_length;
+        row_count++;
+    }
+}
 
 void changeActiveBuffer(){
     if(current_buff == 0){
