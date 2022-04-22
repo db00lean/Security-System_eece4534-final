@@ -98,7 +98,7 @@ int drm_init(int fd)
 
         //printf("init frame buffers\n");
         bufs[i] = malloc(sizeof(struct buf_context));
-
+        framebuffers[i] = malloc(sizeof(u_int32_t));
 
         bufs[i]->fd = fd;
 
@@ -320,7 +320,7 @@ void changeActiveBuffer(){
     }
 }
 
-void pageFlip(){
+void pageFlip() {
 
 
 
@@ -332,29 +332,28 @@ void pageFlip(){
     //printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
 
 
-    uint32_t *fb = malloc(sizeof(uint32_t));
+
     
 
     //printf("fb id %d\n", *fb);
-    fb = &bufs[current_buff]->fb;
+    framebuffers[current_buff]; = &bufs[current_buff]->fb;
 
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
-    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0,  NULL, 1, NULL);
-    sleep(1);
-    ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id,  *fb,  0, 0, &conn->connector_id, 1, mode);
+//    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0,  NULL, 1, NULL);
+//
+    ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id, *fb, 0, 0, &conn->connector_id, 1, mode);
 
     //ret = drmModePageFlip(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, waiting);
-    if ( ret){
+    if (ret) {
         printf("couldn't page flip\n");
-        if (ret == -EINVAL)
-        {
+        if (ret == -EINVAL) {
             printf("invalid crtc id\n");
-        }
-        else if (ret == -errno) {
+        } else if (ret == -errno) {
             printf("other page flip error\n");
         }
     }
 
     changeActiveBuffer();
 
+}
 }
