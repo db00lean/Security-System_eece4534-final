@@ -24,7 +24,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(DRM_LDFLAGS) $(GST_LIBS) -o $@ $^ -lm
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) $(GST_CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 
 hdmi-lib.a: $(OBJS)
 	ar -q hdmi-lib.a $(OBJS)

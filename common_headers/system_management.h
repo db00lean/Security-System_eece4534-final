@@ -5,7 +5,7 @@
 #define SYSTEM_MANAGEMENT_H
 
 #include "cv_structs.h"
-#include "gstreamer-rx.h"
+#include "../base-station/HDMI/inc/gstreamer-rx.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>

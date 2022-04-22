@@ -275,4 +275,5 @@ void* hdmi_main(void* thread_args) {
     render(system);
 
     cleanup_rx_camera(system->cameras[0].gstream_info);
+    return NULL;
 }
