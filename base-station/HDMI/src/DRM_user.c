@@ -48,7 +48,7 @@ int drm_open()
     // Opening cards
     fd = open("/dev/dri/card0", O_RDWR);
 
-    if (fd == NULL)
+    if (fd == -1)
     {
         return -1;
     }
@@ -96,6 +96,8 @@ int drm_init(int fd)
     //Inits frame buffers
     int i = 0;
     for (i = 0; i < BUFF_AMOUNTS; i++) {
+
+        //printf("init frame buffers\n");
         bufs[i] = malloc(sizeof(struct buf_context));
 
 
@@ -119,9 +121,9 @@ void *drm_map(int fd, struct buf_context *myBuf, int id)
     fb = &myBuf->fb;
     //printf("fb id %d\n", *fb);
 
-    printf("\n\n MAP getting crtc \n\n");
+    //printf("\n\n MAP getting crtc \n\n");
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
-    printf("crtc id %d\n", crtc->crtc_id);
+    //printf("crtc id %d\n", crtc->crtc_id);
 
 
     int ret;
@@ -134,7 +136,7 @@ void *drm_map(int fd, struct buf_context *myBuf, int id)
     myBuf->crereq.height = mode->vdisplay;
     myBuf->crereq.width = mode->hdisplay;
     myBuf->crereq.bpp = 32;
-    printf("before drm ioctl\n");
+    //printf("before drm ioctl\n");
     // create dumb DRM based on crereq members -- "handle, pitch, size will be returned", members of crereq
     ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &myBuf->crereq);
 
@@ -144,7 +146,7 @@ void *drm_map(int fd, struct buf_context *myBuf, int id)
         return MAP_FAILED;
     }
     // create DRM FB using information within crereq, populated by drmIoctl call above
-    printf("before add fb\n");
+    //printf("before add fb\n");
     ret = drmModeAddFB(fd, (uint32_t)myBuf->crereq.width, (uint32_t)myBuf->crereq.height, 24,
                        myBuf->crereq.bpp, myBuf->crereq.pitch, myBuf->crereq.handle, fb);
 
@@ -307,36 +309,24 @@ void demo2()
         }
     }
 }
-void changeActiveBuffer(){
-    if(current_buff == 0){
-        printf("switching, %d\n", current_buff);
-        current_buff = 1;
-    }
-    else{
-        printf("switching, %d\n", current_buff);
-        current_buff = 0;
-    }
-}
-
 
 void pageFlip(){
 
 
 
-    printf("inside page flip\n");
+    //printf("inside page flip\n");
     int ret;
     int fd = bufs[current_buff]->fd;
-    void *waiting;
+    //void *waiting;
     //unsigned int waiting(1);
-    printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
+    //printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
 
 
     uint32_t *fb = malloc(sizeof(uint32_t));
-    printf("fb id %d\n", *fb);
+    //printf("fb id %d\n", *fb);
     fb = &bufs[current_buff]->fb;
 
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
-    ret =  drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0, NULL, 0, NULL);
     ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id,  *fb,  0, 0, &conn->connector_id, 1, mode);
 
 
@@ -352,6 +342,23 @@ void pageFlip(){
         }
     }
 
-   changeActiveBuffer();
+    if(current_buff == 0){
+        //printf("switching, %d\n", current_buff);
+        current_buff = 1;
+    }
+    else{
+        //printf("switching, %d\n", current_buff);
+        current_buff = 0;
+    }
 }
 
+void changeActiveBuffer(){
+    if(current_buff == 0){
+        //printf("switching, %d\n", current_buff);
+        current_buff = 1;
+    }
+    else{
+        //printf("switching, %d\n", current_buff);
+        current_buff = 0;
+    }
+}
