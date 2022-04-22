@@ -1,11 +1,10 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/ioctl.h>
-
 
 #include <drm_fourcc.h>
 
@@ -334,16 +333,15 @@ void pageFlip(){
 
 
     uint32_t *fb = malloc(sizeof(uint32_t));
+    
+
     //printf("fb id %d\n", *fb);
     fb = &bufs[current_buff]->fb;
 
-    usleep(1000);
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
-    //drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0, NULL, 0, NULL);
-
-    usleep(1000);
+    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0,  NULL, 1, NULL);
+    sleep(1);
     ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id,  *fb,  0, 0, &conn->connector_id, 1, mode);
-
 
     //ret = drmModePageFlip(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, waiting);
     if ( ret){
@@ -359,3 +357,4 @@ void pageFlip(){
 
     changeActiveBuffer();
 
+}

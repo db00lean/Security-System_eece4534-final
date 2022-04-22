@@ -240,7 +240,7 @@ void render(struct system_status * system) {
     int fd;
     fd = drm_open();
     drm_init(fd);
-  //  map = drm_map(fd);
+    //map = drm_map(fd);
 
     print_info();
 
@@ -256,7 +256,7 @@ void render(struct system_status * system) {
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
-        g_usleep(166667);
+        //g_usleep(166667);
         pageFlip();
     }
 }
