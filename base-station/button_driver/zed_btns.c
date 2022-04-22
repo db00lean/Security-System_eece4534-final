@@ -2,7 +2,7 @@
  * @file zed_btns.c
  * @author Siddharth Chenrayan (chenrayan.s@northeastern.edu)
  * @brief ZedBoard button driver kernel module
- * @version 0.1
+ * @version 0.2
  * @date 2022-03-31
  * 
  * @copyright Copyright (c) 2022
@@ -36,6 +36,11 @@
 /* Chardev file-operations */
 static ssize_t kbtns_read(struct file* f, char __user *buf, size_t count, loff_t* offset);
 static unsigned int kbtns_poll(struct file* filp, poll_table* wait); 
+static int kbtns_open(struct inode* inodep, struct file* filp);
+static int kbtns_release(struct inode* inodep, struct file* filp);
+
+/* Chardev helpers */
+static void clear_kfifo(void);
 
 /* Button interrupt handling */
 static void try_kfifo_put_locked(u8 btn_value);
@@ -60,14 +65,44 @@ static struct kbtns_inst kbtns_global;
 static struct class* kbtns_class;
 
 /////////////////////////////
-/* Chrdev file-operations */
+/* Chrdev file-operations and helpers */
 /////////////////////////////
 
-static ssize_t kbtns_read(struct file* f, 
-                          char __user *buf, 
-                          size_t count, 
-                          loff_t* offset) 
-{
+static void clear_kfifo() {
+    mutex_lock_interruptible(&kbtns_global.buffer_lock);
+    kfifo_reset(&kbtns_global.btns_buffer);
+    mutex_unlock(&kbtns_global.buffer_lock);
+}
+
+static int kbtns_open(
+    struct inode* inodep,
+    struct file* filp
+) {
+    if (kbtns_global.in_use) {
+        printk(KERN_INFO "[ KBtns  ] - Buttons device is already in use. Only one instance of the file can be opened at a time\n");
+        return -EBUSY; 
+    }
+
+    clear_kfifo(); 
+    kbtns_global.in_use = 1;
+    return 0; 
+}
+
+static int kbtns_release(
+    struct inode* inodep,
+    struct file* file
+) {
+    clear_kfifo(); 
+    kbtns_global.in_use = 0; 
+    return 0;
+}
+
+static ssize_t kbtns_read(
+    struct file* f, 
+    char __user *buf, 
+    size_t count, 
+    loff_t* offset
+) {
     int ret; 
     unsigned int copied; 
 
@@ -80,9 +115,10 @@ static ssize_t kbtns_read(struct file* f,
     return ret ? ret : copied;
 }
 
-static unsigned int kbtns_poll(struct file* filp,
-                               poll_table* wait) 
-{
+static unsigned int kbtns_poll(
+    struct file* filp,
+    poll_table* wait
+) {
     unsigned int ret;
 
     if (mutex_lock_interruptible(&kbtns_global.buffer_lock)) 
@@ -107,6 +143,8 @@ static struct file_operations kbtns_fileops = {
     .owner = THIS_MODULE,
     .read = kbtns_read, 
     .poll = kbtns_poll,
+    .open = kbtns_open,
+    .release = kbtns_release,
 };
 
 /////////////////////////////

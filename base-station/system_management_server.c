@@ -1,18 +1,39 @@
 // System management server runs on security system base station
 // John Craffey
 
+#include "../common_headers/hdmi_main.h"
 #include "../common_headers/system_management.h"
+#include "../common_headers/button_client.h"
 #include "aggregate_detect.h"
-#include "button_client.h"
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <czmq.h>
+#include "../network/client.h"
+#include "../network/server.h"
 
 // global variable to track the system charateristics
-struct system_status securitySystem = {
+system_status securitySystem = {
     .numberOfCameras = 0,
+    .menuMode = 0
 };
+
+struct coordinate_data get_forbidden_zone(system_status* system) {
+  struct coordinate_data fz;
+  pthread_mutex_lock(&system->lock);
+  fz = system->cameras[system->guiState].forbiddenZone;
+  pthread_mutex_unlock(&system->lock);
+  return fz; 
+}
+
+camera_module* get_active_camera(system_status* system) {
+  camera_module* cam;
+  pthread_mutex_lock(&system->lock);
+  cam = &(system->cameras[system->guiState]);
+  pthread_mutex_unlock(&system->lock);
+  return cam;
+}
 
 // dump all data for the system
 void print_system_info() {
@@ -51,11 +72,28 @@ int initialize_camera(int cameraNumber) {
 
   securitySystem.cameras[cameraNumber].status = 1;
 
+  securitySystem.cameras[cameraNumber].forbiddenZone.x_coord = 0;
+  securitySystem.cameras[cameraNumber].forbiddenZone.y_coord = 0;
+  securitySystem.cameras[cameraNumber].forbiddenZone.x_len = 150;
+  securitySystem.cameras[cameraNumber].forbiddenZone.y_len = 200;
+
+
+
   return 0;
 }
 
 int main(int argc, char **argv) {
+  // for button presse thread
+  pthread_t btn_listener_thread;
+  pthread_mutex_init(&securitySystem.lock, 0);
+  signal(SIGINT, stop_button_listener);
+  // for HDMI thread
+  pthread_t hdmi_thread;
 
+  // init metadata network
+  received_message* msg;
+  const char* port = "55000";
+  struct server* networkServer = new_server(port);
   // init the cameras
   // find out how many cams
   enumerate_cameras();
@@ -69,44 +107,32 @@ int main(int argc, char **argv) {
   // print for debug
   print_system_info();
 
-  // Kick off thread for button presses
-  pthread_t btn_listener_thread;
+  // launching button thread
+  pthread_create(&btn_listener_thread, NULL, run_button_client, &securitySystem);
 
-  signal(SIGINT, stop_button_listener);
-  pthread_create(&btn_listener_thread, NULL, run_button_client, NULL);
+  // launching HDMI thread
+  pthread_create(&hdmi_thread, NULL, hdmi_main ,&securitySystem);
 
-  // get metadata and send to data agregator
-  // this is a dummy struct for testing
-  struct cv_data metadata = {
-      .num_bbox = 2,
-      //.t = 1020,
-      .box_data[0].x_coord = 5,
-      .box_data[0].y_coord = 5,
-      .box_data[0].x_len = 10,
-      .box_data[0].y_len = 10,
-      .box_data[1].x_coord = 5,
-      .box_data[1].y_coord = 5,
-      .box_data[1].x_len = 10,
-      .box_data[1].y_len = 10,
-  };
-  securitySystem.cameras[0].cvMetadata = metadata;
-  // TODO implement something like metadata =
-  // getData(securitySystem.cameras[cameraNumber].metaPortNumber);
-  // TODO use CV teams data structure for the metadata
-  /*
-  struct packet_struct packet = receive();
-  int type = packet.type;
-  if (type == CV_DATA) {
-      securitySystem.cameras[0].cvMetadata = packet.payload;
+  // get metadata from the network
+  while(1) {
+    msg = receive_msg(networkServer->responder);
+    securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
+    printf("Received message\n");
+    printf("active camera: %i\n", securitySystem.guiState);
+    printf("Camera id: %i\n", msg->cam_id);
+    printf("Data type: %i\n", msg->type);
+    printf("Data length: %i\n", msg->len);
+
+    // Perform a detection of whether or not a person is in the FZ on camera n
+    aggregate_detect(&securitySystem.cameras[0]);
   }
-  */
-
-  // Perform a detection of whether or not a person is in the FZ on camera n
-  aggregate_detect(securitySystem.cameras[0]);
 
   // cleanup
+  pthread_mutex_destroy(&securitySystem.lock);
   free(securitySystem.cameras);
   pthread_join(btn_listener_thread, NULL);
+  pthread_join(hdmi_thread, NULL);
+  free(networkServer);
 
   return 0;
 }

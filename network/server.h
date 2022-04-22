@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-
+#include "packet.h"
 #ifndef SERVER_H
 #define SERVER_H
 
@@ -14,9 +14,17 @@ struct server {
     uint32_t port;
 } server;
 
+// Structure containing received message data and the associated packet header data
+typedef struct received_message {
+    int cam_id;
+    PacketType type;
+    int len;
+    void* data;
+} received_message;
+
 // Initializes a new server connection 
 struct server* new_server(const char*);
 
 // Recieves a new request from client connections
-int receive_msg(zsock_t*);
+received_message* receive_msg(zsock_t*);
 #endif

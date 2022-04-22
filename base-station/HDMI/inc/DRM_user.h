@@ -1,6 +1,8 @@
 
 #ifndef __DRM_USER__
 #define __DRM_USER__
+#include <stdint.h>
+
 
 //Pointer to memory mapped region for writing to card
 void *map;
@@ -10,7 +12,7 @@ int drm_open();
 //Initializes DRM -- uses libdrm to create structs with DRM device info
 int drm_init(int fd);
 //Maps device to virtual address
-void *drm_map();
+void *drm_map(int fd);
 //Frees virtual memory space mapped to DRM device
 void drm_unmap();
 //Print info obtained in drm_init()
