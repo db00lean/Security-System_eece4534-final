@@ -3,9 +3,10 @@
 #define __DRM_USER__
 #include <stdint.h>
 
+#define PIXEL(x, y) ((y * IMG_W * 3) + (x * 3))
 
-//Pointer to memory mapped region for writing to card
-void *map;
+// This is the default and only card on the zedboard
+#define CARD_PATH "/dev/dri/card0"
 
 //Opens device at "/dev/dri/card0"
 int drm_open();

@@ -5,23 +5,17 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <stdint.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
-
 #include <drm_fourcc.h>
+
+#include "../inc/DRM_user.h"
 
 //#include "cv_structs.h"
 //#include "draw_bounding_box.h"
 //#include "imagelib.h"
-
-
-
-#define PIXEL(x, y) ((y * IMG_W * 3) + (x * 3))
-
-
-// This is the default and only card on the zedboard
-#define cardPath "/dev/dri/card0"
 
 //Structs from libdrm that contain information about DRM objects
 drmModeRes *res;
@@ -49,7 +43,7 @@ uint32_t const colors[] = {red, green, blue};
 
 int drm_open()
 {
-    return open("/dev/dri/card0", O_RDWR);
+    return open(CARD_PATH, O_RDWR);
 }
 
 int drm_init(int fd)
@@ -86,6 +80,7 @@ int drm_init(int fd)
 
     return 0;
 }
+
 void *drm_map(int fd)
 {
     // 32 bit memory location to store address of framebuffer
@@ -155,10 +150,12 @@ void *drm_map(int fd)
     }
     return map;
 }
+
 void drm_unmap()
 {
     munmap(map, crereq.size);
 }
+
 void print_info()
 {
     //Printing information from libdrm structs, filled in drm_init()
@@ -188,6 +185,7 @@ void print_info()
     printf("vdisplay: %d\n", mode->vdisplay);
     printf("vrefresh: %d\n", mode->vrefresh);
 }
+
 int drm_close()
 {
 
@@ -197,6 +195,7 @@ int drm_close()
 
     return 0;
 }
+
 void draw_pixel(int x, int y, uint32_t ARGB)
 {
     //Local pointer to point to memory mapped display region
@@ -210,6 +209,7 @@ void draw_pixel(int x, int y, uint32_t ARGB)
 
     *pixelPtr = ARGB;
 }
+
 void demo()
 {
     int y, x;

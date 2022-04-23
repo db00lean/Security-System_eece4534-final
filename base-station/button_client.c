@@ -21,7 +21,10 @@
 #include "../common_headers/system_management.h"
 #include "../common_headers/button_client.h"
 
-/* Button action helpers */
+// global pollfd struct
+struct pollfd zedbtns_pfd;
+
+/* Debug/print functions for a basic set of button actions */
 
 void print_sys_fzones(system_status* system) {
     int ii;
@@ -32,11 +35,33 @@ void print_sys_fzones(system_status* system) {
     }
 }
 
+void print_center(struct system_status* _args) {
+    puts("Center button pressed!");
+}
+
+void print_up(struct system_status* _args) {
+    puts("Up button pressed!");
+}
+
+void print_down(struct system_status* _args) {
+    puts("Down button pressed!");
+}
+
+void print_left(struct system_status* _args) {
+    puts("Left button pressed!");
+}
+
+void print_right(struct system_status* _args) {
+    puts("Right button pressed!");
+}
+
+/* Button action helpers */
+
 void change_fz_x(system_status* system, int8_t delta) {
      pthread_mutex_lock(&system->lock);
     
     struct coordinate_data* zone = &(system->cameras[system->guiState].forbiddenZone);
-    APPLY_DELTA_ENFORCE_RANGE(zone->x_coord, delta, (CAMERA_MAX_X - zone->x_len));
+    APPLY_DELTA_ENFORCE_RANGE(zone->x_coord, delta, (COORDINATE_MAX_X - zone->x_len));
 
     pthread_mutex_unlock(&system->lock);
 #ifdef DEBUG
@@ -49,7 +74,7 @@ void change_fz_y(system_status* system, int8_t delta) {
     pthread_mutex_lock(&system->lock);
     
     struct coordinate_data* zone = &(system->cameras[system->guiState].forbiddenZone);
-    APPLY_DELTA_ENFORCE_RANGE(zone->y_coord, delta, (CAMERA_MAX_Y - zone->y_len));
+    APPLY_DELTA_ENFORCE_RANGE(zone->y_coord, delta, (COORDINATE_MAX_Y - zone->y_len));
 
     pthread_mutex_unlock(&system->lock);
 #ifdef DEBUG
@@ -90,30 +115,6 @@ void decrement_fz_y(system_status* system) {
     change_fz_y(system, FZ_DEC_DELTA); 
 }
 
-/* Debug button actions */ 
-
-
-/* Debug/print functions for a basic set of button actions */
-void print_center(struct system_status* _args) {
-    puts("Center button pressed!");
-}
-
-void print_up(struct system_status* _args) {
-    puts("Up button pressed!");
-}
-
-void print_down(struct system_status* _args) {
-    puts("Down button pressed!");
-}
-
-void print_left(struct system_status* _args) {
-    puts("Left button pressed!");
-}
-
-void print_right(struct system_status* _args) {
-    puts("Right button pressed!");
-}
-
 /* Button action Structs */
 
 struct button_actions debug_actions = {
@@ -134,14 +135,15 @@ struct button_actions basic_menu_actions = {
 
 /* Thread setup and helpers */
 
-int init_zedbtn_pollfd(struct pollfd* pfd) {
-    int zedbtns_fd = open(ZEDBTNS_FILE, O_RDONLY);
-    if (zedbtns_fd == -1) {
+int initialize_buttons() {
+    int fd = open(ZEDBTNS_FILE, O_RDONLY);
+    if (fd == -1) {
+        puts("[ Btns  ] - Could not open ZEDBTNS_FILE");
         return -1; 
     }
 
-    pfd->fd = zedbtns_fd; 
-    pfd->events = POLLIN | POLLRDNORM;
+    zedbtns_pfd.fd = fd; 
+    zedbtns_pfd.events = POLLIN | POLLRDNORM;
     return 0;
 }
 
@@ -179,27 +181,19 @@ void* run_button_client(void* thread_args) {
     int err, i; 
     button_value btn_val_buffer[BUTTON_BUFFER_MAX_SIZE];
     ssize_t bytes_read;
-    struct pollfd zedbtns_pfd;
     system_status* system = (system_status*) thread_args; 
 
-    err = init_zedbtn_pollfd(&zedbtns_pfd);
-    if (err) {
-        stop_threads(-1); //arg does not matter
-        puts("[ Btns ] - Could not open zedbtn character device file.\n");
-        return NULL;
-    }
-
-    puts("[ Btns ] - Hello from button listener thread!\n");
+    puts("[ Btns ] - Hello from button listener thread!");
 
     while(system->running) {
 #ifdef DEBUG
-        printf("[ Btns ] - Going to sleep until button is pressed...\n");
+        puts("[ Btns ] - Going to sleep until button is pressed...");
 #endif
 
         poll(&zedbtns_pfd, 1, -1);
 
 #ifdef DEBUG
-        printf("[ Btns ] - Woken up...\n");
+        puts("[ Btns ] - Woken up...");
 #endif
 
         if (system->running && CAN_READ_PFD(zedbtns_pfd)) {

@@ -69,45 +69,59 @@ int initialize_camera(int cameraNumber) {
   securitySystem.cameras[cameraNumber].forbiddenZone.y_coord = 0;
   securitySystem.cameras[cameraNumber].forbiddenZone.x_len = 150;
   securitySystem.cameras[cameraNumber].forbiddenZone.y_len = 200;
-
-
-
   return 0;
 }
 
+int initialize_cameras() {
+  enumerate_cameras(); 
+  
+  // dynamically allocate memory for cams depending on how many we have
+  securitySystem.cameras = malloc(securitySystem.numberOfCameras * sizeof(camera_module));
+  // init each camera
+  for (int ii = 0; ii < securitySystem.numberOfCameras; ii++) {
+      if(initialize_camera(ii)) {
+        return -1;
+      }
+  }
+
+  return 0; 
+} 
+
 int main(int argc, char **argv) {
-  // for button presse thread
-  pthread_t btn_listener_thread;
-  pthread_mutex_init(&securitySystem.lock, 0);
-  signal(SIGINT, stop_threads);
-  // for HDMI thread
-  pthread_t hdmi_thread;
+  int ret;
+
+  pthread_t btn_listener_thread, hdmi_thread;
 
   // init metadata network
   received_message* msg;
   const char* port = "55000";
   struct server* networkServer = new_server(port);
-  // init the cameras
-  // find out how many cams
-  enumerate_cameras();
-  // dynamically allocate memory for cams depending on how many we have
-  securitySystem.cameras =
-      malloc(securitySystem.numberOfCameras * sizeof(camera_module));
-  // init each camera
-  for (int ii = 0; ii < securitySystem.numberOfCameras; ii++) {
-    initialize_camera(ii);
+  
+  // initalize
+  if (initialize_cameras()) {
+    printf("[ Main ] - Camera initialization failed...\n"); 
+    return -1;
+  }; 
+  
+  if (initialize_buttons()) {
+    printf("[ Main ] - Button initialization failed... Make sure kernel module has been inserted\n");
+    return -1; 
   }
-  // print for debug
+
+  if (initialize_hdmi()) {
+    printf("[ Main ] - HDMI initialization failed... Make sure cable has been plugged in\n");
+    return -1; 
+  }; 
+
   print_system_info();
 
-  // launching button thread
+  signal(SIGINT, stop_threads);
+  // launching threads
   pthread_create(&btn_listener_thread, NULL, run_button_client, &securitySystem);
-
-  // launching HDMI thread
   pthread_create(&hdmi_thread, NULL, hdmi_main ,&securitySystem);
 
   // get metadata from the network
-  while(securitySystem.running) {
+  while (securitySystem.running) {
     msg = receive_msg(networkServer->responder);
     if (msg == NULL) {
       printf("[ Main ] - Received NULL msg\n");

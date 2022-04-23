@@ -60,14 +60,12 @@ struct button_actions {
 };
 
 /**
- * @brief Initializes the given pollfd struct to listen to read events on the zedbtns character device file
+ * @brief Initializes the internal pollfd struct to listen to read events on the zedbtns character device file
  *        defined by the ZEDBTNS_FILE macro
- * 
- * @param pfd - pointer to the pollfd struct to initialize
  * 
  * @return 0 on success, -1 if zedbtns file could not be opened.
  */
-int init_zedbtn_pollfd(struct pollfd* pfd);
+int initialize_buttons();
 
 /**
  * @brief Executes actions from the given set of button_actions, corresponding to what button(s) have been pressed. 

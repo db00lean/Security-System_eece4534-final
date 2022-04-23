@@ -12,7 +12,7 @@
 // includes are placeholders, header files are currently located in separate branches
 #include "../../common_headers/hdmi_main.h"
 #include "../../common_headers/system_management.h"
-#include "../common_headers/cv_structs.h"
+#include "../../common_headers/cv_structs.h"
 #include "inc/draw_bounding_box.h"
 #include "inc/drawtext.h"
 #include "inc/imagelib.h"
@@ -238,38 +238,38 @@ void show_camera_options(struct system_status * system) {
     //       There would have to be elemetns added to the system_status struct
 }
 
-/**
- * @brief renders the GUI and outputs to HDMI
- * 
- */
-void render(struct system_status * system) {
-    // TODO: figure out how to get pointer to system management struct
-    //init DRM
+int initialize_hdmi() {
     int fd, ret;
+    void* map;
+
     fd = drm_open();
     if (fd == -1) {
         printf("[ HDMI ] - Could not open DRM...\n");
-        stop_threads(0);
-        return; 
+        return -1; 
     }
 
     ret = drm_init(fd);
     if (ret != 0) {
         printf("[ HDMI ] - Could not initialize DRM...\n"); 
-        stop_threads(0);
-        return;
+        return -1;
     }
 
     map = drm_map(fd);
     if (map == MAP_FAILED) {
         printf("[ HDMI ] - Could not map DRM...\n");
-        stop_threads(0);
-        return;
+        return -1;
     }
 
     print_info();
-    while (system->running) {
+    return 0;
+}
 
+/**
+ * @brief renders the GUI and outputs to HDMI
+ * 
+ */
+void render(struct system_status * system) {
+    while (system->running) {
         // draw GUI elements
         show_background();
       //  show_camera_frame(system);
@@ -281,9 +281,7 @@ void render(struct system_status * system) {
 }
 
 void* hdmi_main(void* thread_args) {
-    // run indefinitely
     struct system_status *system = (system_status*) thread_args; 
-
     render(system);
     printf("[ HDMI ] - Exiting HDMI thread...\n");
     return NULL;
