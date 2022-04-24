@@ -177,7 +177,7 @@ cv_data GetBBoxesFromFrame()
 #endif
 }
 
-int main()
+int cv_main()
 {
   struct cv_data cv_data_current;
 #if DO_CV

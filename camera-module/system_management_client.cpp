@@ -38,23 +38,7 @@ void *stream(void *thread_args) {
 }
 // computer vision main function
 void *cv_t(void *thread_args) {
-  struct cv_data metadata1 = {
-      .num_bbox = 1,
-  };
-  struct cv_data metadata2 = {
-      .num_bbox = 22,
-  };
-
-  cv_data_q.push(metadata1);
-  cv_data_q.push(metadata2);
-
-  struct cv_data out;
-  out = cv_data_q.front();
-  cv_data_q.pop();
-  printf("meta1 should be 1? %d\n", out.num_bbox);
-  out = cv_data_q.front();
-  cv_data_q.pop();
-  printf("meta2 should be 22? %d\n", out.num_bbox);
+  GetBBoxesFromFrame();
 
 #ifdef __CV_STRUCT_H__
   // Code for when sysman has access to CV code
