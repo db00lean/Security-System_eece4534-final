@@ -66,8 +66,10 @@ int main(int argc, char *argv[]) {
    * any launch line works as long as it contains elements named pay%d. Each
    * element with pay%d names will be a stream */
   factory = gst_rtsp_media_factory_new();
-  gst_rtsp_media_factory_set_launch(factory,
-                                    "v4l2src ! jpegenc ! rtpjpegpay name=pay0");
+  gst_rtsp_media_factory_set_launch(
+      factory, "v4l2src device=/dev/video0 ! "
+               "video/x-h264,width=1920,height=1080,framerate=15/1 ! h264parse "
+               "! rtph264pay name=pay0 pt=96");
   gst_rtsp_media_factory_set_shared(factory, TRUE);
 
   /* attach the test factory to the /test url */

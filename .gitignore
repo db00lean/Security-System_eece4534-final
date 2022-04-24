@@ -4,6 +4,7 @@
 Module.markers 
 Module.symvers
 modules.order
+camera-module/main
 *.ko 
 *.mod.c
 *.mod
