@@ -5,6 +5,7 @@
 #define SYSTEM_MANAGEMENT_H
 
 #include "cv_structs.h"
+#include "../base-station/HDMI/inc/gstreamer-rx.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
@@ -25,6 +26,7 @@ typedef struct camera_module {
   int detection;                        // is a person detected on the camera
   struct coordinate_data forbiddenZone; // coords of the forbidden zone
   struct cv_data cvMetadata; // coordinates of bounding boxes/other info from CV module
+  struct camera_rx* gstream_info;
 } camera_module;
 
 // structure to hold key information of the whole system
