@@ -7,6 +7,9 @@ cv_main: cv_main.cpp
 time_test: cv_time_test.cpp 
 	g++ -g -Wall -o computer_vision.o cv_main.cpp `pkg-config --cflags --libs opencv`
 
+jack: jack_scratch.cpp
+	g++ -g -Wall -o jack.o jack_scratch.cpp -ldarknet
+
 # test: test.cpp
 	# g++ $(CFLAGS) $(LIBS) -o $@ $<
 
