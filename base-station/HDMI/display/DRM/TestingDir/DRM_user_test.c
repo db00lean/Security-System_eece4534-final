@@ -6,23 +6,10 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
 
 #include <drm_fourcc.h>
 
-
-//Struct to hold frame contents
-struct buf_context{
-	uint32_t width;
-	uint32_t height;
-	uint32_t pitch;
-	uint32_t size;
-	uint32_t handle;
-	void *bufmap;
-	uint32_t fb;
-    
-};
+#include "DRM_user_test.h"
 
 
 #define PIXEL(x, y) ((y * IMG_W * 3) + (x * 3))
@@ -38,10 +25,14 @@ drmModeModeInfo *mode;
 drmModeEncoder *encode;
 drmModeCrtc *crtc;
 drmModeFB *fb;
+int CRTC_FB;
+//Pointer to memory mapped region for writing to card
+//moved to struct
+//void *map;
 
 
 
-//Pointer to memory mapped region for writing to card void *map;
+
 
 //Defining constants for colors according to default pixel format -- 32 bit word with transparency, red, green, and blue values
 uint32_t const red = (0xff << 16);
@@ -93,113 +84,59 @@ int drm_init(int fd)
     }
     // point our "struct drmModeCrtc" information based on "CRTC_id" member defined within "struct drmModeEncoder" above
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
+    crtc = drmModeGetCrtc(fd, encode->crtc_id);
 
     // set "struct drmModeModeInfo" to the "struct drmModeModeInfo" member contained within "drmModeConnector"
     mode = conn->modes;
 
-    return 0;
-}
-
-int makeFB(int fd, struct buf_context *myBuf){
-// 32 bit memory location to store address of framebuffer
 
 
-    int ret;
-    // struct to create dumb buffer
+    CRTC_FB = crtc->crtc_id;
+    current_buff = 0;
+    //Inits frame buffers
+    int i = 0;
+    for (i = 0; i < BUFF_AMOUNTS; i++) {
+        bufs[i] = malloc(sizeof(struct buf_context));
 
 
-    struct drm_mode_create_dumb crereq;
+        bufs[i]->fd = fd;
 
-    // struct to create memory mapping for dumb buffer
-    struct drm_mode_map_dumb mreq;
 
-    // struct to destroy dumb buffer
-    struct drm_mode_destroy_dumb dreq;
 
-    // clear crereq before setting members
-    memset(&crereq, 0, sizeof(crereq));
+        bufs[i]->map = drm_map(bufs[i]->fd, bufs[i], i);
+        //print_info();
 
-    // set members of crereq based on members of "drmModeModeInfo" obtained in drm_init()
-    crereq.height = mode->vdisplay;
-    crereq.width = mode->hdisplay;
-    crereq.bpp = 32;
-
-    // create dumb DRM based on crereq members -- "handle, pitch, size will be returned", members of crereq
-    ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &crereq);
-
-    if (ret)
-    {
-        printf("Failed to make dumb buffer");
-        return -1;
     }
-    // create DRM FB using information within crereq, populated by drmIoctl call above
-    ret = drmModeAddFB(fd, (uint32_t)crereq.width, (uint32_t)crereq.height, 24,
-                       crereq.bpp, crereq.pitch, crereq.handle, &myBuf->fb);
-
-
-    if (ret)
-    {
-        printf("Failed to create DRM buffer\n");
-        printf("ret: %d\n", ret);
-        return -3;
-    }
-
-    myBuf->pitch = crereq.pitch;
-    myBuf->handle = crereq.handle;
-    myBuf->size = crereq.size;
-
-    // Clear mreq
-    memset(&mreq, 0, sizeof(mreq));
-
-    // Set memory mapping handle equal to the handle of the dumb fb just created
-    mreq.handle = myBuf->handle;
-    // Map dumb buffer based on mreq.handle
-    // This Ioctl call populates mreq.offset, used in mmap call below
-    ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
-
-    if (ret)
-    {
-        printf("Failed to map dumb buffer");
-        return -2;
-    }
-
- 
-
-    // Map memory region for DRM framebuffer using size and mapped offset of dumbbuffer
-    myBuf->bufmap = mmap(0, myBuf->size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, mreq.offset);
-
-    if (myBuf->bufmap == MAP_FAILED)
-    {
-        printf("map failed");
-        return -3;
-    }
-
-    memset(myBuf->bufmap, 0, myBuf->size);
-
-   
 
     return 0;
 }
-/*
-void *drm_map(int fd)
+void *drm_map(int fd, struct buf_context *myBuf, int id)
 {
     // 32 bit memory location to store address of framebuffer
-    uint32_t fb;
+    //printf("inside drm map\n");
+    uint32_t *fb = malloc(sizeof(uint32_t));
+    //printf("fb id %d\n", *fb);
+    fb = &myBuf->fb;
+    //printf("fb id %d\n", *fb);
+
+    printf("\n\n MAP getting crtc \n\n");
+    crtc = drmModeGetCrtc(fd, encode->crtc_id);
+    printf("crtc id %d\n", crtc->crtc_id);
+
 
     int ret;
-    // struct to create dumb buffer
 
 
     // clear crereq before setting members
-    memset(&crereq, 0, sizeof(crereq));
+    memset(&myBuf->crereq, 0, sizeof(myBuf->crereq));
 
     // set members of crereq based on members of "drmModeModeInfo" obtained in drm_init()
-    crereq.height = mode->vdisplay;
-    crereq.width = mode->hdisplay;
-    crereq.bpp = 32;
-
+    myBuf->crereq.height = mode->vdisplay;
+    myBuf->crereq.width = mode->hdisplay;
+    myBuf->crereq.bpp = 32;
+    printf("before drm ioctl\n");
     // create dumb DRM based on crereq members -- "handle, pitch, size will be returned", members of crereq
-    ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &crereq);
+    ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &myBuf->crereq);
 
     if (ret)
     {
@@ -207,9 +144,9 @@ void *drm_map(int fd)
         return MAP_FAILED;
     }
     // create DRM FB using information within crereq, populated by drmIoctl call above
-    ret = drmModeAddFB(fd, (uint32_t)crereq.width, (uint32_t)crereq.height, 24,
-                       crereq.bpp, crereq.pitch, crereq.handle, &fb);
-
+    printf("before add fb\n");
+    ret = drmModeAddFB(fd, (uint32_t)myBuf->crereq.width, (uint32_t)myBuf->crereq.height, 24,
+                       myBuf->crereq.bpp, myBuf->crereq.pitch, myBuf->crereq.handle, fb);
 
     if (ret)
     {
@@ -222,13 +159,13 @@ void *drm_map(int fd)
 
 
     // Clear mreq
-    memset(&mreq, 0, sizeof(mreq));
+    memset(&myBuf->mreq, 0, sizeof(myBuf->mreq));
 
     // Set memory mapping handle equal to the handle of the dumb fb just created
-    mreq.handle = crereq.handle;
+    myBuf->mreq.handle = myBuf->crereq.handle;
     // Map dumb buffer based on mreq.handle
     // This Ioctl call populates mreq.offset, used in mmap call below
-    ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
+    ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &myBuf->mreq);
 
     if (ret)
     {
@@ -236,31 +173,31 @@ void *drm_map(int fd)
         return MAP_FAILED;
     }
 
-    drmSetMaster(fd);
+    // drmSetMaster(fd);
 
-    // clear crtc
-    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
+    // //clear crtc
 
-    drmModeSetCrtc(fd, crtc->crtc_id, fb, 0, 0, &conn->connector_id, 1, mode);
 
-    drmDropMaster(fd);
+    drmModeSetCrtc(fd, crtc->crtc_id, *fb, 0, 0, &conn->connector_id, 1, mode);
+    printf("creating buf w CRTC ID: %d\n", crtc->crtc_id);
+
+    // drmDropMaster(fd);
 
     // Map memory region for DRM framebuffer using size and mapped offset of dumbbuffer
-    map = mmap(0, crereq.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, mreq.offset);
+    myBuf->map = mmap(0, myBuf->crereq.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, myBuf->mreq.offset );//* (1+id));
 
-    if (map == MAP_FAILED)
+    if (myBuf->map == MAP_FAILED)
     {
         printf("map failed");
         return MAP_FAILED;
     }
-    return map;
+    return myBuf->map;
 }
-*/
-/*
-void drm_unmap()
+void drm_unmap(struct buf_context *myBuf)
 {
-    munmap(map, buf.size);
-}*/
+    munmap(myBuf->map, myBuf->crereq.size);
+}
+
 void print_info()
 {
     //Printing information from libdrm structs, filled in drm_init()
@@ -299,11 +236,15 @@ int drm_close()
 
     return 0;
 }
-void draw_pixel(int x, int y, uint32_t ARGB, void* bufmap)
+void draw_pixel(int x, int y, uint32_t ARGB)
 {
+
+
     //Local pointer to point to memory mapped display region
     uint32_t *pixelPtr;
-    pixelPtr = (uint32_t *)(bufmap);
+
+    pixelPtr = (uint32_t * )(bufs[current_buff]->map);
+
 
     //Advance pixelPtr to correct row
     pixelPtr += mode->hdisplay * y;
@@ -312,7 +253,7 @@ void draw_pixel(int x, int y, uint32_t ARGB, void* bufmap)
 
     *pixelPtr = ARGB;
 }
-void demo(struct buf_context buf)
+void demo()
 {
     int y, x;
     //Loop to iterate through rows
@@ -322,25 +263,24 @@ void demo(struct buf_context buf)
         for (x = 0; x < mode->hdisplay; x++)
         {
             //Draw top 3rd of screen red
-            if (y < (mode->vdisplay / 3))
+            if (x < (mode->hdisplay / 3))
             {
-                draw_pixel(x, y, colors[0], buf.bufmap);
+                draw_pixel(x, y, colors[0]);
             }
-            //Draw middle 3rd of screen blue
-            else if (y < (mode->vdisplay * 2 / 3))
+                //Draw middle 3rd of screen blue
+            else if (x < (mode->hdisplay * 2 / 3))
             {
-                draw_pixel(x, y, colors[1],  buf.bufmap);
+                draw_pixel(x, y, colors[1]);
             }
-            //Draw bottom 3rd of screen green
+                //Draw bottom 3rd of screen green
             else
             {
-                draw_pixel(x, y, colors[2],  buf.bufmap);
+                draw_pixel(x, y, colors[2]);
             }
         }
     }
 }
-
-void demo2(struct buf_context buf)
+void demo2()
 {
     int y, x;
     //Loop to iterate through rows
@@ -350,47 +290,120 @@ void demo2(struct buf_context buf)
         for (x = 0; x < mode->hdisplay; x++)
         {
             //Draw top 3rd of screen red
-            if (y < (mode->vdisplay / 3))
+            if (x < (mode->hdisplay / 3))
             {
-                draw_pixel(x, y, colors[1], buf.bufmap);
+                draw_pixel(x, y, colors[1]);
             }
-            //Draw middle 3rd of screen blue
-            else if (y < (mode->vdisplay * 2 / 3))
+                //Draw middle 3rd of screen blue
+            else if (x < (mode->hdisplay * 2 / 3))
             {
-                draw_pixel(x, y, colors[2],  buf.bufmap);
+                draw_pixel(x, y, colors[2]);
             }
-            //Draw bottom 3rd of screen green
+                //Draw bottom 3rd of screen green
             else
             {
-                draw_pixel(x, y, colors[0],  buf.bufmap);
+                draw_pixel(x, y, colors[0]);
             }
         }
     }
 }
 
+void draw_map(int x_start, int y_start, int x_length, int y_length, uint32_t *ARGB)
+{
+    //Local pointer to point to memory mapped display region
+    
+    uint32_t *pixelPtr;
+    uint32_t row_count=0;
+    //pixelPtr = (uint32_t *)(myBuf->map);
+    pixelPtr = (uint32_t)(bufs[current_buff]->map);
+    
+    //Advance pixelPtr to correct row
+    pixelPtr += mode->hdisplay * y_start;
+    //Advance pixelPtr to correct column
+    pixelPtr += x_start;
 
-void pageFlip(int fd, struct buf_context *bufs){
+    printf("inside draw map \n");
+
+    while(row_count < y_length)
+    {
+       // printf("mem copying\n");
+        memcpy(pixelPtr, ARGB, x_length*4);
+        pixelPtr += mode->hdisplay;
+        ARGB += x_length;
+        row_count++;
+    }
+}
+
+void demoMap()
+{
+    int y;
+
+    uint32_t array_size = mode->hdisplay*mode->vdisplay;
+    uint32_t color_image[array_size];
+
+    for(int i=0; i<array_size/3; i++){
+        color_image[i] = red;
+    }
+    for(int j=array_size/3; j<array_size*2/3; j++){
+        color_image[j] = blue;
+    }
+    for(int k=array_size*2/3; k<array_size; k++){
+        color_image[k] = green;
+    }
+
+
+    draw_map(0, 0, mode->hdisplay, mode->vdisplay, color_image);
+}
+
+void pageFlip(){
+
 
 
     printf("inside page flip\n");
-    drmSetMaster(fd);
-
-    // clear crtc
-    //drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
-
-    printf("before set crtc\n");
-
-    //drmModeSetCrtc(fd, crtc->crtc_id, bufs[0].fb, 0, 0, &conn->connector_id, 1, mode);
-
-    printf("before buf id\n");
-    uint32_t buf_id = bufs->fb;
-    
-    printf("before page flip\n");
-    printf("Changing to FB: %d\n", bufs->fb);
-    drmModePageFlip(fd, crtc->crtc_id, buf_id, DRM_MODE_PAGE_FLIP_EVENT, NULL );
+    int ret;
+    int fd = bufs[current_buff]->fd;
+    void *waiting;
+    //unsigned int waiting(1);
+    printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
 
 
-    drmDropMaster(fd);
+    uint32_t *fb = malloc(sizeof(uint32_t));
+    printf("fb id %d\n", *fb);
+    fb = &bufs[current_buff]->fb;
+
+    crtc = drmModeGetCrtc(fd, encode->crtc_id);
+    ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id,  *fb,  0, 0, &conn->connector_id, 1, mode);
 
 
+    //ret = drmModePageFlip(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, waiting);
+    if ( ret){
+        printf("couldn't page flip\n");
+        if (ret == -EINVAL)
+        {
+            printf("invalid crtc id\n");
+        }
+        else if (ret == -errno) {
+            printf("other page flip error\n");
+        }
+    }
+
+    if(current_buff == 0){
+        printf("switching, %d\n", current_buff);
+        current_buff = 1;
+    }
+    else{
+        printf("switching, %d\n", current_buff);
+        current_buff = 0;
+    }
+}
+
+void changeActiveBuffer(){
+    if(current_buff == 0){
+        printf("switching, %d\n", current_buff);
+        current_buff = 1;
+    }
+    else{
+        printf("switching, %d\n", current_buff);
+        current_buff = 0;
+    }
 }

@@ -17,8 +17,11 @@
 system_status securitySystem = {
     .numberOfCameras = 0,
     .menuMode = 0,
-    .running = 1
+    .running = 0
 };
+
+// TODO ports need to be calculated via some networking code
+int ports[2] = {123, 456};
 
 void stop_threads(int _sig) {
   if (securitySystem.running) {
@@ -56,9 +59,6 @@ void enumerate_cameras() {
 
 // set important values for each camera module
 int initialize_camera(int cameraNumber) {
-  // TODO ports need to be calculated via some networking code
-  int ports[2] = {123, 456};
-
   securitySystem.cameras[cameraNumber].cameraNumber = cameraNumber;
   securitySystem.cameras[cameraNumber].sysManPortNumber = ports[cameraNumber];
   securitySystem.cameras[cameraNumber].streamPortNumber = ports[cameraNumber];
@@ -69,6 +69,11 @@ int initialize_camera(int cameraNumber) {
   securitySystem.cameras[cameraNumber].forbiddenZone.y_coord = 0;
   securitySystem.cameras[cameraNumber].forbiddenZone.x_len = 150;
   securitySystem.cameras[cameraNumber].forbiddenZone.y_len = 200;
+
+  if (cameraNumber == 0) {
+    securitySystem.cameras[0].gstream_info = init_rx_camera("some string");
+  }
+
   return 0;
 }
 
@@ -84,12 +89,22 @@ int initialize_cameras() {
       }
   }
 
+  securitySystem.running = 1;
+
   return 0; 
 } 
 
-int main(int argc, char **argv) {
-  int ret;
+int initialize_security_system() {
+  securitySystem.running = 1;
+  return pthread_mutex_init(&securitySystem.lock, 0);
+}
 
+void cleanup_cameras() {
+  cleanup_rx_camera(securitySystem.cameras[0].gstream_info);
+  free(securitySystem.cameras);
+}
+
+int main(int argc, char **argv) {
   pthread_t btn_listener_thread, hdmi_thread;
 
   // init metadata network
@@ -98,6 +113,11 @@ int main(int argc, char **argv) {
   struct server* networkServer = new_server(port);
   
   // initalize
+  if (initialize_security_system()) {
+    printf("[ Main ] - Security system initialization failed\n");
+    return -1;
+  }
+
   if (initialize_cameras()) {
     printf("[ Main ] - Camera initialization failed...\n"); 
     return -1;
@@ -136,7 +156,7 @@ int main(int argc, char **argv) {
     printf("Data length: %i\n", msg->len);
 
     // Perform a detection of whether or not a person is in the FZ on camera n
-    aggregate_detect(&securitySystem.cameras[0]);
+    area_aggregate_detect(&securitySystem, 0);
   }
 
   // cleanup
@@ -144,7 +164,7 @@ int main(int argc, char **argv) {
   pthread_join(btn_listener_thread, NULL);
   pthread_join(hdmi_thread, NULL);
 
-  free(securitySystem.cameras);
+  cleanup_cameras();
   free(networkServer);
 
   printf("[ Main ] - Security camera system exited successfully. Bye!\n");

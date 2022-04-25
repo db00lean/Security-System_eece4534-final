@@ -8,6 +8,8 @@
         "string_view": "c",
         "initializer_list": "c",
         "utility": "c",
-        "drm_user.h": "c"
+        "drm_user.h": "c",
+        "cv_structs.h": "c",
+        "system_management.h": "c"
     }
 }

@@ -203,11 +203,7 @@ void* run_button_client(void* thread_args) {
 #endif
 
             for (i = 0; i < BUTTON_BUFFER_MAX_SIZE && btn_val_buffer[i] != 0; i++) {
-#ifndef BUTTON_CLIENT_MAIN
                 exec_action(&basic_menu_actions, 1, btn_val_buffer[i], system);
-#else
-                exec_action(&debug_actions, 1, btn_val_buffer[i], system);
-#endif
             }
         }
     }
@@ -216,21 +212,3 @@ void* run_button_client(void* thread_args) {
     puts("[ Btns ] - Exiting button listener thread...");
     return NULL;
 }
-
-#ifdef BUTTON_CLIENT_MAIN
-int main(int argc, char** argv) {
-    pthread_t btn_listener_thread;
-    struct system_status sys = {
-        .menuMode = 0
-    };
-
-    signal(SIGINT, stop_button_listener);
-    pthread_create(&btn_listener_thread, NULL, run_button_client, &sys);
-
-    puts("Hello from main button listener main!");
-    // Can do other stuff in main...
-
-    pthread_join(btn_listener_thread, NULL); 
-    return 0; 
-}
-#endif
