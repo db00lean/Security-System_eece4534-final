@@ -17,7 +17,7 @@
 system_status securitySystem = {
     .numberOfCameras = 0,
     .menuMode = 0,
-    .running = 1
+    .running = 0
 };
 
 void stop_threads(int _sig) {
@@ -97,6 +97,9 @@ int main(int argc, char **argv) {
   for (int ii = 0; ii < securitySystem.numberOfCameras; ii++) {
     initialize_camera(ii);
   }
+
+  securitySystem.running = 1;
+
   // print for debug
   print_system_info();
 
