@@ -1,0 +1,24 @@
+CFLAGS=`pkg-config --cflags gstreamer-1.0 gstreamer-app-1.0 gstreamer-plugins-base-1.0` -g -Wall -Werror --std=c99 -I ./inc -O1
+LIBS = `pkg-config --libs gstreamer-1.0 gstreamer-app-1.0 gstreamer-plugins-base-1.0` -lgstvideo-1.0
+
+all: image-out rx-example
+
+rx-example: tests/rx-example.c gstreamer-rx.o imagelib.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
+
+gstreamer-rx.o: src/gstreamer-rx.c
+	$(CC) $(CFLAGS) -c $< -o $@ $(LIBS)
+
+image-out: tests/image-out.c imagelib.o
+	$(CC) $(CFLAGS) $^ -o $@
+
+imagelib.o: src/imagelib.c inc/imagelib.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm image-out rx-example *.o
+
+format:
+	clang-format -i *.c *.h
+
+.PHONY: all clean format
