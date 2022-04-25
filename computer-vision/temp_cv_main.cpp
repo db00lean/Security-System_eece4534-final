@@ -1,6 +1,12 @@
 #include <iostream>
 #include "../camera-module/cv_main.h"
 
+#include "../base-station/HDMI/imagelib.h"
+#include "../base-station/HDMI/gstreamer-rx.h"
+
+#define IMAGE_WIDTH 1920
+#define IMAGE_HEIGHT 1080
+
 // TODO: Rename "cv_main.cpp" and "cv_main.h" later on
 // TODO: Update Makefile with the new name
 // TODO: Remove <iostream> and "stdio.h" after cout testing is done
@@ -24,6 +30,17 @@ cv::Mat ImportFrame()
     }
 
     return image;
+}
+
+cv::Mat StreamFrame(struct camera_rx* cam)
+{
+  struct image * img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+
+  // TODO convert image to cvframe
+  // cv::Mat image(height, width CV_8UC4, pixel_data);
+ 
+  free_image(img);
+  return cv_frame;
 }
 
 cv_data GenerateBBoxes(cv::Mat image)
@@ -104,6 +121,11 @@ int main()
 {
     struct cv_data cv_data_current;
     cv::Mat image;
+
+    struct camera_rx * cam = init_rx_camera("cv_cam");
+    struct cv_data cv_data_current;
+    cv::Mat image;
+    // image = StreamFrame(cam);
     image = ImportFrame();
 
     if (image.empty())
