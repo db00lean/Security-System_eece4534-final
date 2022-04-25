@@ -143,7 +143,7 @@ int initialize_buttons() {
     }
 
     zedbtns_pfd.fd = fd; 
-    zedbtns_pfd.events = POLLIN | POLLRDNORM;
+    zedbtns_pfd.events = POLLIN;
     return 0;
 }
 
@@ -178,7 +178,7 @@ void exec_action(struct button_actions* actions, int n_actions, button_value btn
 }
 
 void* run_button_client(void* thread_args) {
-    int err, i; 
+    int i; 
     button_value btn_val_buffer[BUTTON_BUFFER_MAX_SIZE];
     ssize_t bytes_read;
     system_status* system = (system_status*) thread_args; 

@@ -5,8 +5,8 @@
 #include <gst/video/video.h>
 #include <gst/gst.h>
 
-#include "imagelib.h"
-#include "gstreamer-rx.h"
+#include "../inc/imagelib.h"
+#include "../inc/gstreamer-rx.h"
 
 static const char* const ENC_LOOKUP[] = {
   [IMGENC_RGB] = "RGB",

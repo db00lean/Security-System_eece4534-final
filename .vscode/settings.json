@@ -10,6 +10,8 @@
         "utility": "c",
         "drm_user.h": "c",
         "cv_structs.h": "c",
-        "system_management.h": "c"
+        "system_management.h": "c",
+        "button_client.h": "c",
+        "zed_btns.h": "c"
     }
 }

@@ -5,7 +5,7 @@
 SRCS := $(wildcard *.c)
 OBJS := $(SRCS:.c=.o)
 HDRS := $(wildcard *.h)
-LIBS := -lpthread -lczmq -lzmq -lm
+LIBS := -lpthread -lczmq -lzmq -lm $(shell pkg-config --libs gstreamer-1.0 gstreamer-app-1.0 gstreamer-plugins-base-1.0) -lgstvideo-1.0
 CFLAGS := -O -g -Wall $(shell pkg-config --cflags gstreamer-1.0 gstreamer-app-1.0 gstreamer-plugins-base-1.0) -Werror --std=c99
 DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
 
