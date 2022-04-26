@@ -13,12 +13,15 @@ int main()
 
     printf("inside main\n");
 
-    int fd, ret;
+    int fd, ret, canPageFlip;
 
     fd = drm_open();
     drmSetMaster(fd);
 
     drm_init(fd);
+
+    drmGetCap(fd, DRM_CAP_ASYNC_PAGE_FLIP, &canPageFlip);
+    printf("Ability to page flip: (0 if false, 1 if true): %d\n", canPageFlip);
 
 
     demo();
