@@ -12,11 +12,11 @@ int main() {
     // -----------------------------------------------------------------------------------------------------------------
 
     // Path to configuration file.
-    static char *cfg_file = const_cast<char *>("/home/jack/code/darknet/cfg/yolov3-tiny.cfg");
+    static char *cfg_file = const_cast<char *>("../yolo/yolov3-tiny.cfg");
     // Path to weight file.
-    static char *weight_file = const_cast<char *>("yolov3-tiny.weights");
+    static char *weight_file = const_cast<char *>("../yolo/yolov3-tiny.weights");
     // Path to a file describing classes names.
-    static char *names_file = const_cast<char *>("../../darknet/data/coco.names");
+    static char *names_file = const_cast<char *>("../yolo/coco.names");
     // This is an image to test.
     static char *input = const_cast<char *>("people.jpg");
     // Define thresholds for predicted class.
