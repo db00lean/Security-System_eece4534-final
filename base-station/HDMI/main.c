@@ -11,7 +11,7 @@
 
 // includes are placeholders, header files are currently located in separate branches
 
-#include "inc/gstreamer-rx.h"
+//#include "inc/gstreamer-rx.h"
 #include "inc/imagelib.h"
 #include "../../common_headers/hdmi_main.h"
 #include "../../common_headers/system_management.h"
@@ -20,7 +20,8 @@
 #include "inc/drawtext.h"
 #include "inc/imagelib.h"
 #include "inc/DRM_user.h"
-
+#include <stdlib.h>
+#include <stdio.h>
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
 // #include "rendering.h"
@@ -47,6 +48,11 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
 #define PEOPLE_BOX_TOP_LEFT_Y ZONE_STATUS_TOP_LEFT_Y + 300
 #define TOGGLE_OPT_BOX_TOP_LEFT_X ZONE_STATUS_TOP_LEFT_X
 #define TOGGLE_OPT_BOX_TOP_LEFT_Y PEOPLE_BOX_TOP_LEFT_Y + 300
+#define OPTION_BOX_TOP_LEFT_X RIGHT_BOX_W + ZONE_STATUS_TOP_LEFT_X + 25
+#define OPTION_BOX_TOP_LEFT_Y ZONE_STATUS_TOP_LEFT_Y
+#define OPTION_BOX_W RIGHT_BOX_W/2
+#define OPTION_BOX_H RIGHT_BOX_H * 2
+
 
 /**
  * @brief draws the background of the GUI (static elements)
@@ -73,6 +79,13 @@ void show_background(struct system_status * system) {
     //zone status block and label
     draw_boundingbox(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
     draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
+
+    draw_boundingbox(OPTION_BOX_TOP_LEFT_X, OPTION_BOX_TOP_LEFT_Y, OPTION_BOX_W + 50, 500, grey);
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+50, "Camera Options", violet, 2);
+
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+150, "Brightness", violet, 2);
+
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+350, "Contrast", violet, 2);
 
     // get the current camera information from the struct
     struct camera_module * active_camera = &system->cameras[system->guiState];
@@ -232,6 +245,13 @@ void show_camera_info(struct system_status * system) {
 void show_camera_options(struct system_status * system) {
     // TODO: no toggling options are included in the system struct, current mockup includes them.
     //       There would have to be elemetns added to the system_status struct
+
+    char cbuf[5];
+    sprintf(cbuf, "%d", system->cameras[system->guiState].brightness);
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
+    sprintf(cbuf, "%d", system->cameras[system->guiState].contrast);
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
+
 }
 
 /**
@@ -261,19 +281,51 @@ void render(struct system_status * system) {
         show_camera_info(system);
         show_camera_options(system);
         //g_usleep(166667);
+        
         pageFlip();
 
     }
 }
 
-void* hdmi_main(void* thread_args) {
+void * hdmi_main() {
     // run indefinitely
-    struct system_status *system = (system_status*) thread_args; 
+    struct system_status system; 
 
-    system->cameras[0].gstream_info = init_rx_camera("some string");
+struct coordinate_data cood2;
+    cood2.x_coord = 100;
+   cood2.y_coord = 100;
+   cood2.x_len = 50;
+   cood2.y_len = 50;
 
-    render(system);
+    system.numberOfCameras = 1;
+    system.guiState = 0;
 
-    cleanup_rx_camera(system->cameras[0].gstream_info);
+    struct camera_module cam1;
+    cam1.status = 1;
+    cam1.detection = 1;
+    cam1.forbiddenZone = cood2;
+    cam1.brightness = 50;
+    cam1.contrast = 50;
+
+ struct coordinate_data cood;
+    cood.x_coord = 200;
+   cood.y_coord = 200;
+   cood.x_len = 300;
+   cood.y_len = 300;
+
+    struct cv_data cvd;
+    cvd.num_bbox = 1;                                 // number of bounding boxes
+  cvd.box_data[0] = cood;
+
+   cam1.cvMetadata = cvd;
+
+    system.cameras = &cam1;
+    system.cameras[0].gstream_info = init_rx_camera("some string");
+
+    //system->cameras[0].gstream_info = init_rx_camera("some string");
+
+    render(&system);
+
+    cleanup_rx_camera(system.cameras[0].gstream_info);
     return NULL;
 }
