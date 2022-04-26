@@ -1,13 +1,12 @@
-libs:= -lpthread -lzmq -lczmq
+libs:= -lpthread -lzmq -lczmq $(shell pkg-config --libs gstreamer-1.0 gstreamer-rtsp-server-1.0 opencv4)
 CFLAGS:=-g $(shell pkg-config --cflags gstreamer-1.0 gstreamer-rtsp-server-1.0 opencv4) -O
-LDFLAGS:= $(shell pkg-config --libs gstreamer-1.0 gstreamer-rtsp-server-1.0 opencv4)
 
 main: system_management_client.o stream.o cv_main.o
 	(cd ../network && make cplus)
-	${CXX} -o main system_management_client.o stream.o cv_main.o ../network/client.o ../network/packet.o  ${LDFLAGS} ${libs}
+	${CXX} -o main system_management_client.o stream.o cv_main.o ../network/client.o ../network/packet.o ${libs}
 
 system_management_client.o: system_management_client.cpp
-	${CXX} -c system_management_client.cpp
+	${CXX} -c system_management_client.cpp ${CFLAGS}
 
 stream.o: stream.cpp
 	${CXX} -c stream.cpp ${CFLAGS}
