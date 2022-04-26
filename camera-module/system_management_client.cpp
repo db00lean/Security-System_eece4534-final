@@ -50,9 +50,9 @@ void *cv_t(void *thread_args)
     // TODO: Add "gstream camera_stream" as argument to GetBBoxesFromFrame (or
     // whatever the gstream type is)
     current_data = GetBBoxesFromFrame();
-    pthread_mutex_lock(&mutex;); // Lock
+    pthread_mutex_lock(&mutex); // Lock
     cv_data_q.push(current_data);
-    pthread_mutex_unlock(&mutex;); // Unlock
+    pthread_mutex_unlock(&mutex); // Unlock
   }
 
   return NULL;
