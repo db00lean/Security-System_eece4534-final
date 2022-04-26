@@ -395,7 +395,7 @@ void pageFlip() {
 
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
 
-
+    //last argument gets passed to callback function set in ev.page_flip_handler
     ret = drmModePageFlip(fd, crtc->crtc_id, *framebuffers[current_buff],
 			      DRM_MODE_PAGE_FLIP_EVENT, dev);
     
