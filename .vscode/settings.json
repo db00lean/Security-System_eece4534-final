@@ -12,6 +12,7 @@
         "cv_structs.h": "c",
         "system_management.h": "c",
         "button_client.h": "c",
-        "zed_btns.h": "c"
+        "zed_btns.h": "c",
+        "gstreamer-rx.h": "c"
     }
 }

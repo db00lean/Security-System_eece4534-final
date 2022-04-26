@@ -138,7 +138,7 @@ struct button_actions basic_menu_actions = {
 int initialize_buttons() {
     int fd = open(ZEDBTNS_FILE, O_RDONLY);
     if (fd == -1) {
-        puts("[ Btns  ] - Could not open ZEDBTNS_FILE");
+        puts("[ Btns ] - Could not open ZEDBTNS_FILE");
         return -1; 
     }
 

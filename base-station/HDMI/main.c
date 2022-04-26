@@ -114,6 +114,9 @@ void show_camera_frame(struct system_status * system) {
 
     // pass the camera number to get the frame corresponding to the active camera number
     struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_ARGB, IMAGE_WIDTH, IMAGE_HEIGHT);
+    if (img == NULL) {
+        return;
+    }
 
     // draw image to screen using draw pixel
     draw_map(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, (uint32_t*)img->buf);
@@ -261,14 +264,13 @@ void render(struct system_status * system) {
     changeActiveBuffer();
     show_background(system);
     changeActiveBuffer();
-
     //draw dynamic elements repeatedly
     while (system->running) {
         show_camera_frame(system);
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
-        //g_usleep(166667);
+        g_usleep(166667);
         pageFlip();
     }
 }
