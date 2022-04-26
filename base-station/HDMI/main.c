@@ -10,9 +10,6 @@
  */
 
 // includes are placeholders, header files are currently located in separate branches
-
-#include <arpa/inet.h>
-
 #include "inc/gstreamer-rx.h"
 #include "inc/imagelib.h"
 #include "../../common_headers/hdmi_main.h"
@@ -128,7 +125,7 @@ void show_camera_frame(struct system_status * system) {
     // int active_camera_no = system->guiState;
 
     // pass the camera number to get the frame corresponding to the active camera number
-    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_ARGB, IMAGE_WIDTH, IMAGE_HEIGHT);
+    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_BGRA, IMAGE_WIDTH, IMAGE_HEIGHT);
 
     // draw image to screen using draw pixel
     draw_map(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, (uint32_t*)img->buf);

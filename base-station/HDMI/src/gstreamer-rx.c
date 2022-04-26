@@ -12,6 +12,7 @@ static const char* const ENC_LOOKUP[] = {
   [IMGENC_RGB] = "RGB",
   [IMGENC_ARGB] = "ARGB",
   [IMGENC_BGR] = "BGR",
+  [IMGENC_BGRA] = "BGRA",
 };
 
 
