@@ -345,53 +345,59 @@ void changeActiveBuffer(){
     }
 }
 
-void pageFlip() {
+// void pageFlip() {
 
-    changeActiveBuffer();
+//     changeActiveBuffer();
 
-    //printf("inside page flip\n");
-    int ret;
-    int fd = bufs[current_buff]->fd;
-    //void *waiting;
-    //unsigned int waiting(1);
-    //printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
+//     //printf("inside page flip\n");
+//     int ret;
+//     int fd = bufs[current_buff]->fd;
+//     //void *waiting;
+//     //unsigned int waiting(1);
+//     //printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
 
 
 
     
 
-    //printf("fb id %d\n", *fb);
-    framebuffers[current_buff] = &bufs[current_buff]->fb;
-
-    crtc = drmModeGetCrtc(fd, encode->crtc_id);
-//    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0,  NULL, 1, NULL);
-//
-    ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id, *framebuffers[current_buff], 0, 0, &conn->connector_id, 1, mode);
-
-    //ret = drmModePageFlip(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, waiting);
-    if (ret) {
-        printf("couldn't page flip\n");
-        if (ret == -EINVAL) {
-            printf("invalid crtc id\n");
-        } else if (ret == -errno) {
-            printf("other page flip error\n");
-        }
-    }
-}
-
-
-// void pageFlip() {
-//     int ret;
-
-//     changeActiveBuffer();
-
-//     int fd = bufs[current_buff]->fd;
+//     //printf("fb id %d\n", *fb);
 //     framebuffers[current_buff] = &bufs[current_buff]->fb;
 
 //     crtc = drmModeGetCrtc(fd, encode->crtc_id);
+// //    drmModeSetCrtc(fd, crtc->crtc_id, 0, 0,0,  NULL, 1, NULL);
+// //
+//     ret = drmModeSetCrtc(bufs[current_buff]->fd, crtc->crtc_id, *framebuffers[current_buff], 0, 0, &conn->connector_id, 1, mode);
 
-
-//      ret = drmModePageFlip(fd, dev->crtc, buf->fb,
-// 			      DRM_MODE_PAGE_FLIP_EVENT, dev);
-                  
+//     //ret = drmModePageFlip(myBuf->fd, crtc->crtc_id, myBuf->fb, DRM_MODE_PAGE_FLIP_ASYNC, waiting);
+//     if (ret) {
+//         printf("couldn't page flip\n");
+//         if (ret == -EINVAL) {
+//             printf("invalid crtc id\n");
+//         } else if (ret == -errno) {
+//             printf("other page flip error\n");
+//         }
+//     }
 // }
+
+void pageFlipCallback() {
+    printf("page flip callback \n");
+}
+
+void pageFlip() {
+    int ret;
+    drmEventContext ev;
+    ev.page_flip_handler = pageFlipCallback;
+
+    changeActiveBuffer();
+
+    int fd = bufs[current_buff]->fd;
+    framebuffers[current_buff] = &bufs[current_buff]->fb;
+
+    crtc = drmModeGetCrtc(fd, encode->crtc_id);
+
+
+    ret = drmModePageFlip(fd, crtc->crtc_id, *framebuffers[current_buff],
+			      DRM_MODE_PAGE_FLIP_EVENT, dev);
+    
+    drmHandleEvent(fd, &ev);
+}
