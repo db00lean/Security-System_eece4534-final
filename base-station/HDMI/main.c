@@ -47,6 +47,10 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
 #define PEOPLE_BOX_TOP_LEFT_Y ZONE_STATUS_TOP_LEFT_Y + 300
 #define TOGGLE_OPT_BOX_TOP_LEFT_X ZONE_STATUS_TOP_LEFT_X
 #define TOGGLE_OPT_BOX_TOP_LEFT_Y PEOPLE_BOX_TOP_LEFT_Y + 300
+#define OPTION_BOX_TOP_LEFT_X RIGHT_BOX_W + ZONE_STATUS_TOP_LEFT_X
+#define OPTION_BOX_TOP_LEFT_Y ZONE_STATUS_TOP_LEFT_Y
+#define OPTION_BOX_W RIGHT_BOX_W
+#define OPTION_BOX_H RIGHT_BOX_H * 2
 
 
 /**
@@ -74,6 +78,13 @@ void show_background(struct system_status * system) {
     //zone status block and label
     draw_boundingbox(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
     draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
+
+    draw_boundingbox(OPTION_BOX_TOP_LEFT_X, OPTION_BOX_TOP_LEFT_Y, OPTION_BOX_W, OPTION_BOX_H, grey);
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2, OPTION_BOX_TOP_LEFT_Y+50, "Camera Option", violet, 2);
+
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2, OPTION_BOX_TOP_LEFT_Y+150, "Brightness", violet, 2);
+
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2, OPTION_BOX_TOP_LEFT_Y+150, "Contrast", violet, 2);
 
     // get the current camera information from the struct
     struct camera_module * active_camera = &system->cameras[system->guiState];
@@ -233,6 +244,14 @@ void show_camera_info(struct system_status * system) {
 void show_camera_options(struct system_status * system) {
     // TODO: no toggling options are included in the system struct, current mockup includes them.
     //       There would have to be elemetns added to the system_status struct
+
+
+    char* camera_num_display = (char*)system->cameras[system->guiState].brightness;
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+150, camera_num_display, green, 2);
+
+    camera_num_display = (char*)system->cameras[system->guiState].contrast;
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+150, camera_num_display, green, 2);
+
 }
 
 /**
@@ -284,6 +303,8 @@ struct coordinate_data cood2;
     cam1.status = 1;
     cam1.detection = 1;
     cam1.forbiddenZone = cood2;
+    cam1.brightness = 50;
+    cam1.contrast = 50;
 
  struct coordinate_data cood;
     cood.x_coord = 200;
