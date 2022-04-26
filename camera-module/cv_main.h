@@ -7,7 +7,7 @@
 
 // If USE_DARKNET is 1, cv_main uses darknet. If its 0, it uses openCV's HOG Descriptors
 #define USE_DARKNET 0   // Enable Darknet
-#define DEBUG_MODE_CV 1 // iostream stuff; can be removed at the end
+#define DEBUG_MODE_CV 0 // iostream stuff; can be removed at the end
 
 #if DO_CV
 #if USE_DARKNET
@@ -25,7 +25,7 @@
 #endif
 #endif
 
-#ifdef DO_DV
+#ifdef DO_CV
 cv::Mat ImportFrame();
 cv_data GenerateBBoxes(cv::Mat image); // Change datatype from int to whatever the frame is
 #endif
