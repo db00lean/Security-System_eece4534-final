@@ -377,9 +377,6 @@ void pageFlip() {
             printf("other page flip error\n");
         }
     }
-
-    //changeActiveBuffer();
-
 }
 
 
