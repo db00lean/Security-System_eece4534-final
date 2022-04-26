@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
   // networking stuff
   // TODO: find cam_id
   const char *port = "55000"; // Statically defined for now
-  const char *address = "127.0.0.1";
+  const char *address = "129.10.156.154";
   int cam_id;
   struct client *c = new_client(port, address);
 
@@ -80,14 +80,18 @@ int main(int argc, char *argv[])
   pthread_t cv_main_thread;
   pthread_mutex_init(&mutex, NULL);
   pthread_create(&cv_main_thread, NULL, cv_t, NULL);
+  
   struct cv_data out;
-
-  pthread_mutex_lock(&mutex); // Lock
-  out = cv_data_q.front();
-  cv_data_q.pop();
-  pthread_mutex_unlock(&mutex); // Unlock
-  send_msg(c->requester, cam_id, CV_DATA, (void *)&out, sizeof(struct cv_data) + sizeof(struct coordinate_data));
-
+  while(1){
+    if(!cv_data_q.empty()) {
+      pthread_mutex_lock(&mutex); // Lock
+      out = cv_data_q.front();
+      cv_data_q.pop();
+      pthread_mutex_unlock(&mutex); // Unlock
+      send_msg(c->requester, cam_id, CV_DATA, (void *)&out, sizeof(struct cv_data) + sizeof(struct coordinate_data));
+    }
+    usleep(100000);
+  }
   // ### cleanup ###
   pthread_join(cv_main_thread, NULL);
   pthread_mutex_destroy(&mutex);
