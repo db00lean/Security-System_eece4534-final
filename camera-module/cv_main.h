@@ -3,7 +3,7 @@
 
 #include "../common_headers/cv_structs.h"
 
-#define DO_CV 1 // Set to 0 to disable all CV and use hard coded boxes
+#define DO_CV 0 // Set to 0 to disable all CV and use hard coded boxes
 
 // If USE_DARKNET is 1, cv_main uses darknet. If its 0, it uses openCV's HOG Descriptors
 #define USE_DARKNET 0   // Enable Darknet
@@ -25,7 +25,7 @@
 #endif
 #endif
 
-#ifdef DO_CV
+#if DO_CV
 cv::Mat ImportFrame();
 cv_data GenerateBBoxes(cv::Mat image); // Change datatype from int to whatever the frame is
 #endif
