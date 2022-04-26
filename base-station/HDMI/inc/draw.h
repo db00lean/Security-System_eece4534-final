@@ -8,6 +8,7 @@ This is the header file for drawing shapes and text on the HDMI displau
 #include "../inc/DRM_user.h"
 
 #include <math.h>
+#include <string.h>
 
 #define SHAPE_RECT 0x0
 #define SHAPE_CIR 0x1
