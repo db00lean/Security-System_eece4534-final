@@ -347,7 +347,7 @@ void changeActiveBuffer(){
 
 void pageFlip() {
 
-
+    changeActiveBuffer();
 
     //printf("inside page flip\n");
     int ret;
@@ -378,6 +378,23 @@ void pageFlip() {
         }
     }
 
-    changeActiveBuffer();
+    //changeActiveBuffer();
 
 }
+
+
+// void pageFlip() {
+//     int ret;
+
+//     changeActiveBuffer();
+
+//     int fd = bufs[current_buff]->fd;
+//     framebuffers[current_buff] = &bufs[current_buff]->fb;
+
+//     crtc = drmModeGetCrtc(fd, encode->crtc_id);
+
+
+//      ret = drmModePageFlip(fd, dev->crtc, buf->fb,
+// 			      DRM_MODE_PAGE_FLIP_EVENT, dev);
+                  
+// }
