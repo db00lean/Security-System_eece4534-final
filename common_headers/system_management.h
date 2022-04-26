@@ -27,6 +27,8 @@ typedef struct camera_module {
   struct coordinate_data forbiddenZone; // coords of the forbidden zone
   struct cv_data cvMetadata; // coordinates of bounding boxes/other info from CV module
   struct camera_rx* gstream_info;
+  int brightness;
+  int contrast;
 } camera_module;
 
 // structure to hold key information of the whole system
