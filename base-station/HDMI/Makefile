@@ -18,7 +18,7 @@ all: $(TARGET) rtsp-things
 
 # hack, we should make a nicer makefile
 rtsp-things:
-	$(MAKE) -f Makefile_rtsp
+	$(MAKE) -B -f Makefile_rtsp
 
 $(TARGET): $(OBJS)
 	$(CC) $(DRM_LDFLAGS) $(GST_LIBS) -o $@ $^ -lm
