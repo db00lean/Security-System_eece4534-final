@@ -62,7 +62,7 @@ received_message* receive_msg(zsock_t* responder)
     msg->data = malloc(header->len);
     memcpy(msg->data, data, header->len);
     // TODO: send an ack to the client (probably to change in the future)
-    size = zmq_send(responder, "ACK", 3, 0);
+    // size = zmq_send(responder, "ACK", 3, 0);
     // Free memory
     free_packet(header);
     // Return message

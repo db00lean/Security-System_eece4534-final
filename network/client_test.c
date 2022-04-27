@@ -14,9 +14,9 @@ int main(void)
     struct coordinate_data cd;
     struct cv_data cv;
     const char* port = "55000";
-    const char* address = "129.10.156.154";
+    const char* address = "127.0.0.1";
     struct client* c = new_client(port, address);
-
+    // first 2 boxes
     while(1) {
         // first 2 boxes
         cv.num_bbox = 2;
@@ -31,6 +31,7 @@ int main(void)
         cd.y_len = 150;
         cv.box_data[1] = cd;
         send_msg(c->requester, 0, CV_DATA, (void*)&cv, sizeof(struct cv_data)+sizeof(struct coordinate_data));
+        printf("Message sent");
         usleep(3000000);
 
         // 2nd 2 boxes
@@ -44,7 +45,6 @@ int main(void)
         usleep(3000000);
 
     }
-    
     
     free(c);
     return 0;

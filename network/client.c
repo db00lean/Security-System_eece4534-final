@@ -14,7 +14,7 @@ struct client* new_client(const char* server_port, const char* server_address)
 {
     int err; 
     struct client* c = (struct client*) malloc(sizeof(struct client));
-    char bind_addr[22]; // @john Craffey I changed this from 20 to 22 because sprintf was giving me illegal hardware instruction with it at 20
+    char bind_addr[22]; 
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://%s:%s", server_address, server_port);
     printf("Client bind address is %s\n", bind_addr);
@@ -63,6 +63,7 @@ void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint
         fprintf(stderr, "Error sending message to server: %s\n", strerror(errno));    
     }
     assert(rc == msg_len);
+    /*
     // Wait for an ACK from the server
     while(wait_reply)
     {
@@ -70,10 +71,14 @@ void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint
         zmq_pollitem_t items[] = {{zsock_resolve(requester), 0, ZMQ_POLLIN, 0}};
         printf("After polling \n");
         int rc = zmq_poll(items, 1, REQUEST_TIMEOUT * ZMQ_POLL_MSEC);
-        printf("Polling complete\n");
-        if (rc == -1) 
+        printf("Polling complete, rc:%i\n", rc);
+        if (rc == 0) 
         {
             break;
+        }
+        if (rc == -1)
+        {
+            fprintf(stderr, "Error polling socket for reply from server: %s\n", strerror(errno));
         }
         if(items[0].revents & ZMQ_POLLIN)
         {
@@ -90,9 +95,11 @@ void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint
                 size = SERVER_RESPONSE_LENGTH;
             }
             // We have received a reply from the server and want to break out of the loop and return the pointer to its response.
-            wait_reply = 0;
             printf("Received %s from server\n", response);
+            break;
         }
     }
     return response;
+    */
+    return void;
 }
