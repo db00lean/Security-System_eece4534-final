@@ -53,6 +53,9 @@ void *cv_t(void *thread_args)
     pthread_mutex_lock(&mutex); // Lock
     cv_data_q.push(current_data);
     pthread_mutex_unlock(&mutex); // Unlock
+#if DO_CV == 0
+    usleep(100000);
+#endif
   }
 
   return NULL;
@@ -66,7 +69,7 @@ int main(int argc, char *argv[])
   // TODO: find cam_id
   const char *port = "55000"; // Statically defined for now
   const char *address = "129.10.156.154";
-  int cam_id;
+  int cam_id = 0;
   struct client *c = new_client(port, address);
 
   // ### kick off threads ###
@@ -84,6 +87,7 @@ int main(int argc, char *argv[])
   struct cv_data out;
   while(1){
     if(!cv_data_q.empty()) {
+      printf("CV q has stuff in it\n");
       pthread_mutex_lock(&mutex); // Lock
       out = cv_data_q.front();
       cv_data_q.pop();
