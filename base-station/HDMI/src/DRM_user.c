@@ -386,13 +386,14 @@ void pageFlipCallback(int fd, unsigned int sequence, unsigned int tv_sec, unsign
 
 
 void pageFlip() {
+    //printf("inside pageflip\n");
     int ret;
     drmEventContext ev;
     uint32_t* callbackPtr = malloc(sizeof(uint32_t));
     *callbackPtr = 127;
     ev.page_flip_handler = pageFlipCallback;
 
-    changeActiveBuffer();
+    //changeActiveBuffer();
 
     int fd = bufs[current_buff]->fd;
     framebuffers[current_buff] = &bufs[current_buff]->fb;
@@ -403,5 +404,9 @@ void pageFlip() {
     ret = drmModePageFlip(fd, crtc->crtc_id, *framebuffers[current_buff],
 			      DRM_MODE_PAGE_FLIP_EVENT, callbackPtr);
     
-    drmHandleEvent(fd, &ev);
+    
+    
+    
+    //drmHandleEvent(fd, &ev);
+    //printf("after handle event\n");
 }

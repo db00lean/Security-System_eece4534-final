@@ -23,19 +23,22 @@ int main()
     drmGetCap(fd, DRM_CAP_ASYNC_PAGE_FLIP, &canPageFlip);
     printf("Ability to page flip: (0 if false, 1 if true): %d\n", canPageFlip);
 
-
+    printf("demo 1\n");
     demo();
+    printf("changing buffer\n");
 
     changeActiveBuffer();
+    printf("demo 2\n");
 
     demo2();
-
-   
+    usleep(1000000);
+   pageFlip();
 
     int i = 0;
     while(1){
-        pageFlip();
-        usleep(SIXTYFPSMICROSECONDS);
+        //printf("before page flip\n");
+        //pageFlip();
+        //usleep(SIXTYFPSMICROSECONDS);
     }
 
     
