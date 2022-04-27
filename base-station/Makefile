@@ -8,13 +8,14 @@ HDRS := $(wildcard *.h)
 LIBS := -lpthread -lczmq -lzmq -lm
 CFLAGS := -O -g -Wall $(shell pkg-config --cflags gstreamer-1.0 gstreamer-app-1.0 gstreamer-plugins-base-1.0) -Werror --std=c99
 DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
+GST_LIBS:= $(shell pkg-config --libs gstreamer-1.0 gstreamer-app-1.0 gstreamer-plugins-base-1.0) -lgstvideo-1.0
 
 .PHONY: sysman_server button_listener clean
 
 sysman_server: management_server.o agg_detect.o button_client.o
 	(cd ../network && make server.o)
 	(cd HDMI && make hdmi-lib.a)
-	$(CC) -o sysman_server system_management_server.o aggregate_detect.o button_client.o ../network/server.o ../network/client.o ../network/packet.o ./HDMI/hdmi-lib.a $(DRM_LDFLAGS) $(LIBS)
+	$(CC) -o sysman_server system_management_server.o aggregate_detect.o button_client.o ../network/server.o ../network/client.o ../network/packet.o ./HDMI/hdmi-lib.a $(DRM_LDFLAGS) $(GST_LIBS) $(LIBS)
 
 button_listener: button_client_standalone.o
 	$(CC) -o $@ button_client_standalone.o $(LIBS)
