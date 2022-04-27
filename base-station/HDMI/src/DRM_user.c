@@ -379,13 +379,17 @@ void changeActiveBuffer(){
 //     }
 // }
 
-void pageFlipCallback() {
-    printf("page flip callback \n");
+void pageFlipCallback(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data) 
+{
+    printf("page flip callback %d\n", *(uint32_t *)(user_data));
 }
+
 
 void pageFlip() {
     int ret;
     drmEventContext ev;
+    uint32_t* callbackPtr = malloc(sizeof(uint32_t));
+    *callbackPtr = 127;
     ev.page_flip_handler = pageFlipCallback;
 
     changeActiveBuffer();
@@ -397,7 +401,7 @@ void pageFlip() {
 
     //last argument gets passed to callback function set in ev.page_flip_handler
     ret = drmModePageFlip(fd, crtc->crtc_id, *framebuffers[current_buff],
-			      DRM_MODE_PAGE_FLIP_EVENT, dev);
+			      DRM_MODE_PAGE_FLIP_EVENT, callbackPtr);
     
     drmHandleEvent(fd, &ev);
 }
