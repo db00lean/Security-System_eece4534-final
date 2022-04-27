@@ -31,7 +31,6 @@ struct camera_rx * init_rx_camera(char* uri) {
   // TODO handle ip address, setup rtsp stream
 
   // nice
-  // if we want RGB, just change the format!
   // rtsp with online source:
   // pipeline = gst_parse_launch(
   //     "rtspsrc location=\"rtsp://rtsp.stream/pattern\" ! rtph264depay ! "
@@ -40,17 +39,17 @@ struct camera_rx * init_rx_camera(char* uri) {
   //     NULL);
   // alternative in case you don't have network or dave decides he's had enough:
   // (or maybe you just want faster development)
-  cam->pipeline = gst_parse_launch(
-      "videotestsrc ! videoconvert ! "
-      //"video/x-raw,format=ARGB,width=960,height=540 ! "
-      "appsink name=sink max-buffers=10,drop=true",
-      NULL);
+  //cam->pipeline = gst_parse_launch(
+  //    "videotestsrc ! videoconvert ! "
+  //    //"video/x-raw,format=ARGB,width=960,height=540 ! "
+  //    "appsink name=sink max-buffers=10,drop=true",
+  //    NULL);
 
   // jpeg / cam decoding
-  // cam->pipeline = gst_parse_launch(
-  //     "rtspsrc location=rtsp://129.10.156.133:8554/test ! rtpjpegdepay ! "
-  //     "decodebin ! appsink name=sink max-buffers=10,drop=true",
-  //     NULL);
+  cam->pipeline = gst_parse_launch(
+      "rtspsrc location=rtsp://129.10.156.169:8554/test ! rtpjpegdepay ! "
+      "decodebin ! appsink name=sink max-buffers=10,drop=true",
+      NULL);
 
   gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
 
