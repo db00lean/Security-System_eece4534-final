@@ -13,13 +13,20 @@ struct server* new_server(const char* port)
     char bind_addr[19];
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://*:%s", port);
-    printf("Server bind address is %s\n", bind_addr);
+    sprintf(s->reg_port, port);
+    printf("Server registration address is %s\n", bind_addr);
     s->context = zmq_ctx_new();
     s->responder = zmq_socket(s->context, ZMQ_REP);
-    // Bind requester to socket using the given server information
-    err = zmq_bind(s->responder, bind_addr);
+    s->num_clients = 0;
+    // Bind to registration port and begin listening for new client connections
+    err = zmq_bind(s->register, bind_addr);
     assert (err == 0);
     return s;
+}
+
+int new_client()
+{
+    return 0;
 }
 
 // Recieves a new request from client connections, this is currently a BLOCKING call
