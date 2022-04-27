@@ -279,7 +279,7 @@ void render(struct system_status * system) {
     }
 }
 
-void * hdmi_main() {
+void * hdmi_main(void* thread_args) {
     // run indefinitely
     struct system_status system; 
 
