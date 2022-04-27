@@ -42,13 +42,13 @@ struct camera_rx * init_rx_camera(char* uri) {
   //cam->pipeline = gst_parse_launch(
   //    "videotestsrc ! videoconvert ! "
   //    //"video/x-raw,format=ARGB,width=960,height=540 ! "
-  //    "appsink name=sink max-buffers=10,drop=true",
+  //    "appsink name=sink max-buffers=10 drop=true",
   //    NULL);
 
   // jpeg / cam decoding
   cam->pipeline = gst_parse_launch(
       "rtspsrc location=rtsp://129.10.156.169:8554/test ! rtpjpegdepay ! "
-      "decodebin ! appsink name=sink max-buffers=10,drop=true",
+      "decodebin ! appsink name=sink max-buffers=10 drop=true",
       NULL);
 
   gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
