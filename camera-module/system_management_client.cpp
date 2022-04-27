@@ -80,8 +80,9 @@ int main(int argc, char *argv[]) {
   // TODO: find cam_id
   const char* port = "55000"; // Statically defined for now
   const char* address = "127.0.0.1";
-  int cam_id;
+  int cam_id = 0;
   struct client* c = new_client(port, address);
+  send_msg(c->requester, cam_id, CAM_INIT, nullptr, 0);
 
   // ### kick off threads ###
 

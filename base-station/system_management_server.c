@@ -101,8 +101,11 @@ int main(int argc, char **argv) {
   securitySystem.cameras =
       malloc(securitySystem.numberOfCameras * sizeof(camera_module));
   // init each camera
+  int id;
   for (int ii = 0; ii < securitySystem.numberOfCameras; ii++) {
-    initialize_camera(ii);
+    msg = receive_msg(networkServer->responder);
+    id = msg->cam_id;
+    initialize_camera(id);
   }
   // print for debug
   print_system_info();
