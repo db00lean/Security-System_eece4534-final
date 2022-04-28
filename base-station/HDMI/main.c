@@ -235,10 +235,10 @@ void show_camera_info(struct system_status * system) {
     int zone_data_y_len_scaled = zone_data->y_len / 2;
 
     
-    draw_boundingbox(zone_data->x_coord,
-                      zone_data->y_coord,
-                      zone_data->x_len,
-                      zone_data->y_len,
+    draw_boundingbox(zone_data_x_coord_scaled,
+                      zone_data_y_coord_scaled,
+                      zone_data_x_len_scaled,
+                      zone_data_y_len_scaled,
                       0xcccccc);
 
     // could draw other information, like number of people here
@@ -296,11 +296,11 @@ void render(struct system_status * system) {
 
 void * hdmi_main(void* thread_args) {
     // run indefinitely
-    struct system_status system; 
-
+    struct system_status system;
+ 
 struct coordinate_data cood2;
-    cood2.x_coord = 100;
-   cood2.y_coord = 100;
+    cood2.x_coord = 1000;
+   cood2.y_coord = 1000;
    cood2.x_len = 50;
    cood2.y_len = 50;
 
@@ -315,18 +315,19 @@ struct coordinate_data cood2;
     cam1.contrast = 50;
 
  struct coordinate_data cood;
-    cood.x_coord = 200;
-   cood.y_coord = 200;
+    cood.x_coord = 1200;
+   cood.y_coord = 600;
    cood.x_len = 300;
    cood.y_len = 300;
 
     struct cv_data cvd;
-    cvd.num_bbox = 1;                                 // number of bounding boxes
-  cvd.box_data[0] = cood;
+    cvd.num_bbox = 1;
+    cvd.box_data[0] = cood;
 
-   cam1.cvMetadata = cvd;
+    cam1.cvMetadata = cvd;
 
     system.cameras = &cam1;
+
     system.cameras[0].gstream_info = init_rx_camera("some string");
 
     //system->cameras[0].gstream_info = init_rx_camera("some string");
