@@ -142,10 +142,10 @@ int main(int argc, char **argv) {
       printf("Data length: %i\n", msg->len);
   
       // Perform a detection of whether or not a person is in the FZ on camera n
-      aggregate_detect(&securitySystem.cameras[0]);
+      aggregate_detect(&securitySystem.cameras[msg->cam_id]);
     } else {
       printf("Received INVALID message\n");
-      securitySystem.cameras[0].cvMetadata.num_bbox = 0;
+      securitySystem.cameras[msg->cam_id].cvMetadata.num_bbox = 0;
     }
   }
 
