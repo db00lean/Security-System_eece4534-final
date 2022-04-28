@@ -83,10 +83,10 @@ int initialize_camera(int cameraNumber) {
 }
 
 // make sure coordinates of bboxes are in range
-int validateCVData(cv_data* message){
+int validateCVData(struct cv_data* message){
   int isValid = 1;
   int ii;
-  for (ii = 0; ii < message->cvMetadata.num_bbox; ii++) {
+  for (ii = 0; ii < message->num_bbox; ii++) {
     if (message->box_data[ii].x_coord +  message->box_data[ii].x_len > X_RESOLUTION ||
         message->box_data[ii].y_coord +  message->box_data[ii].y_len > Y_RESOLUTION) {
           isValid = 0;
@@ -142,9 +142,10 @@ int main(int argc, char **argv) {
       printf("Data length: %i\n", msg->len);
   
       // Perform a detection of whether or not a person is in the FZ on camera n
-      area_aggregate_detect(&securitySystem, 0);
+      aggregate_detect(&securitySystem.cameras[0]);
     } else {
       printf("Received INVALID message\n");
+      securitySystem.cameras[0].cvMetadata.num_bbox = 0;
     }
   }
 
