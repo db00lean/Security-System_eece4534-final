@@ -12,6 +12,8 @@
 
 #define MAX_NUM_CAMERAS 8
 #define MAX_NUM_PEOPLE 64
+#define X_RESOLUTION 1920
+#define Y_RESOLUTION 1080
 
 // struct to hold values unique to each individual camera module
 typedef struct camera_module {

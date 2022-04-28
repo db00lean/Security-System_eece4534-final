@@ -82,6 +82,20 @@ int initialize_camera(int cameraNumber) {
   return 0;
 }
 
+// make sure coordinates of bboxes are in range
+int validateCVData(cv_data* message){
+  int isValid = 1;
+  int ii;
+  for (ii = 0; ii < message->cvMetadata.num_bbox; ii++) {
+    if (message->box_data[ii].x_coord +  message->box_data[ii].x_len > X_RESOLUTION ||
+        message->box_data[ii].y_coord +  message->box_data[ii].y_len > Y_RESOLUTION) {
+          isValid = 0;
+        }
+  }
+
+  return isValid;
+}
+
 int main(int argc, char **argv) {
   // for button presse thread
   pthread_t btn_listener_thread;
@@ -116,15 +130,22 @@ int main(int argc, char **argv) {
   // get metadata from the network
   while(1) {
     msg = receive_msg(networkServer->responder);
-    securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
-    printf("Received message\n");
-    printf("active camera: %i\n", securitySystem.guiState);
-    printf("Camera id: %i\n", msg->cam_id);
-    printf("Data type: %i\n", msg->type);
-    printf("Data length: %i\n", msg->len);
+    // check if the data in the message has valid coordinates
+    int valid = validateCVData((struct cv_data*) msg->data);
 
-    // Perform a detection of whether or not a person is in the FZ on camera n
-    aggregate_detect(&securitySystem.cameras[0]);
+    if (valid) {
+      securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
+      printf("Received valid message\n");
+      printf("active camera: %i\n", securitySystem.guiState);
+      printf("Camera id: %i\n", msg->cam_id);
+      printf("Data type: %i\n", msg->type);
+      printf("Data length: %i\n", msg->len);
+  
+      // Perform a detection of whether or not a person is in the FZ on camera n
+      area_aggregate_detect(&securitySystem, 0);
+    } else {
+      printf("Received INVALID message\n");
+    }
   }
 
   // cleanup
