@@ -290,6 +290,7 @@ void render(struct system_status * system) {
     //draw static elements
     changeActiveBuffer();
     show_background(system);
+
     while (system->running) {
         show_camera_frame(system);
         show_bounding_box(system);

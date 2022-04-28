@@ -20,8 +20,8 @@
 #include "../base-station/button_driver/zed_btns.h"
 #include "system_management.h"
 
-#define FZ_INC_DELTA (10)
-#define FZ_DEC_DELTA (-10)
+#define FZ_INC_DELTA (100)
+#define FZ_DEC_DELTA (-100)
 
 #define CAN_READ_PFD(pfd) (pfd.revents & POLLIN)
 
