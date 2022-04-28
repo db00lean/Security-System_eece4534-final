@@ -14,13 +14,14 @@
 #include "inc/imagelib.h"
 #include "../../common_headers/hdmi_main.h"
 #include "../../common_headers/system_management.h"
-#include "../common_headers/cv_structs.h"
+#include "../../common_headers/cv_structs.h"
 #include "inc/draw_bounding_box.h"
 #include "inc/drawtext.h"
 #include "inc/imagelib.h"
 #include "inc/DRM_user.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/mman.h>
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
 // #include "rendering.h"
@@ -125,7 +126,10 @@ void show_camera_frame(struct system_status * system) {
     // int active_camera_no = system->guiState;
 
     // pass the camera number to get the frame corresponding to the active camera number
-    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_BGRA, IMAGE_WIDTH, IMAGE_HEIGHT);
+    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_ARGB, IMAGE_WIDTH, IMAGE_HEIGHT);
+    if (img == NULL) {
+        return;
+    }
 
     // draw image to screen using draw pixel
     draw_map(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, (uint32_t*)img->buf);
@@ -261,34 +265,40 @@ void show_camera_options(struct system_status * system) {
 
 }
 
+int initialize_hdmi() {
+    int fd, ret;
+
+    fd = drm_open();
+    if (fd == -1) {
+        printf("[ HDMI ] - Could not open DRM...\n");
+        return -1; 
+    }
+
+    ret = drm_init(fd);
+    if (ret) {
+        printf("[ HDMI ] - Could not initialize DRM...\n"); 
+        return -1;
+    }
+    return 0;
+}
+
 /**
  * @brief renders the GUI and outputs to HDMI
  * 
  */
 void render(struct system_status * system) {
-    // TODO: figure out how to get pointer to system management struct
-    //init DRM
-    int fd;
-    fd = drm_open();
-    drm_init(fd);
-    //map = drm_map(fd);
-
-    print_info();
-
     //draw static elements
     changeActiveBuffer();
     show_background(system);
-    
-    //draw dynamic elements repeatedly
-    while (1) {
-        //show_camera_frame(system);
+    while (system->running) {
+        show_camera_frame(system);
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
-     //   g_usleep(166667);
-      //  pageFlip();
-
+        //g_usleep(166667);
+        //pageFlip();
     }
+    
 }
 
 void * hdmi_main(void* thread_args) {
@@ -297,5 +307,6 @@ void * hdmi_main(void* thread_args) {
     system->cameras[0].gstream_info = init_rx_camera("some string");
     render(system);
     cleanup_rx_camera(system->cameras[0].gstream_info);
+    printf("[ HDMI ] - Exiting HDMI thread...\n");
     return NULL;
 }

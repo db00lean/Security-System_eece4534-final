@@ -5,17 +5,11 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <stdint.h>
 
 #include <drm_fourcc.h>
 
-#include "DRM_user.h"
-
-
-#define PIXEL(x, y) ((y * IMG_W * 3) + (x * 3))
-
-
-// This is the default and only card on the zedboard
-#define cardPath "/dev/dri/card0"
+#include "../inc/DRM_user.h"
 
 //Structs from libdrm that contain information about DRM objects
 drmModeRes *res;
@@ -27,10 +21,6 @@ drmModeFB *fb;
 int CRTC_FB;
 //Pointer to memory mapped region for writing to card
 //moved to struct
-//void *map;
-
-
-
 
 
 //Defining constants for colors according to default pixel format -- 32 bit word with transparency, red, green, and blue values
@@ -41,19 +31,9 @@ uint32_t const colors[] = {red, green, blue};
 
 int drm_open()
 {
-
-    int fd;
-
-    // Opening cards
-    fd = open("/dev/dri/card0", O_RDWR);
-
-    if (fd == -1)
-    {
-        return -1;
-    }
-
-    return fd;
+    return open(CARD_PATH, O_RDWR);
 }
+
 int drm_init(int fd)
 {
     // point our "struct drmModeRes" -- contains information about current display configuration
@@ -61,7 +41,7 @@ int drm_init(int fd)
 
     if (res == NULL)
     {
-        printf("Failed to get resources");
+        printf("[ HDMI ] - Failed to get resources");
         return -1;
     }
     // point our "struct drmModeConnector" based on "connector" member defined within "struct drmModeRes" above
@@ -69,8 +49,7 @@ int drm_init(int fd)
 
     if (conn == NULL)
     {
-        printf("Can't find connector");
-        printf("Can't find connector");
+        printf("[ HDMI ] - Can't find connector\n");
         return -1;
     }
     // point our "struct drmModeEncoder" encoder information based on "encoder" member defined within "struct drmModeRes" above
@@ -78,7 +57,7 @@ int drm_init(int fd)
 
     if (encode->encoder_id != conn->encoder_id)
     {
-        printf("error with encoder and connector IDs");
+        printf("[ HDMI ] - error with encoder and connector IDs\n");
         return -1;
     }
     // point our "struct drmModeCrtc" information based on "CRTC_id" member defined within "struct drmModeEncoder" above
@@ -87,8 +66,6 @@ int drm_init(int fd)
 
     // set "struct drmModeModeInfo" to the "struct drmModeModeInfo" member contained within "drmModeConnector"
     mode = conn->modes;
-
-
 
     CRTC_FB = crtc->crtc_id;
     current_buff = 0;
@@ -102,15 +79,17 @@ int drm_init(int fd)
 
         bufs[i]->fd = fd;
 
-
-
         bufs[i]->map = drm_map(bufs[i]->fd, bufs[i], i);
-        //print_info();
-
+        
+        if (bufs[i]->map == MAP_FAILED) {
+            puts("[ HDMI ] - Failed to create DRM mapping");
+            return -1;
+        }
     }
 
     return 0;
 }
+
 void *drm_map(int fd, struct buf_context *myBuf, int id)
 {
     // 32 bit memory location to store address of framebuffer
@@ -126,7 +105,6 @@ void *drm_map(int fd, struct buf_context *myBuf, int id)
 
 
     int ret;
-
 
     // clear crereq before setting members
     memset(&myBuf->crereq, 0, sizeof(myBuf->crereq));
@@ -155,9 +133,6 @@ void *drm_map(int fd, struct buf_context *myBuf, int id)
         printf("ret: %d\n", ret);
         return MAP_FAILED;
     }
-
-
-
 
     // Clear mreq
     memset(&myBuf->mreq, 0, sizeof(myBuf->mreq));
@@ -194,6 +169,7 @@ void *drm_map(int fd, struct buf_context *myBuf, int id)
     }
     return myBuf->map;
 }
+
 void drm_unmap(struct buf_context *myBuf)
 {
     munmap(myBuf->map, myBuf->crereq.size);
@@ -228,6 +204,7 @@ void print_info()
     printf("vdisplay: %d\n", mode->vdisplay);
     printf("vrefresh: %d\n", mode->vrefresh);
 }
+
 int drm_close()
 {
 
@@ -237,6 +214,7 @@ int drm_close()
 
     return 0;
 }
+
 void draw_pixel(int x, int y, uint32_t ARGB)
 {
 
@@ -254,6 +232,7 @@ void draw_pixel(int x, int y, uint32_t ARGB)
 
     *pixelPtr = ARGB;
 }
+
 void demo()
 {
     int y, x;
