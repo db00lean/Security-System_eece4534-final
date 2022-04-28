@@ -31,13 +31,14 @@ int main()
     printf("demo 2\n");
 
     demo2();
-    usleep(1000000);
-   pageFlip();
+    //usleep(1000000);
+   //pageFlip();
 
     int i = 0;
     while(1){
         //printf("before page flip\n");
         //pageFlip();
+        pageFlipVBlank();
         //usleep(SIXTYFPSMICROSECONDS);
     }
 

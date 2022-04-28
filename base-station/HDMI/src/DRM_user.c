@@ -5,6 +5,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <time.h>
 
 #include <drm_fourcc.h>
 
@@ -381,7 +382,18 @@ void changeActiveBuffer(){
 
 void pageFlipCallback(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data) 
 {
-    printf("page flip callback %d\n", *(uint32_t *)(user_data));
+    printf("page flip callback: sec %d, fb %d\n", tv_sec, *framebuffers[current_buff]);
+    if (!(current_buff))
+    {
+        demo();
+    }
+    else {
+        demo2();
+    }
+}
+void vBlankCallback(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data) {
+    printf("vblank callback: sec %d, fb %d\n", tv_sec, *framebuffers[current_buff]);
+
 }
 
 
@@ -391,9 +403,22 @@ void pageFlip() {
     drmEventContext ev;
     uint32_t* callbackPtr = malloc(sizeof(uint32_t));
     *callbackPtr = 127;
+    
+
+    fd_set fds;
+    time_t start, cur;
+    struct timeval v;
+
+
+    srand(time(&start));
+    FD_ZERO(&fds);
+	memset(&v, 0, sizeof(v));
+	memset(&ev, 0, sizeof(ev));
+
+	ev.version = 2;
     ev.page_flip_handler = pageFlipCallback;
 
-    //changeActiveBuffer();
+    changeActiveBuffer();
 
     int fd = bufs[current_buff]->fd;
     framebuffers[current_buff] = &bufs[current_buff]->fb;
@@ -403,10 +428,104 @@ void pageFlip() {
     //last argument gets passed to callback function set in ev.page_flip_handler
     ret = drmModePageFlip(fd, crtc->crtc_id, *framebuffers[current_buff],
 			      DRM_MODE_PAGE_FLIP_EVENT, callbackPtr);
-    
-    
+
+    if (ret) {
+        printf("schedule pageflip unsuccessful\n");
+    }
+    FD_SET(0, &fds);
+    FD_SET(fd, &fds);    
+
+	while (time(&cur) < start +0.1) {
+
+		v.tv_sec = start - cur;
+
+		ret = select(fd + 1, &fds, NULL, NULL, &v);
+		if (ret < 0) {
+			fprintf(stderr, "select() failed with %d: %m\n", errno);
+			break;
+		} else if (FD_ISSET(0, &fds)) {
+			fprintf(stderr, "exit due to user-input\n");
+			break;
+		} else if (FD_ISSET(fd, &fds)) {
+			drmHandleEvent(fd, &ev);
+		}
+	}
     
     
     //drmHandleEvent(fd, &ev);
     //printf("after handle event\n");
+}
+
+void pageFlipVBlank() {
+    drmVBlank vbl;
+    drmEventContext ev;
+    int ret;
+    printf("before vbl\n");
+
+    
+    vbl.request.type = (DRM_VBLANK_RELATIVE | DRM_VBLANK_EVENT);
+    vbl.request.sequence = 1;
+    printf("after vbl\n");
+
+    int fd = bufs[current_buff]->fd;
+
+    ret = drmWaitVBlank(fd, &vbl);
+    if(ret) {
+        printf("wait vblank unsuccessful %d\n", ret);
+    }
+    
+    
+
+    fd_set fds;
+    time_t start, cur;
+    struct timeval v;
+
+
+    srand(time(&start));
+    FD_ZERO(&fds);
+	memset(&v, 0, sizeof(v));
+	memset(&ev, 0, sizeof(ev));
+
+    ev.version = 2;
+    ev.vblank_handler = vBlankCallback;
+
+    
+
+            
+    printf("outside while\n");
+
+    
+    
+    FD_SET(0, &fds);
+    FD_SET(fd, &fds);
+
+    while (time(&cur) < start + 1) {
+        //printf("inside while\n");
+		v.tv_sec = start - cur +0.1;
+
+		ret = select(fd + 1, &fds, NULL, NULL, &v);
+        //printf("after select\n");
+
+		if (ret < 0) {
+			fprintf(stderr, "select() failed with %d: %m\n", errno);
+            printf("case 1\n");
+
+			break;
+		} else if (FD_ISSET(0, &fds)) {
+			fprintf(stderr, "exit due to user-input\n");
+            printf("case 2\n");
+			break;
+		} else if (FD_ISSET(fd, &fds)) {
+            printf("drmhandle vblank\n");
+			drmHandleEvent(fd, &ev);
+		}
+        else{
+            //printf("no case\n");
+        }
+	}
+
+}
+
+void pageFlipKMS() {
+    
 }
