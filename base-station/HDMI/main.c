@@ -153,10 +153,17 @@ void show_bounding_box(struct system_status * system) {
     int b;
     for (b = 0; b < camera_metadata->num_bbox; b ++) {
         struct coordinate_data * box_data = &camera_metadata->box_data[b];
-        draw_boundingbox(box_data->x_coord,
-                          box_data->y_coord,
-                          box_data->x_len,
-                          box_data->y_len,
+        
+        //scaled down to region
+        int box_data_x_coord_scaled = box_data->x_coord / 2 + IMAGE_TOP_LEFT_X;
+        int box_data_y_coord_scaled = box_data->y_coord / 2 + IMAGE_TOP_LEFT_Y;
+        int box_data_x_len_scaled = box_data->x_len / 2;
+        int box_data_y_len_scaled = box_data->y_len / 2;
+        
+        draw_boundingbox(box_data_x_coord_scaled,
+                          box_data_y_coord_scaled,
+                          box_data_x_len_scaled,
+                          box_data_y_len_scaled,
                           red
                           );
     }
@@ -220,6 +227,14 @@ void show_camera_info(struct system_status * system) {
     // draw the forbidden zone as an overlay on the camera
     // TODO: coordinate translation between camera coordinates and HDMI coordinates
     struct coordinate_data * zone_data = &active_camera->forbiddenZone;
+    
+    //scaled down to region
+    int zone_data_x_coord_scaled = zone_data->x_coord / 2 + IMAGE_TOP_LEFT_X;
+    int zone_data_y_coord_scaled = zone_data->y_coord / 2 + IMAGE_TOP_LEFT_Y;
+    int zone_data_x_len_scaled = zone_data->x_len / 2;
+    int zone_data_y_len_scaled = zone_data->y_len / 2;
+
+    
     draw_boundingbox(zone_data->x_coord,
                       zone_data->y_coord,
                       zone_data->x_len,
