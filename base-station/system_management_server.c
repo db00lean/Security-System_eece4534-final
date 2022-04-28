@@ -77,6 +77,19 @@ int initialize_camera(int cameraNumber) {
   return 0;
 }
 
+// make sure coordinates of bboxes are in range
+int validateCVData(struct cv_data* message){
+  int isValid = 1;
+  int ii;
+  for (ii = 0; ii < message->num_bbox; ii++) {
+    if (message->box_data[ii].x_coord +  message->box_data[ii].x_len > X_RESOLUTION ||
+        message->box_data[ii].y_coord +  message->box_data[ii].y_len > Y_RESOLUTION) {
+          isValid = 0;
+        }
+  }
+  return isValid;
+}
+
 int initialize_cameras() {
   enumerate_cameras(); 
   
@@ -121,7 +134,7 @@ int main(int argc, char **argv) {
   if (initialize_cameras()) {
     printf("[ Main ] - Camera initialization failed...\n"); 
     return -1;
-  }; 
+  }
   
   if (initialize_buttons()) {
     printf("[ Main ] - Button initialization failed... Make sure kernel module has been inserted\n");
@@ -131,7 +144,7 @@ int main(int argc, char **argv) {
   if (initialize_hdmi()) {
     printf("[ Main ] - HDMI initialization failed... Make sure cable has been plugged in\n");
     return -1; 
-  }; 
+  }
 
   print_system_info();
 
@@ -147,16 +160,23 @@ int main(int argc, char **argv) {
       printf("[ Main ] - Received NULL msg\n");
       continue;
     }
+    // check if the data in the message has valid coordinates
+    int valid = validateCVData((struct cv_data*) msg->data);
 
-    securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
-    printf("Received message\n");
-    printf("active camera: %i\n", securitySystem.guiState);
-    printf("Camera id: %i\n", msg->cam_id);
-    printf("Data type: %i\n", msg->type);
-    printf("Data length: %i\n", msg->len);
-
+    if (valid) {
+      securitySystem.cameras[msg->cam_id].cvMetadata = *((struct cv_data*) msg->data);
+      printf("Received valid message\n");
+      printf("active camera: %i\n", securitySystem.guiState);
+      printf("Camera id: %i\n", msg->cam_id);
+      printf("Data type: %i\n", msg->type);
+      printf("Data length: %i\n", msg->len);
+  
     // Perform a detection of whether or not a person is in the FZ on camera n
     area_aggregate_detect(&securitySystem, 0);
+    } else {
+      printf("Received INVALID message\n");
+      securitySystem.cameras[msg->cam_id].cvMetadata.num_bbox = 0;
+    }
   }
 
   // cleanup
