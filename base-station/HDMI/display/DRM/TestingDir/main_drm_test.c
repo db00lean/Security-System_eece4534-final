@@ -1,30 +1,50 @@
-#include "./DRM_user_test.h"
 
-int main(){
+#include <stdio.h>
+#include <stdlib.h>
+#include "DRM_user_test.h"
+
+
+#define SIXTYFPSMICROSECONDS 166667
+
+int main()
+{
+    //struct buf_context *myBuf0 = malloc(sizeof(struct buf_context));
+    //struct buf_context *myBuf1 = malloc(sizeof(struct buf_context));
+
+    printf("inside main\n");
 
     int fd, ret;
-    struct buf_context bufs[2];
+
     fd = drm_open();
+    drmSetMaster(fd);
+
     drm_init(fd);
-    makeFB(fd, &bufs[0]);
-
-    //makeFB(fd, &bufs[1]);
-    //map = drm_map(fd);
-
-    print_info();
-    printf("before demo 1\n");
-    demo(bufs[0]);
-    getchar();
-    printf("after demo 1\n\n");
 
 
-    /*
-    // getchar();
-    // pageFlip(fd, &bufs[1]);
-    // printf("before demo 2\n");
-    // demo2(bufs[1]);
-    // printf("after demo 2\n");
-    // getchar();
-    // pageFlip(fd, &bufs[0]);
-    */
+    demo();
+
+    changeActiveBuffer();
+
+    demo2();
+
+   
+
+    int i = 0;
+    while(1){
+        pageFlip();
+        usleep(SIXTYFPSMICROSECONDS);
+    }
+
+    
+
+    // pageFlip(myBuf1);
+
+
+
+    drm_close();
+    drmDropMaster(fd);
+
+    drm_unmap(bufs[0]);
+    drm_unmap(bufs[1]);
 }
+

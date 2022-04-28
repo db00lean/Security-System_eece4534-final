@@ -16,23 +16,19 @@
 // global variable to track the system charateristics
 system_status securitySystem = {
     .numberOfCameras = 0,
-    .menuMode = 0
+    .menuMode = 0,
+    .running = 0
 };
 
-struct coordinate_data get_forbidden_zone(system_status* system) {
-  struct coordinate_data fz;
-  pthread_mutex_lock(&system->lock);
-  fz = system->cameras[system->guiState].forbiddenZone;
-  pthread_mutex_unlock(&system->lock);
-  return fz; 
-}
+// TODO ports need to be calculated via some networking code
+int ports[2] = {123, 456};
 
-camera_module* get_active_camera(system_status* system) {
-  camera_module* cam;
-  pthread_mutex_lock(&system->lock);
-  cam = &(system->cameras[system->guiState]);
-  pthread_mutex_unlock(&system->lock);
-  return cam;
+void stop_threads(int _sig) {
+  if (securitySystem.running) {
+    securitySystem.running = 0;
+    printf("\n[ Main ] - Terminating threads...\n");
+    printf("[ Main ] - Press any button on the ZedBoard to terminate the button thread...\n");
+  }
 }
 
 // dump all data for the system
@@ -63,9 +59,6 @@ void enumerate_cameras() {
 
 // set important values for each camera module
 int initialize_camera(int cameraNumber) {
-  // TODO ports need to be calculated via some networking code
-  int ports[2] = {123, 456};
-
   securitySystem.cameras[cameraNumber].cameraNumber = cameraNumber;
   securitySystem.cameras[cameraNumber].sysManPortNumber = ports[cameraNumber];
   securitySystem.cameras[cameraNumber].streamPortNumber = ports[cameraNumber];
@@ -77,7 +70,9 @@ int initialize_camera(int cameraNumber) {
   securitySystem.cameras[cameraNumber].forbiddenZone.x_len = 150;
   securitySystem.cameras[cameraNumber].forbiddenZone.y_len = 200;
 
-
+  if (cameraNumber == 0) {
+    securitySystem.cameras[0].gstream_info = init_rx_camera("some string");
+  }
 
   return 0;
 }
@@ -92,44 +87,79 @@ int validateCVData(struct cv_data* message){
           isValid = 0;
         }
   }
-
   return isValid;
 }
 
+int initialize_cameras() {
+  enumerate_cameras(); 
+  
+  // dynamically allocate memory for cams depending on how many we have
+  securitySystem.cameras = malloc(securitySystem.numberOfCameras * sizeof(camera_module));
+  // init each camera
+  for (int ii = 0; ii < securitySystem.numberOfCameras; ii++) {
+      if(initialize_camera(ii)) {
+        return -1;
+      }
+  }
+
+  securitySystem.running = 1;
+
+  return 0; 
+} 
+
+int initialize_security_system() {
+  securitySystem.running = 1;
+  return pthread_mutex_init(&securitySystem.lock, 0);
+}
+
+void cleanup_cameras() {
+  cleanup_rx_camera(securitySystem.cameras[0].gstream_info);
+  free(securitySystem.cameras);
+}
+
 int main(int argc, char **argv) {
-  // for button presse thread
-  pthread_t btn_listener_thread;
-  pthread_mutex_init(&securitySystem.lock, 0);
-  signal(SIGINT, stop_button_listener);
-  // for HDMI thread
-  pthread_t hdmi_thread;
+  pthread_t btn_listener_thread, hdmi_thread;
 
   // init metadata network
   received_message* msg;
   const char* port = "55000";
   struct server* networkServer = new_server(port);
-  // init the cameras
-  // find out how many cams
-  enumerate_cameras();
-  // dynamically allocate memory for cams depending on how many we have
-  securitySystem.cameras =
-      malloc(securitySystem.numberOfCameras * sizeof(camera_module));
-  // init each camera
-  for (int ii = 0; ii < securitySystem.numberOfCameras; ii++) {
-    initialize_camera(ii);
+  
+  // initalize
+  if (initialize_security_system()) {
+    printf("[ Main ] - Security system initialization failed\n");
+    return -1;
   }
-  // print for debug
+
+  if (initialize_cameras()) {
+    printf("[ Main ] - Camera initialization failed...\n"); 
+    return -1;
+  }
+  
+  if (initialize_buttons()) {
+    printf("[ Main ] - Button initialization failed... Make sure kernel module has been inserted\n");
+    return -1; 
+  }
+
+  if (initialize_hdmi()) {
+    printf("[ Main ] - HDMI initialization failed... Make sure cable has been plugged in\n");
+    return -1; 
+  }
+
   print_system_info();
 
-  // launching button thread
+  signal(SIGINT, stop_threads);
+  // launching threads
   pthread_create(&btn_listener_thread, NULL, run_button_client, &securitySystem);
-
-  // launching HDMI thread
   pthread_create(&hdmi_thread, NULL, hdmi_main ,&securitySystem);
 
   // get metadata from the network
-  while(1) {
+  while (securitySystem.running) {
     msg = receive_msg(networkServer->responder);
+    if (msg == NULL) {
+      printf("[ Main ] - Received NULL msg\n");
+      continue;
+    }
     // check if the data in the message has valid coordinates
     int valid = validateCVData((struct cv_data*) msg->data);
 
@@ -141,8 +171,8 @@ int main(int argc, char **argv) {
       printf("Data type: %i\n", msg->type);
       printf("Data length: %i\n", msg->len);
   
-      // Perform a detection of whether or not a person is in the FZ on camera n
-      aggregate_detect(&securitySystem.cameras[msg->cam_id]);
+    // Perform a detection of whether or not a person is in the FZ on camera n
+    area_aggregate_detect(&securitySystem, 0);
     } else {
       printf("Received INVALID message\n");
       securitySystem.cameras[msg->cam_id].cvMetadata.num_bbox = 0;
@@ -151,10 +181,13 @@ int main(int argc, char **argv) {
 
   // cleanup
   pthread_mutex_destroy(&securitySystem.lock);
-  free(securitySystem.cameras);
   pthread_join(btn_listener_thread, NULL);
   pthread_join(hdmi_thread, NULL);
+
+  cleanup_cameras();
   free(networkServer);
+
+  printf("[ Main ] - Security camera system exited successfully. Bye!\n");
 
   return 0;
 }
