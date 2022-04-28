@@ -148,7 +148,7 @@ int init_zedbtn_pollfd(struct pollfd* pfd) {
     }
 
     pfd->fd = zedbtns_fd; 
-    pfd->events = POLLIN | POLLRDNORM;
+    pfd->events = POLLIN;
     return 0;
 }
 

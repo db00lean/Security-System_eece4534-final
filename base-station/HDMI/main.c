@@ -10,8 +10,7 @@
  */
 
 // includes are placeholders, header files are currently located in separate branches
-
-//#include "inc/gstreamer-rx.h"
+#include "inc/gstreamer-rx.h"
 #include "inc/imagelib.h"
 #include "../../common_headers/hdmi_main.h"
 #include "../../common_headers/system_management.h"
@@ -126,17 +125,10 @@ void show_camera_frame(struct system_status * system) {
     // int active_camera_no = system->guiState;
 
     // pass the camera number to get the frame corresponding to the active camera number
-    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_ARGB, IMAGE_WIDTH, IMAGE_HEIGHT);
+    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_BGRA, IMAGE_WIDTH, IMAGE_HEIGHT);
 
     // draw image to screen using draw pixel
     draw_map(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, (uint32_t*)img->buf);
-    // for (int x = 0; x < IMAGE_WIDTH; x++) {
-    //   for (int y = 0; y < IMAGE_HEIGHT; y++) {
-    //         //uint32_t color = (img->buf[x + y + 0] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
-    //         uint32_t color = *((uint32_t*)img->buf + y * IMAGE_WIDTH + x);
-    //         draw_pixel(IMAGE_TOP_LEFT_X + x,IMAGE_TOP_LEFT_Y + y,color);
-    //     }
-    // }
 
     // free the memory space of the frame
     free_image(img);
@@ -287,7 +279,7 @@ void render(struct system_status * system) {
     }
 }
 
-void * hdmi_main() {
+void * hdmi_main(void* thread_args) {
     // run indefinitely
     struct system_status system; 
 
