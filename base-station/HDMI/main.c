@@ -279,45 +279,14 @@ void render(struct system_status * system) {
     }
 }
 
-void * hdmi_main(void* thread_args) {
+void* hdmi_main(void* thread_args) {
     // run indefinitely
-    struct system_status system; 
+    struct system_status *system = (system_status*) thread_args; 
 
-struct coordinate_data cood2;
-    cood2.x_coord = 100;
-   cood2.y_coord = 100;
-   cood2.x_len = 50;
-   cood2.y_len = 50;
+    system->cameras[0].gstream_info = init_rx_camera("some string");
 
-    system.numberOfCameras = 1;
-    system.guiState = 0;
+    render(system);
 
-    struct camera_module cam1;
-    cam1.status = 1;
-    cam1.detection = 1;
-    cam1.forbiddenZone = cood2;
-    cam1.brightness = 50;
-    cam1.contrast = 50;
-
- struct coordinate_data cood;
-    cood.x_coord = 200;
-   cood.y_coord = 200;
-   cood.x_len = 300;
-   cood.y_len = 300;
-
-    struct cv_data cvd;
-    cvd.num_bbox = 1;                                 // number of bounding boxes
-  cvd.box_data[0] = cood;
-
-   cam1.cvMetadata = cvd;
-
-    system.cameras = &cam1;
-    system.cameras[0].gstream_info = init_rx_camera("some string");
-
-    //system->cameras[0].gstream_info = init_rx_camera("some string");
-
-    render(&system);
-
-    cleanup_rx_camera(system.cameras[0].gstream_info);
+    cleanup_rx_camera(system->cameras[0].gstream_info);
     return NULL;
 }
