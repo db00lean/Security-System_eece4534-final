@@ -1,7 +1,7 @@
 /*
     Provide basic control functionality for UVC webcam
 */
-
+#include "camera_control.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,21 +21,7 @@
 
 #include <linux/videodev2.h>
 
-static char *dev_name;
 static int fd = -1;
-
-// TODO: use this to hold some control state to avoid needing to query camera before issuing some controls
-typedef struct control_state_t
-{
-    int hflip;      // boolean
-    int vflip;      // boolean
-    int rotate;     // integer [0, 360]
-    int brightness; // integer
-    int contrast;   // integer
-    int pan;        // integer
-    int tilt;       // integer
-    int zoom;       // integer
-} control_state_t;
 
 static void errno_exit(const char *s)
 {
@@ -64,7 +50,7 @@ static void close_device(void)
     fd = -1;
 }
 
-static void open_device(void)
+static void open_device(char * dev_name)
 {
     struct stat st;
 
@@ -93,72 +79,81 @@ static void open_device(void)
     }
 }
 
-// hflip
-void horizontal_flip()
-{
-    struct v4l2_control v;
+// // hflip
+// void horizontal_flip()
+// {
+//     struct v4l2_control v;
 
-    // TODO: make this a toggle control based on the current state
-    int val = 1;
-    if (-1 == xioctl(fd, V4L2_CID_HFLIP, &val))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support V4L2_CID_HFLIP\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("V4L2_CID_HFLIP");
-        }
-    }
-}
+//     // TODO: make this a toggle control based on the current state
+//     int val = 1;
+//     if (-1 == xioctl(fd, V4L2_CID_HFLIP, &val))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support V4L2_CID_HFLIP\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("V4L2_CID_HFLIP");
+//         }
+//     }
+// }
 
-// vlip
-void vertical_flip()
-{
-    // TODO: make this a toggle control based on the current state
-    int val = 1;
-    if (-1 == xioctl(fd, V4L2_CID_VFLIP, &val))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support V4L2_CID_VFLIP\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("V4L2_CID_VFLIP");
-        }
-    }
-}
+// // vlip
+// void vertical_flip()
+// {
+//     // TODO: make this a toggle control based on the current state
+//     int val = 1;
+//     if (-1 == xioctl(fd, V4L2_CID_VFLIP, &val))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support V4L2_CID_VFLIP\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("V4L2_CID_VFLIP");
+//         }
+//     }
+// }
 
-// rotate
-void rotate_video(int angle)
-{
-    if (-1 == xioctl(fd, V4L2_CID_ROTATE, &angle))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support V4L2_CID_ROTATE\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("V4L2_CID_ROTATE");
-        }
-    }
+// // rotate
+// void rotate_video(int angle)
+// {
+//     if (-1 == xioctl(fd, V4L2_CID_ROTATE, &angle))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support V4L2_CID_ROTATE\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("V4L2_CID_ROTATE");
+//         }
+//     }
 
-    // TODO: rotating to 90 and 270 will reverse the height and width of the display window,
-    // need to set new height and width using VIDIOC_S_FMT according to the selected angle
-}
+//     // TODO: rotating to 90 and 270 will reverse the height and width of the display window,
+//     // need to set new height and width using VIDIOC_S_FMT according to the selected angle
+// }
 
 // brightness
-void set_brightness(int val)
+// value range: [0, 255] (default 128)
+int set_brightness(char * dev_name, int val)
 {
+    if (val > 255 || val < 0)
+    {
+        printf("Error: brightness value outside of valid range [0, 255]!\n");
+        return 1;
+    }
+
+    open_device(dev_name);
+
     if (-1 == xioctl(fd, V4L2_CID_BRIGHTNESS, &val))
     {
         if (EINVAL == errno)
@@ -172,11 +167,24 @@ void set_brightness(int val)
             errno_exit("V4L2_CID_BRIGHTNESS");
         }
     }
+
+    close_device();
+
+    return 0;
 }
 
 // contrast
-void set_contrast(int val)
+// value range: [0, 255] (default 32)
+int set_contrast(char * dev_name, int val)
 {
+    if (val > 255 || val < 0)
+    {
+        printf("Error: contrast value outside of valid range [0, 255]!\n");
+        return 1;
+    }
+
+    open_device(dev_name);
+
     if (-1 == xioctl(fd, V4L2_CID_CONTRAST, &val))
     {
         if (EINVAL == errno)
@@ -190,147 +198,152 @@ void set_contrast(int val)
             errno_exit("V4L2_CID_CONTRAST");
         }
     }
+
+    close_device();
 }
 
-// pan (horizontal movement) by val
-//  - negative val: move left
-//  - positive val: move right
-//  - zero val: no motion
-void pan_relative(int val)
-{
-    if (-1 == xioctl(fd, V4L2_CID_PAN_RELATIVE, &val))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support V4L2_CID_PAN_RELATIVE\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("V4L2_CID_PAN_RELATIVE");
-        }
-    }
-}
+// // pan (horizontal movement) by val
+// //  - negative val: move left
+// //  - positive val: move right
+// //  - zero val: no motion
+// void pan_relative(int val)
+// {
+//     if (-1 == xioctl(fd, V4L2_CID_PAN_RELATIVE, &val))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support V4L2_CID_PAN_RELATIVE\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("V4L2_CID_PAN_RELATIVE");
+//         }
+//     }
+// }
 
-// tilt (vertical movement) by val
-//  - negative val: move down
-//  - positive val: move up
-//  - zero val: no motion
-void tilt_relative(int val)
-{
-    if (-1 == xioctl(fd, V4L2_CID_TILT_RELATIVE, &val))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support V4L2_CID_TILT_RELATIVE\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("V4L2_CID_TILT_RELATIVE");
-        }
-    }
-}
+// // tilt (vertical movement) by val
+// //  - negative val: move down
+// //  - positive val: move up
+// //  - zero val: no motion
+// void tilt_relative(int val)
+// {
+//     if (-1 == xioctl(fd, V4L2_CID_TILT_RELATIVE, &val))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support V4L2_CID_TILT_RELATIVE\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("V4L2_CID_TILT_RELATIVE");
+//         }
+//     }
+// }
 
-// reset the horizontal and vertical position of the camera back to the default position
-void reset_position()
-{
-    // TODO: not sure argument needs to be specified for button-type controls?
-    int val = 1;
-    if (-1 == xioctl(fd, V4L2_CID_TILT_RESET, &val))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support V4L2_CID_TILT_RESET\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("V4L2_CID_TILT_RESET");
-        }
-    }
-    if (-1 == xioctl(fd, V4L2_CID_PAN_RESET, &val))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support V4L2_CID_PAN_RESET\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("V4L2_CID_PAN_RESET");
-        }
-    }
-}
+// // reset the horizontal and vertical position of the camera back to the default position
+// void reset_position()
+// {
+//     // TODO: not sure argument needs to be specified for button-type controls?
+//     int val = 1;
+//     if (-1 == xioctl(fd, V4L2_CID_TILT_RESET, &val))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support V4L2_CID_TILT_RESET\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("V4L2_CID_TILT_RESET");
+//         }
+//     }
+//     if (-1 == xioctl(fd, V4L2_CID_PAN_RESET, &val))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support V4L2_CID_PAN_RESET\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("V4L2_CID_PAN_RESET");
+//         }
+//     }
+// }
 
-// xoom by val
-//  - negative val: zoom out
-//  - positive val: zoom in
-//  - zero val: no change
-void zoom_relative(int val)
-{
-    if (-1 == xioctl(fd, V4L2_CID_ZOOM_RELATIVE, &val))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support V4L2_CID_TILT_RELATIVE\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("V4L2_CID_TILT_RELATIVE");
-        }
-    }
-}
+// // xoom by val
+// //  - negative val: zoom out
+// //  - positive val: zoom in
+// //  - zero val: no change
+// void zoom_relative(int val)
+// {
+//     if (-1 == xioctl(fd, V4L2_CID_ZOOM_RELATIVE, &val))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support V4L2_CID_TILT_RELATIVE\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("V4L2_CID_TILT_RELATIVE");
+//         }
+//     }
+// }
 
-// reset to default zoom position
-void zoom_reset()
-{
-    // TODO: not yet sure what the default zoom value is. Documentation says the value is driver-specific
-    // so we will have to use VIDIOC_QUERY_EXT_CTRL to query and get the default value to find this
-    int val = 0;
-    if (-1 == xioctl(fd, V4L2_CID_TILT_RELATIVE, &val))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support V4L2_CID_TILT_RELATIVE\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("V4L2_CID_TILT_RELATIVE");
-        }
-    }
-}
+// // reset to default zoom position
+// void zoom_reset()
+// {
+//     // TODO: not yet sure what the default zoom value is. Documentation says the value is driver-specific
+//     // so we will have to use VIDIOC_QUERY_EXT_CTRL to query and get the default value to find this
+//     int val = 0;
+//     if (-1 == xioctl(fd, V4L2_CID_TILT_RELATIVE, &val))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support V4L2_CID_TILT_RELATIVE\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("V4L2_CID_TILT_RELATIVE");
+//         }
+//     }
+// }
 
-// reset USB bus for the device
-void reset_usb_bus()
-{
-    int val = 0;
-    if (-1 == xioctl(fd, USBDEVFS_RESET, &val))
-    {
-        if (EINVAL == errno)
-        {
-            fprintf(stderr, "%s doesn't support USBDEVFS_RESET\\n",
-                    dev_name);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            errno_exit("USBDEVFS_RESET");
-        }
-    }
-}
+// // reset USB bus for the device
+// void reset_usb_bus()
+// {
+//     int val = 0;
+//     if (-1 == xioctl(fd, USBDEVFS_RESET, &val))
+//     {
+//         if (EINVAL == errno)
+//         {
+//             fprintf(stderr, "%s doesn't support USBDEVFS_RESET\\n",
+//                     dev_name);
+//             exit(EXIT_FAILURE);
+//         }
+//         else
+//         {
+//             errno_exit("USBDEVFS_RESET");
+//         }
+//     }
+// }
 
 // print info about supported controls (min, max, default values for controls)
-void print_controls_info()
+void print_controls_info(char * dev_name)
 {
+    open_device(dev_name);
+
+    printf("Info about available camera controls:\n");
     struct v4l2_queryctrl queryctrl;
     int supported_ctrls[] = {V4L2_CID_HFLIP,
                              V4L2_CID_VFLIP,
@@ -373,21 +386,9 @@ void print_controls_info()
             printf("%s: min %d, max %d, default %d\n", queryctrl.name, queryctrl.minimum, queryctrl.maximum, queryctrl.default_value);
         }
     }
+    printf("\n\n");
+
+    close_device();
 }
 
 // NOTE: disable/enable stream can also be provided, but probably should be handled via gstreamer server
-
-int main(int argc, char **argv)
-{
-    dev_name = "/dev/video0";
-
-    open_device();
-    // todo: do we need to call VIDIOC_QUERYCAP ioctl after opening the device?
-    print_controls_info();
-
-    /* test whatever controls from above */
-
-    close_device();
-    fprintf(stderr, "\\n");
-    return 0;
-}

@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../camera/camera_control/camera_control.h"
 #ifndef __CV_STRUCT_H__
 #include "../common_headers/system_management.h"
 #else
@@ -101,6 +102,9 @@ int main(int argc, char *argv[]) {
   cv_data_q.pop();
   pthread_mutex_unlock(&mutex);  // Unlock
   send_msg(c->requester, cam_id, CV_DATA, (void*)&out, sizeof(struct cv_data)+sizeof(struct coordinate_data));
+
+
+  // TODO: receive control msgs from base station for adjusting brightness/contrast?
 
 
   // ### cleanup ###
