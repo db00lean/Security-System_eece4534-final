@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
     int valid = validateCVData((struct cv_data*) msg->data);
 
     if (valid) {
-      securitySystem.cameras[0].cvMetadata = *((struct cv_data*) msg->data);
+      securitySystem.cameras[msg->cam_id].cvMetadata = *((struct cv_data*) msg->data);
       printf("Received valid message\n");
       printf("active camera: %i\n", securitySystem.guiState);
       printf("Camera id: %i\n", msg->cam_id);
