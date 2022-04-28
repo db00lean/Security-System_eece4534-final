@@ -283,7 +283,7 @@ void render(struct system_status * system) {
 
     //draw dynamic elements repeatedly
     while (1) {
-        //show_camera_frame(system);
+        show_camera_frame(system);
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
