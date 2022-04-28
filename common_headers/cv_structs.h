@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 #define MAX_B_BOXES 8
-#define CAMERA_MAX_X 600
-#define CAMERA_MAX_Y 600
+#define COORDINATE_MAX_X 1920
+#define COORDINATE_MAX_Y 1080
 
 // holds the data needed to draw an individual bounding box
 struct coordinate_data {

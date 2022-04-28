@@ -9,11 +9,11 @@
 struct server* new_server(const char* port)
 {
     int err;
-    struct server* s = malloc(sizeof(server));
+    struct server* s = malloc(sizeof(struct server));
     char bind_addr[19];
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://*:%s", port);
-    printf("Server bind address is %s\n", bind_addr);
+    printf("[ ZMQ  ] - Server bind address is %s\n", bind_addr);
     s->context = zmq_ctx_new();
     s->responder = zmq_socket(s->context, ZMQ_REP);
     // Bind requester to socket using the given server information
@@ -43,15 +43,21 @@ received_message* receive_msg(zsock_t* responder)
     {
         fprintf(stderr, "Error initializing message structure\n");
     }
-    printf("Before receive call\n");
+    printf("[ ZMQ  ] - Before receive call\n");
     size = zmq_msg_recv(&zmsg, responder, 0);
     if (size == -1)
     {
         // TODO: Check error code and see if a retry is necessary 
-        fprintf(stderr, "Error receiving messages: %s\n", strerror(errno));
+        if (errno == EINTR) {
+            // syscall was interrupted by Cntrl-C
+            printf("[ ZMQ  ] - Receiving message interrupted, exiting...\n");
+        }
+        else {
+            fprintf(stderr, "[ ZMQ  ] - Error receiving messages: %s\n", strerror(errno));
+        }
         return NULL;
     }
-    printf("Received message from client\n");
+    printf("[ ZMQ  ] - Received message from client\n");
     // Parse out header and data, store in received_message structure to return to caller
     header = parse_packet_header(&zmsg);
     data = parse_packet_data(&zmsg);

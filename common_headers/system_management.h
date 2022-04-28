@@ -31,6 +31,7 @@ typedef struct camera_module {
 
 // structure to hold key information of the whole system
 typedef struct system_status {
+  char running;
   int numberOfCameras;
   int guiState; // which camera the GUI is supposed to be viewing. 0-indexed, indexes into list of cameras.
   camera_module *cameras;
@@ -40,20 +41,12 @@ typedef struct system_status {
 } system_status;
 
 /**
- * @brief Gets the forbidden zone of the currently active camera. Uses system_status's 
- *        lock for synchronization.
+ * @brief Stops execution of the button and hdmi threads in response to SIGINT (or any other signal, really). 
+ *        Make sure to pass this to the signal syscall (see man 2 signal)
+ *        Otherwise, threads will not clean up properly!
  * 
- * @param system - the system_status struct containing the forbidden zone 
- * @return struct coordinate_data - read-only copy of the forbidden zone
+ * @param _sig - Signal (as an integer). Unused
  */
-struct coordinate_data get_forbidden_zone(system_status* system);
-
-/**
- * @brief Get the active camera object. Uses system_status's lock for synchronization
- * 
- * @param system - the system_status struct containing all the camera modules
- * @return camera_module* - pointer to the currently active camera
- */
-camera_module* get_active_camera(system_status* system);
+void stop_threads(int _sig);
 
 #endif
