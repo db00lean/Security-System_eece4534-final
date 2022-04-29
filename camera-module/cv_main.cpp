@@ -1,6 +1,6 @@
 #include "cv_main.h"
 
-#include "../HDMI/inc/imagelib.h"
+#include "../HDMI/rtsp-rx/imagelib.h"
 #include "../HDMI/inc/gstreamer-rx.h"
 
 #define NUM_CHANNELS 3
@@ -59,6 +59,9 @@ cv::Mat StreamFrame(struct camera_rx* cam)
   const int * sizes = {img->height, img->width, NUM_CHANNELS};
   const size_t * steps = {(img->width * sizeof(char)), sizeof(char)};
   cv::Mat cv_frame = cv::Mat::Mat(ARRAY_DIM, sizes, CV_8UC3, (void *) img->buf, steps);
+
+  // write to an image file to test if this works
+  bool result = cv::imwrite("streamed_frame_test.png", cv_frame);
  
   free_image(img);
   return cv_frame;
