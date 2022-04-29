@@ -1,10 +1,13 @@
 #include "cv_main.h"
 
-#include "../HDMI/rtsp-rx/imagelib.h"
+#include "../HDMI/inc/imagelib.h"
 #include "../HDMI/inc/gstreamer-rx.h"
 
 #define NUM_CHANNELS 3
 #define ARRAY_DIM 3
+
+#define IMAGE_HEIGHT 100
+#define IMAGE_WIDTH 100
 
 #if DEBUG_MODE_CV
 #include <iostream>
@@ -58,9 +61,11 @@ cv::Mat StreamFrame(struct camera_rx* cam)
   struct image * img = create_image(IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
 
   // convert image to cv Mat
-  const int * sizes = {img->height, img->width, NUM_CHANNELS};
-  const size_t * steps = {(img->width * sizeof(char)), sizeof(char)};
-  cv::Mat cv_frame = cv::Mat::Mat(ARRAY_DIM, sizes, CV_8UC3, (void *) img->buf, steps);
+  //const int sizes[3] = {img->height, img->width, NUM_CHANNELS};
+  //const size_t steps[2] = {(img->width * sizeof(char)), sizeof(char)};
+  //cv::Mat cv_frame = cv::Mat(ARRAY_DIM, &sizes, CV_8UC3, (void *) img->buf, &steps);
+  cv::Mat frame = cv::Mat(sizeof(img->buf), 1, CV_8UC3, img->buf).clone();
+  cv::Mat cv_frame = frame.reshape(0, IMAGE_HEIGHT);
 
   // write to an image file to test if this works
   bool result = cv::imwrite("streamed_frame_test.png", cv_frame);
@@ -240,5 +245,7 @@ int cv_main()
   }
 #endif
 
+  //cleanup_rx_camera(cam);
+  //free_rx_camera(cam);
   return 0;
 }
