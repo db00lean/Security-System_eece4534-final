@@ -4,7 +4,9 @@
 #define PACKET_H
 
 typedef enum PacketType {
-    CV_DATA
+    CV_DATA,
+    CLIENT_HELLO,
+    SERVER_HELLO
 } PacketType;
 
 typedef struct packet_header {

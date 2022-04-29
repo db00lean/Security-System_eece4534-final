@@ -16,9 +16,7 @@
 
 // Structure containing the information for 0mq client connection
 struct client {
-
   void *context;
-
   zsock_t *requester;
 };
 
@@ -26,5 +24,5 @@ struct client {
 struct client *new_client(const char *, const char *);
 
 // Sends a new message using the given client connection, does not wait for a response from the server
-void *send_msg(zsock_t *, int, PacketType, void *, uint32_t);
+void send_msg(zsock_t *, int, PacketType, void *, uint32_t);
 #endif

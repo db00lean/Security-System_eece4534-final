@@ -36,10 +36,9 @@ struct client* new_client(const char* server_port, const char* server_address)
 
 // Sends a new request to the previously initialized 0mq client, this currently polls periodically for an acknowledgement 
 // from the server and exits once received, tiemout will be adjusted upon discussing with other sysman members.
-void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint32_t len)
+void send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint32_t len)
 {
-    char* response = (char*) malloc(SERVER_RESPONSE_LENGTH);
-    int wait_reply = 1;
+    //char* response = (char*) malloc(SERVER_RESPONSE_LENGTH);
     int msg_len;
     packet_header* p;
     zmq_msg_t msg;
@@ -63,6 +62,7 @@ void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint
         fprintf(stderr, "Error sending message to server: %s\n", strerror(errno));    
     }
     assert(rc == msg_len);
+    return;
     /*
     // Wait for an ACK from the server
     while(wait_reply)
@@ -101,5 +101,4 @@ void* send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint
     }
     return response;
     */
-    return void;
 }

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <stdlib.h>
 
 // Initializes a new server connection 
 struct server* new_server(const char* port)
@@ -13,20 +14,15 @@ struct server* new_server(const char* port)
     char bind_addr[19];
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://*:%s", port);
-    sprintf(s->reg_port, port);
+    sprintf("%i", s->reg_port, port);
     printf("Server registration address is %s\n", bind_addr);
     s->context = zmq_ctx_new();
-    s->responder = zmq_socket(s->context, ZMQ_REP);
+    s->register_s = zmq_socket(s->context, ZMQ_REP);
     s->num_clients = 0;
     // Bind to registration port and begin listening for new client connections
-    err = zmq_bind(s->register, bind_addr);
+    err = zmq_bind(s->register_s, bind_addr);
     assert (err == 0);
     return s;
-}
-
-int new_client()
-{
-    return 0;
 }
 
 // Recieves a new request from client connections, this is currently a BLOCKING call
@@ -34,8 +30,6 @@ int new_client()
 received_message* receive_msg(zsock_t* responder)
 {
     int size;
-    // TODO: Will need to implement a maximum packet size if data becomes too large
-    int max = 256;
     // The zeromq message to store bytes read off socket in
     zmq_msg_t zmsg;
     // The message structure to store the data parsed in and return to the caller
@@ -74,4 +68,44 @@ received_message* receive_msg(zsock_t* responder)
     free_packet(header);
     // Return message
     return msg;
+}
+
+// Registers a new client and saves its state to the given server
+int register_client(struct server* s)
+{
+    received_message* msg;
+    int port = atoi(s->reg_port);
+    const char* client_port[5];
+    char bind_addr[19];
+    int lower = 10000;
+    int upper = 65535;
+    
+    // Only support MAX_NUM clients at a time
+    // TODO: Add a way to check for existing taken ports
+    if (s->num_clients >= MAX_CLIENTS) 
+    {
+        return -1;
+    }
+    // Receive new client registration on port (assume caller has checked that there is one to receive)
+    msg = receive_msg(s->register_s);
+    // TODO: Verify that we received a register packet, otherwise throw it away
+    // TODO: Some magic checking to make sure that the camera id they request here is valid, crypto stuff if time
+    // For now assume they are who they say they are and setup the connection
+    // Generate a random port that isn't the registration port
+    while(port != atoi(s->reg_port))
+    {
+        port = rand() % (upper - lower + 1)) + lower;
+    }
+    sprintf(client_port, "%i", port);
+    printf("Generated port number for new client is %s\n", client_port);
+    // Create a new zeromq pair socket on that port number
+    // Initialize the context and the requester socket
+    sprintf(bind_addr, "tcp://*:%s", client_port);
+    printf("Server listening for new client on %s\n", bind_addr);
+    s->clients[msg->cam_id] = zmq_socket(s->context, ZMQ_PAIR);
+    err = zmq_bind(s->clients[msg->cam_id], bind_addr);
+    // Make sure we've successfully bound to that socket
+    assert (err == 0);
+    // Send back the assigned port number
+    return 0;
 }

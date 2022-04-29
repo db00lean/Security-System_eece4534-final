@@ -6,15 +6,16 @@
 #include "packet.h"
 #ifndef SERVER_H
 #define SERVER_H
+
 #define MAX_CLIENTS 2
 // Structure containing the information for server connection,
 // This struct requires the clients to first register on the initaitlized port number, then a new registered client connection
 // Will become available under the array of clients.
 struct server {
     void* context;
-    zsock_t* register;
-    const char* reg_port;
-    zsock_t* num_clients;
+    zsock_t* register_s;
+    char* reg_port[5];
+    uint32_t num_clients;
     zsock_t* clients[MAX_CLIENTS];
 } server;
 
@@ -30,7 +31,7 @@ typedef struct received_message {
 struct server* new_server(const char*);
 
 // Registers a new client connection to this server, returns 0 if successful and -1 if there was an issue registering
-int new_client();
+int register_client(struct server*);
 
 // Recieves a new request from client connections
 received_message* receive_msg(zsock_t*);
