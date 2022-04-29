@@ -53,7 +53,9 @@ cv::Mat ImportFrame()
 
 cv::Mat StreamFrame(struct camera_rx* cam)
 {
-  struct image * img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+  // struct image * img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+
+  struct image * img = create_image(IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
 
   // convert image to cv Mat
   const int * sizes = {img->height, img->width, NUM_CHANNELS};
@@ -63,6 +65,11 @@ cv::Mat StreamFrame(struct camera_rx* cam)
   // write to an image file to test if this works
   bool result = cv::imwrite("streamed_frame_test.png", cv_frame);
  
+  if(!result)
+  {
+    std::cout << "Unable to write test image\n";
+  }
+
   free_image(img);
   return cv_frame;
 }
