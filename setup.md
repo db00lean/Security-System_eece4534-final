@@ -64,13 +64,13 @@ For `czmq`, you first need `libzmq`. `cd` into wherever you want to keep the sou
 
 Once you reach this point, you should be all set to start cross-compiling with czmq.
 
-## Install opencv for cross-compilation
+### Setup to compile kernel modules
 
-TODO
-
-## HDMI dependencies
-
-TODO
+With extended SDK, some things need to be built. With SDK sourced:
+```
+cd ~/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/lib/modules/5.10.0-esl/build
+make
+```
 
 # Run-time dependencies
 
@@ -87,4 +87,6 @@ TODO
 ## Base Station
 
 TODO
+
+
 
