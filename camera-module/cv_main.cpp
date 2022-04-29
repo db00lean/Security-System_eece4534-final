@@ -1,5 +1,11 @@
 #include "cv_main.h"
 
+#include "../base-station/HDMI/imagelib.h"
+#include "../base-station/HDMI/gstreamer-rx.h"
+
+#define NUM_CHANNELS 3
+#define ARRAY_DIM 3
+
 #if DEBUG_MODE_CV
 #include <iostream>
 #endif
@@ -15,7 +21,6 @@
 // TODO: Remove <iostream> and "stdio.h" after cout testing is done
 
 // Loads an image into the image buffer
-// TODO: Convert ImportFrame() to C++
 #if DO_CV
 cv::Mat ImportFrame()
 {
@@ -44,6 +49,20 @@ cv::Mat ImportFrame()
   return image;
 }
 #endif
+
+
+cv::Mat StreamFrame(struct camera_rx* cam)
+{
+  struct image * img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+
+  // convert image to cv Mat
+  const int * sizes = {img->height, img->width, NUM_CHANNELS};
+  const size_t * steps = {(img->width * sizeof(char)), sizeof(char)};
+  cv::Mat cv_frame = cv::Mat::Mat(ARRAY_DIM, sizes, CV_8UC3, (void *) img->buf, steps);
+ 
+  free_image(img);
+  return cv_frame;
+}
 
 #if DO_CV
 cv_data GenerateBBoxes(cv::Mat image)
@@ -161,6 +180,7 @@ cv_data GetBBoxesFromFrame()
 #if DO_CV
   cv::Mat frame;         // Could consolidate this into one mega-line, but this looks cleaner
   frame = ImportFrame(); // TODO: Update ImportFrame() to get frame from gstream; accepts "gstream camera_stream" as argument
+  // frame = StreamFrame();
   return GenerateBBoxes(frame);
 #else
   // Hard-code 4 bounding boxes
@@ -183,6 +203,11 @@ int cv_main()
 #if DO_CV
   cv::Mat image;
   image = ImportFrame();
+
+  /**
+  struct camera_rx * cam = init_rx_camera("cv_cam");
+  image = StreamFrame(cam);
+  **/
 
   if (image.empty())
   {
