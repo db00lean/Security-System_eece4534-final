@@ -128,6 +128,11 @@ void show_camera_frame(struct system_status * system) {
     // pass the camera number to get the frame corresponding to the active camera number
     struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_ARGB, IMAGE_WIDTH, IMAGE_HEIGHT);
     if (img == NULL) {
+        //display no signal text
+        draw_rectangle_filled(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, orange);
+        draw_text_scale(IMAGE_TOP_LEFT_X + IMAGE_WIDTH / 2, IMAGE_TOP_LEFT_Y + IMAGE_HEIGHT / 2, "NO SIGNAL", black, 5);
+
+        //then return
         return;
     }
 
@@ -243,7 +248,7 @@ void show_camera_info(struct system_status * system) {
                       zone_data_y_coord_scaled,
                       zone_data_x_len_scaled,
                       zone_data_y_len_scaled,
-                      0xcccccc);
+                      green);
 
     // could draw other information, like number of people here
 }
