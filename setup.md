@@ -16,6 +16,10 @@ wget https://www1.coe.neu.edu/~esl/EECE4534/$SDK_INST
 bash ./$SDK_INST -d ~/eece4534sdk
 ```
 
+Recommend creating command alias `setup-4534` to source the environment:
+`echo "alias setup-4534='source ~/eece4534sdk/environment-setup-cortexa9t2hf-neon-esl-linux-gnueabi && PS1=\"(4534) \$PS1\"'" >> ~/.bashrc`
+
+
 Optionally download qemu zedboard image:
 ```
 cd ~/eece4534sdk/sysroots/cortexa9t2hf-neon-esl-linux-gnueabi/
@@ -25,7 +29,7 @@ wget https://www1.coe.neu.edu/~esl/EECE4534/esl-eece4534-image-zedboard-esl.wic
 
 ## Installing czmq dependencies to be able to cross-compile
 
-nstall czmq for cross-compilation on the ZedBoards: https://github.com/zeromq/czmq#building-on-linux-and-macos
+Install czmq for cross-compilation on the ZedBoards: https://github.com/zeromq/czmq#building-on-linux-and-macos
 
 Scroll to the section "Building on Linux and macOS". We're gonna be following these directions, with some modifications. 
 
