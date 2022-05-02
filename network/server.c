@@ -74,11 +74,10 @@ received_message* receive_msg(zsock_t* responder)
 // Registers a new client and saves its state to the given server
 int register_client(struct server* s, int cam_id)
 {
-    received_message* msg;
     struct client_conn* client = (struct client_conn*)malloc(sizeof(client_conn));
     int reg_port = atoi(s->reg_port);
     int bind_port = reg_port; 
-    char client_port[5];
+    char client_port[8];
     char bind_addr[19];
     int lower = 10000;
     int upper = 65535;
@@ -90,12 +89,11 @@ int register_client(struct server* s, int cam_id)
         return -1;
     }
     // Receive new client registration on port (assume caller has checked that there is one to receive)
-    msg = receive_msg(s->register_s);
     // TODO: Verify that we received a register packet, otherwise throw it away
     // TODO: Some magic checking to make sure that the camera id they request here is valid, crypto stuff if time
     // For now assume they are who they say they are and setup the connection
     // Generate a random port that isn't the registration port
-    while(bind_port != reg_port)
+    while(bind_port == reg_port)
     {
         bind_port = rand() % ((upper - lower + 1) + lower);
     }
@@ -105,12 +103,17 @@ int register_client(struct server* s, int cam_id)
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://*:%s", client_port);
     printf("Server listening for new client on %s\n", bind_addr);
-    s->clients[msg->cam_id] = client;
-    s->clients[msg->cam_id]->sock = zmq_socket(s->context, ZMQ_PAIR);
-    s->clients[msg->cam_id]->port = bind_port;
-    int err = zmq_bind(s->clients[msg->cam_id], bind_addr);
+    s->clients[cam_id] = client;
+    s->clients[cam_id]->sock = zmq_socket(s->context, ZMQ_PAIR);
+    s->clients[cam_id]->port = bind_port;
+    int err = zmq_bind(s->clients[cam_id]->sock, bind_addr);
     // Make sure we've successfully bound to that socket
+    if (err == -1)
+    {
+        fprintf(stderr, "Error binding to new socket: %s\n", strerror(errno));    
+    }
     assert (err == 0);
+    s->num_clients+=1;
     // Send back 0 indicating success
     return 0;
 }
@@ -122,7 +125,15 @@ void send_client_msg(struct server* s, int cam_id, PacketType type, void* buff, 
     int msg_len;
     packet_header* p;
     zmq_msg_t msg;
-    zsock_t* client_socket = s->clients[cam_id]->sock;
+    zsock_t* client_socket;
+    if (type == SERVER_HELLO)
+    {
+        client_socket = s->register_s;
+    }
+    else 
+    {
+        client_socket = s->clients[cam_id]->sock;
+    }
     // calculate total message length
     msg_len = sizeof(packet_header)+len;
     int rc = zmq_msg_init_size(&msg, msg_len);

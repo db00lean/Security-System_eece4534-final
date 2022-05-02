@@ -13,22 +13,22 @@ int main(void)
     const char* port = "55000";
     struct server* s = new_server(port);
     struct client_hello* ch;
-    while (1) {
-        msg = receive_msg(s->register_s);
-        ch = (struct client_hello*)msg->data;
-        if (msg->type == CLIENT_HELLO)
-        {
+    msg = receive_msg(s->register_s);
+    ch = (struct client_hello*)msg->data;
+    if (msg->type == CLIENT_HELLO)
+    {
             printf("Processing new client\n");
             register_client(s, ch->cam_id);
             printf("Registered new client\n: %i", s->clients[ch->cam_id]->port);
-        }
-        else {
-            printf("Received message\n");
-            printf("Camera id: %i\n", msg->cam_id);
-            printf("Data type: %i\n", msg->type);
-            printf("Data length: %i\n", msg->len);
-            free(s);
-        }
-    }   
+            send_server_hello(s, ch->cam_id);
+    }
+    while (1) {
+        msg = receive_msg(s->clients[0]->sock);
+        printf("Received message\n");
+        printf("Camera id: %i\n", msg->cam_id);
+        printf("Data type: %i\n", msg->type);
+        printf("Data length: %i\n", msg->len);
+    }
+    free(s);
     return 0;
 }

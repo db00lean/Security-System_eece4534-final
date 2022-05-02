@@ -37,7 +37,7 @@ received_message* receive_server_msg(zsock_t* responder)
         fprintf(stderr, "Error receiving messages: %s\n", strerror(errno));
         return NULL;
     }
-    printf("Received message from client\n");
+    printf("Received message from server\n");
     // Parse out header and data, store in received_message structure to return to caller
     header = parse_packet_header(&zmsg);
     data = parse_packet_data(&zmsg);
