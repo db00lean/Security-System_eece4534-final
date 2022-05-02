@@ -7,7 +7,7 @@ static void draw_char_scale(int x, int y, char c, uint32_t color, int scale);
 
 struct shapeObj * create_circle(uint16_t r, bool hasFill, uint32_t fill, bool hasOutline, uint32_t outline)
 {
-	struct shapeObj * circle = malloc(sizeof(struct shapeObj));
+	struct shapeObj * circle = (struct shapeObj *)malloc(sizeof(struct shapeObj));
 	circle->type = SHAPE_CIR
 	circle->dim1 = r;
 	circle->dim2 = r;
@@ -21,7 +21,7 @@ struct shapeObj * create_circle(uint16_t r, bool hasFill, uint32_t fill, bool ha
 
 struct shapeObj * create_rect(uint16_t l, uint16_t h, bool hasFill, uint32_t fill, bool hasOutline, uint32_t outline)
 {
-	struct shapeObj * rect = malloc(sizeof(struct shapeObj));
+	struct shapeObj * rect = (struct shapeObj *)malloc(sizeof(struct shapeObj));
 	rect->type = SHAPE_RECT
 	rect->dim1 = l;
 	rect->dim2 = h;

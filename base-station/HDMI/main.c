@@ -16,11 +16,19 @@
 #include "../../common_headers/hdmi_main.h"
 #include "../../common_headers/system_management.h"
 #include "../common_headers/cv_structs.h"
-#include "inc/draw_bounding_box.h"
-#include "inc/drawtext.h"
 #include "inc/imagelib.h"
 #include "inc/DRM_user.h"
 
+// IMPORTANT: 1 will run David's changes, 0 will run the old code
+#define DAVID_CODE 1
+
+
+#if DAVID_CODE
+    #include "inc/draw.h"
+#else
+    #include "inc/draw_bounding_box.h"
+    #include "inc/drawtext.h"
+#endif
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
 // #include "rendering.h"
@@ -54,6 +62,60 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
  */
 
 void show_background(struct system_status * system) {
+
+#if DAVID_CODE
+    //top name
+    draw_text(TITLE_X, TITLE_Y, "Security System", light_green, 4);
+
+    //camera fram border
+    static struct shapeObj * frm_bdr = NULL;
+    if (!frm_bdr) frm_bdr = create_rect(IMAGE_WIDTH, IMAGE_HEIGHT, false, black, true, white);
+    draw_shape(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, frm_bdr, JUSTIFY_L, JUSTIFY_T);
+
+    //shown box and people status block
+    static struct shapeObj * opt_box = NULL;
+    if (!opt_box) opt_box = create_rect(RIGHT_BOX_W, RIGHT_BOX_H, false, black, true, grey);
+    static struct shapeObj * opt_cir = NULL;
+    if (!opt_cir) opt_cir = create_cir(CAM_SEL_BOX_RAD, true, green, false, black);
+
+    draw_shape(TOGGLE_OPT_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
+    draw_text(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, "Show Boxes: ", light_green, 2);
+    draw_shape(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, opt_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_text(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, "Show Person #: ", light_green, 2);
+    draw_shape(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, opt_cir, JUSTIFY_C, JUSTIFY_C);
+
+    //people count block and label
+    draw_shape(PEOPLE_BOX_TOP_LEFT_X, PEOPLE_BOX_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
+    draw_text(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 50, "Number of People", violet, 2);
+
+    //zone status block and label
+    draw_shape(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
+    draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
+
+    //get the current camera information from the struct
+    struct camera_module * active_camera = &system->cameras[system->guiState];
+
+    //camera_boxes in bottom row
+    char num_str[3];
+
+    static struct shapeObj * cmr_box = NULL;
+    if (!cmr_box) cmr_box = create_rect(CAM_SEL_BOX_DIM, CAM_SEL_BOX_DIM, true, grey, true, violet);
+
+    for (int i = 0; i < system->numberOfCameras; i++) {
+        draw_shape(CAM_SEL_BOX_X + (i * 200),
+                   CAM_SEL_BOX_Y,
+                   cmr_box,
+                   JUSTIFY_L,
+                   JUSTIFY_T);
+
+        sprintf(num_str, "%d", i+1);
+        draw_text(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_DIM / 2),
+                  CAM_SEL_BOX_Y + (CAM_SEL_BOX_DIM / 2),
+                  num_str, violet, 10);
+    }
+
+#else
+
     //top name
     draw_text_scale(TITLE_X, TITLE_Y, "Security System", light_green, 4);
     //camera frame border
@@ -101,6 +163,7 @@ void show_background(struct system_status * system) {
         // draw "off"
     }
 
+#endif
 }
 
 /**
@@ -141,6 +204,32 @@ void show_bounding_box(struct system_status * system) {
 
     //people count number - dynamic
     int camera_num_display = camera_metadata->num_bbox + 48;
+
+#if DAVID_CODE
+
+    static struct shapeObj * bkgrnd = NULL;
+    if (!bkgrnd) bkgrnd = create_rect(24, 24, true, black, false, black);
+
+    draw_shape(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 - 12, PEOPLE_BOX_TOP_LEFT_Y + 88, bkgrnd, JUSTIFY_L, JUSTIFY_T);
+    draw_text(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 100, (char *)&camera_num_display, 0x00ff00, 3);
+
+    static struct shapeObj * bbox = NULL;
+    if (!bbox) bbox = create_rect(0, 0, false, black, true, red);
+
+    int b;
+    for (b = 0; b < camera_metadata->num_bbox; b ++) {
+        struct coordinate_data * box_data = &camera_metadata->box_data[b];
+        bbox->dim1 = box_data->x_len;
+        bbox->dim2 = box_data->y_len;
+        draw_shape(box_data->x_coord,
+                   box_data->y_coord,
+                   bbox,
+                   JUSTIFY_L,
+                   JUSTIFY_T);
+    }
+
+#else
+
     draw_rectangle_filled(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 - 12, PEOPLE_BOX_TOP_LEFT_Y + 88, 24, 24, black);
     draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 100, (char *)&camera_num_display, 0x00ff00, 3);
 
@@ -155,6 +244,8 @@ void show_bounding_box(struct system_status * system) {
                           red
                           );
     }
+
+#endif
 }
 
 /**
@@ -163,8 +254,73 @@ void show_bounding_box(struct system_status * system) {
  * @param system Struct holding system information
  */
 void show_camera_info(struct system_status * system) {
+
     // get the current camera information from the struct
     struct camera_module * active_camera = &system->cameras[system->guiState];
+
+#if DAVID_CODE
+
+    //zone status - dynamic
+    if (active_camera->detection) {
+        //first clear old text
+        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", black, 3);
+        // draw "ZONE OCCUPIED"
+        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", red, 3);
+    } else {
+        //first clear old text
+        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", black, 3);
+        // draw "ZONE VACANT"
+        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", green, 3);
+    }
+
+    static struct shapeObj * sel_box = NULL;
+    if (!sel_box) sel_box = create_rect(CAM_SEL_BOX_DIM + 6, CAM_SEL_BOX_DIM + 6, false, black, true, red);
+
+    static struct shapeObj * sts_cir = NULL;
+    if (!sts_cir) sts_cir = create_cir(CAM_SEL_BOX_RAD, true, red, true, black);
+
+    for (int i = 0; i < system->numberOfCameras; i++) {
+
+        if (i == system->guiState) {
+            draw_shape(CAM_SEL_BOX_X + (i * 200) - 3,
+                       CAM_SEL_BOX_Y - 3,
+                       sel_box,
+                       JUSTIFY_L,
+                       JUSTIFY_T);
+        }
+        else {
+            draw_shape(CAM_SEL_BOX_X + (i * 200) - 3,
+                       CAM_SEL_BOX_Y - 3,
+                       sel_box,
+                       JUSTIFY_L,
+                       JUSTIFY_T);;        
+        }
+        //camera status circles
+        if (system->cameras[i].status) {
+            sts->fillColor = green;
+        } else {
+            sts->fillColor = red;
+        }
+
+        draw_shape(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_RAD / 2),
+                   CAM_SEL_BOX_Y + (CAM_SEL_BOX_RAD / 2),
+                   sts_cir,
+                   JUSTIFY_C,
+                   JUSTIFY_C);
+    }
+
+    // draw the forbidden zone as an overlay on the camera
+    // TODO: coordinate translation between camera coordinates and HDMI coordinates
+    struct coordinate_data * zone_data = &active_camera->forbiddenZone;
+
+    static struct shapeObj * zone_box = NULL;
+    if (!zone_box) zone_box = create_rect(zone_data->x_len, zone_data->y_len, false, black, true, grey);
+
+    draw_shape(zone_data->x_coord, zone_data->y_coord, zone_box, JUSTIFY_L, JUSTIFY_T);
+
+    // could draw other information, like number of people here
+
+#else
 
     //zone status - dynamic
     if (active_camera->detection) {
@@ -222,6 +378,8 @@ void show_camera_info(struct system_status * system) {
                       0xcccccc);
 
     // could draw other information, like number of people here
+
+#endif
 }
 
 /**
