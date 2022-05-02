@@ -111,7 +111,7 @@ int send_client_hello(int cam_id, zsock_t* registration_port, struct client* c)
 struct client* new_client(const char* server_port, const char* server_address, int cam_id)
 {
     int err;
-    zsock_t* register_port;
+    zsock_t* registration_port;
     int client_port_num;
     struct client* c = (struct client*) malloc(sizeof(struct client));
     char bind_addr[25]; 
@@ -120,19 +120,19 @@ struct client* new_client(const char* server_port, const char* server_address, i
     printf("Client bind address is %s\n", bind_addr);
     c->context = zmq_ctx_new();
     // Create a client connection to the registration socket on the server side
-    register_port = (zsock_t*)zmq_socket(c->context, ZMQ_REQ);
-    if (!register_port) {
+    registration_port = (zsock_t*)zmq_socket(c->context, ZMQ_REQ);
+    if (!registration_port) {
         fprintf(stderr, "Error creating connection to registration socket on server: %s\n", strerror(errno));    
     }
-    assert(register_port != 0);
-    err = zmq_connect(register_port, bind_addr);
+    assert(registration_port != 0);
+    err = zmq_connect(registration_port, bind_addr);
     if (err == -1)
     {
         fprintf(stderr, "Error connecting to server on registration socket: %s\n", strerror(errno)); 
     }
     assert(err == 0);
-    zmq_close((void*)register_port);
-    client_port_num = send_client_hello(cam_id, register_port, c);
+    client_port_num = send_client_hello(cam_id, registration_port, c);
+    zmq_close((void*)registration_port);
     // Initialize the new client socket
     sprintf(bind_addr, "tcp://%s:%i", server_address, client_port_num);
     printf("Client bind address is now %s\n", bind_addr);

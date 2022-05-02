@@ -20,7 +20,7 @@ struct client_conn {
 struct server {
     void* context;
     zsock_t* register_s;
-    char reg_port[5];
+    char reg_port[9];
     uint32_t num_clients;
     struct client_conn* clients[MAX_CLIENTS];
 } server;

@@ -12,7 +12,7 @@ struct server* new_server(const char* port)
 {
     int err;
     struct server* s = malloc(sizeof(server));
-    char bind_addr[19];
+    char bind_addr[25];
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://*:%s", port);
     sprintf(s->reg_port, "%s", port);

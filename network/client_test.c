@@ -45,7 +45,6 @@ int main(void)
         usleep(3000000);
 
     }
-    
     free(c);
     return 0;
 }
