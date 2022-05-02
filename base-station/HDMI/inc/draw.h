@@ -8,6 +8,7 @@ This is the header file for drawing shapes and text on the HDMI displau
 #include "../inc/DRM_user.h"
 
 #include <math.h>
+#include <stdbool.h>
 #include <string.h>
 
 #define SHAPE_RECT 0x0
@@ -19,6 +20,8 @@ This is the header file for drawing shapes and text on the HDMI displau
 
 #define JUSTIFY_T 0x0
 #define JUSTIFY_B 0x2
+
+extern char fontdata_8x8[];
 
 struct textObj
 {

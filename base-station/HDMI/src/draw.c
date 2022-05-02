@@ -1,4 +1,5 @@
 #include "../inc/draw.h"
+#include <stdlib.h>
 
 static void draw_rect(uint16_t x_start, uint16_t y_start, struct shapeObj * rect);
 static void draw_circle(uint16_t x_center, uint16_t y_center, struct shapeObj * circle);
@@ -7,8 +8,8 @@ static void draw_char_scale(int x, int y, char c, uint32_t color, int scale);
 
 struct shapeObj * create_circle(uint16_t r, bool hasFill, uint32_t fill, bool hasOutline, uint32_t outline)
 {
-	struct shapeObj * circle = malloc(sizeof(struct shapeObj));
-	circle->type = SHAPE_CIR
+	struct shapeObj * circle = (struct shapeObj *)malloc(sizeof(struct shapeObj));
+	circle->type = SHAPE_CIR;
 	circle->dim1 = r;
 	circle->dim2 = r;
 	circle->hasFill = hasFill || !hasOutline;
@@ -21,8 +22,8 @@ struct shapeObj * create_circle(uint16_t r, bool hasFill, uint32_t fill, bool ha
 
 struct shapeObj * create_rect(uint16_t l, uint16_t h, bool hasFill, uint32_t fill, bool hasOutline, uint32_t outline)
 {
-	struct shapeObj * rect = malloc(sizeof(struct shapeObj));
-	rect->type = SHAPE_RECT
+	struct shapeObj * rect = (struct shapeObj *)malloc(sizeof(struct shapeObj));
+	rect->type = SHAPE_RECT;
 	rect->dim1 = l;
 	rect->dim2 = h;
 	rect->hasFill = hasFill || !hasOutline;
@@ -33,7 +34,7 @@ struct shapeObj * create_rect(uint16_t l, uint16_t h, bool hasFill, uint32_t fil
 	return rect;
 }
 
-void draw_shape(uint16_t x, uint16_t y, struct shapeObj * shape, uint8_t justify_h, uint8_t jusitfy_v)
+void draw_shape(uint16_t x, uint16_t y, struct shapeObj * shape, uint8_t justify_h, uint8_t justify_v)
 {
 	if (shape->type == SHAPE_CIR)
 	{
@@ -83,8 +84,8 @@ void draw_shape(uint16_t x, uint16_t y, struct shapeObj * shape, uint8_t justify
 
 static void draw_rect(uint16_t x_start, uint16_t y_start, struct shapeObj * rect)
 {
-	uint16_t x_end = x + rect->dim1;
-	uint16_t y_end = y + rect->dim2;
+	uint16_t x_end = x_start + rect->dim1;
+	uint16_t y_end = y_start + rect->dim2;
 
 	for (int x = x_start; x < x_end; x++) {
         for (int y = y_start; y < y_end; y++) {

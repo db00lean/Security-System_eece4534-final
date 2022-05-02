@@ -86,7 +86,9 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
 
   if (!converted_sample) {
     printf("sample converted to NULL\n");
-    exit(1); //TODO
+    gst_caps_unref(caps);
+    gst_sample_unref(sample);
+    return NULL;
   }
 
   GstBuffer *buffer = gst_sample_get_buffer(converted_sample);
@@ -101,10 +103,10 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
   img->enc = enc;
 
   // cleanup memory
-  gst_buffer_unmap(buffer, &map);
-  gst_sample_unref(sample);
-  gst_sample_unref(converted_sample);
   gst_caps_unref(caps);
+  gst_sample_unref(sample);
+  gst_buffer_unmap(buffer, &map);
+  gst_sample_unref(converted_sample);
 
   return img;
 }

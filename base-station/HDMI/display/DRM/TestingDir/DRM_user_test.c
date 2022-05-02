@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -31,7 +32,9 @@ int CRTC_FB;
 //void *map;
 
 
+struct buf_context *bufs[BUFF_AMOUNTS];
 
+int current_buff;
 
 
 //Defining constants for colors according to default pixel format -- 32 bit word with transparency, red, green, and blue values
@@ -42,14 +45,14 @@ uint32_t const colors[] = {red, green, blue};
 
 int drm_open()
 {
-
+    
     int fd, flags;
 
     // Opening cards
     fd = open("/dev/dri/card0", O_RDWR);
-
-    if (fd == NULL)
-    {
+    
+    if (fd == NULL){
+	printf("failed to open card");
         return -1;
     }
 
@@ -96,7 +99,7 @@ int drm_init(int fd)
     //Inits frame buffers
     int i = 0;
     for (i = 0; i < BUFF_AMOUNTS; i++) {
-        bufs[i] = malloc(sizeof(struct buf_context));
+        bufs[i] = (buf_context*)malloc(sizeof(struct buf_context));
 
 
         bufs[i]->fd = fd;
@@ -114,7 +117,7 @@ void *drm_map(int fd, struct buf_context *myBuf, int id)
 {
     // 32 bit memory location to store address of framebuffer
     //printf("inside drm map\n");
-    uint32_t *fb = malloc(sizeof(uint32_t));
+    uint32_t *fb = (uint32_t*)malloc(sizeof(uint32_t));
     //printf("fb id %d\n", *fb);
     fb = &myBuf->fb;
     //printf("fb id %d\n", *fb);
@@ -315,7 +318,7 @@ void draw_map(int x_start, int y_start, int x_length, int y_length, uint32_t *AR
     uint32_t *pixelPtr;
     uint32_t row_count=0;
     //pixelPtr = (uint32_t *)(myBuf->map);
-    pixelPtr = (uint32_t)(bufs[current_buff]->map);
+    pixelPtr = (uint32_t*)(bufs[current_buff]->map);
     
     //Advance pixelPtr to correct row
     pixelPtr += mode->hdisplay * y_start;
@@ -359,16 +362,16 @@ void pageFlip(){
 
 
 
-    printf("inside page flip\n");
+    //printf("inside page flip\n");
     int ret;
     int fd = bufs[current_buff]->fd;
     void *waiting;
     //unsigned int waiting(1);
-    printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
+    //printf("inside page flip CRTC ID: %d\n", crtc->crtc_id);
 
 
-    uint32_t *fb = malloc(sizeof(uint32_t));
-    printf("fb id %d\n", *fb);
+    uint32_t *fb = (uint32_t*)malloc(sizeof(uint32_t));
+    //printf("fb id %d\n", *fb);
     fb = &bufs[current_buff]->fb;
 
     crtc = drmModeGetCrtc(fd, encode->crtc_id);
@@ -388,11 +391,11 @@ void pageFlip(){
     }
 
     if(current_buff == 0){
-        printf("switching, %d\n", current_buff);
+      //  printf("switching, %d\n", current_buff);
         current_buff = 1;
     }
     else{
-        printf("switching, %d\n", current_buff);
+        //printf("switching, %d\n", current_buff);
         current_buff = 0;
     }
 }
