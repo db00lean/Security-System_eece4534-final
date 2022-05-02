@@ -10,13 +10,11 @@
  */
 
 // includes are placeholders, header files are currently located in separate branches
-
 #include "inc/gstreamer-rx.h"
 #include "inc/imagelib.h"
 #include "../../common_headers/hdmi_main.h"
 #include "../../common_headers/system_management.h"
 #include "../common_headers/cv_structs.h"
-#include "inc/imagelib.h"
 #include "inc/DRM_user.h"
 
 // IMPORTANT: 1 will run David's changes, 0 will run the old code
@@ -29,6 +27,8 @@
     #include "inc/draw_bounding_box.h"
     #include "inc/drawtext.h"
 #endif
+#include <stdlib.h>
+#include <stdio.h>
 
 // an include for a header file not created yet, could be inherited from draw_bounding_box function head
 // #include "rendering.h"
@@ -55,6 +55,11 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
 #define PEOPLE_BOX_TOP_LEFT_Y ZONE_STATUS_TOP_LEFT_Y + 300
 #define TOGGLE_OPT_BOX_TOP_LEFT_X ZONE_STATUS_TOP_LEFT_X
 #define TOGGLE_OPT_BOX_TOP_LEFT_Y PEOPLE_BOX_TOP_LEFT_Y + 300
+#define OPTION_BOX_TOP_LEFT_X RIGHT_BOX_W + ZONE_STATUS_TOP_LEFT_X + 25
+#define OPTION_BOX_TOP_LEFT_Y ZONE_STATUS_TOP_LEFT_Y
+#define OPTION_BOX_W RIGHT_BOX_W/2
+#define OPTION_BOX_H RIGHT_BOX_H * 2
+
 
 /**
  * @brief draws the background of the GUI (static elements)
@@ -136,6 +141,13 @@ void show_background(struct system_status * system) {
     draw_boundingbox(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, RIGHT_BOX_W, RIGHT_BOX_H, grey);
     draw_text_scale(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
 
+    draw_boundingbox(OPTION_BOX_TOP_LEFT_X, OPTION_BOX_TOP_LEFT_Y, OPTION_BOX_W + 50, 500, grey);
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+50, "Camera Options", violet, 2);
+
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+150, "Brightness", violet, 2);
+
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+350, "Contrast", violet, 2);
+
     // get the current camera information from the struct
     struct camera_module * active_camera = &system->cameras[system->guiState];
 
@@ -176,17 +188,10 @@ void show_camera_frame(struct system_status * system) {
     // int active_camera_no = system->guiState;
 
     // pass the camera number to get the frame corresponding to the active camera number
-    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_ARGB, IMAGE_WIDTH, IMAGE_HEIGHT);
+    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_BGRA, IMAGE_WIDTH, IMAGE_HEIGHT);
 
     // draw image to screen using draw pixel
     draw_map(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, (uint32_t*)img->buf);
-    // for (int x = 0; x < IMAGE_WIDTH; x++) {
-    //   for (int y = 0; y < IMAGE_HEIGHT; y++) {
-    //         //uint32_t color = (img->buf[x + y + 0] << 16) | (img->buf[x + y + 1] << 8) | (img->buf[x + y + 2] << 0);
-    //         uint32_t color = *((uint32_t*)img->buf + y * IMAGE_WIDTH + x);
-    //         draw_pixel(IMAGE_TOP_LEFT_X + x,IMAGE_TOP_LEFT_Y + y,color);
-    //     }
-    // }
 
     // free the memory space of the frame
     free_image(img);
@@ -237,10 +242,17 @@ void show_bounding_box(struct system_status * system) {
     int b;
     for (b = 0; b < camera_metadata->num_bbox; b ++) {
         struct coordinate_data * box_data = &camera_metadata->box_data[b];
-        draw_boundingbox(box_data->x_coord,
-                          box_data->y_coord,
-                          box_data->x_len,
-                          box_data->y_len,
+        
+        //scaled down to region
+        int box_data_x_coord_scaled = box_data->x_coord / 2 + IMAGE_TOP_LEFT_X;
+        int box_data_y_coord_scaled = box_data->y_coord / 2 + IMAGE_TOP_LEFT_Y;
+        int box_data_x_len_scaled = box_data->x_len / 2;
+        int box_data_y_len_scaled = box_data->y_len / 2;
+        
+        draw_boundingbox(box_data_x_coord_scaled,
+                          box_data_y_coord_scaled,
+                          box_data_x_len_scaled,
+                          box_data_y_len_scaled,
                           red
                           );
     }
@@ -371,10 +383,18 @@ void show_camera_info(struct system_status * system) {
     // draw the forbidden zone as an overlay on the camera
     // TODO: coordinate translation between camera coordinates and HDMI coordinates
     struct coordinate_data * zone_data = &active_camera->forbiddenZone;
-    draw_boundingbox(zone_data->x_coord,
-                      zone_data->y_coord,
-                      zone_data->x_len,
-                      zone_data->y_len,
+    
+    //scaled down to region
+    int zone_data_x_coord_scaled = zone_data->x_coord / 2 + IMAGE_TOP_LEFT_X;
+    int zone_data_y_coord_scaled = zone_data->y_coord / 2 + IMAGE_TOP_LEFT_Y;
+    int zone_data_x_len_scaled = zone_data->x_len / 2;
+    int zone_data_y_len_scaled = zone_data->y_len / 2;
+
+    
+    draw_boundingbox(zone_data_x_coord_scaled,
+                      zone_data_y_coord_scaled,
+                      zone_data_x_len_scaled,
+                      zone_data_y_len_scaled,
                       0xcccccc);
 
     // could draw other information, like number of people here
@@ -390,6 +410,13 @@ void show_camera_info(struct system_status * system) {
 void show_camera_options(struct system_status * system) {
     // TODO: no toggling options are included in the system struct, current mockup includes them.
     //       There would have to be elemetns added to the system_status struct
+
+    char cbuf[5];
+    sprintf(cbuf, "%d", system->cameras[system->guiState].brightness);
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
+    sprintf(cbuf, "%d", system->cameras[system->guiState].contrast);
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
+
 }
 
 /**
@@ -418,7 +445,7 @@ void render(struct system_status * system) {
         show_bounding_box(system);
         show_camera_info(system);
         show_camera_options(system);
-        //g_usleep(166667);
+        g_usleep(166667);
         pageFlip();
 
     }
@@ -433,5 +460,6 @@ void* hdmi_main(void* thread_args) {
     render(system);
 
     cleanup_rx_camera(system->cameras[0].gstream_info);
+
     return NULL;
 }
