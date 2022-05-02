@@ -1,6 +1,5 @@
 #include "cv_main.h"
 
-// #include "../base-station/HDMI/inc/imagelib.h"
 #include "../base-station/HDMI/inc/gstreamer-rx.h"
 
 #define NUM_CHANNELS 3
@@ -58,9 +57,9 @@ cv::Mat ImportFrame()
 cv::Mat StreamFrame(struct camera_rx *cam)
 {
   // struct image *get_frame(struct camera_rx * cam, enum img_enc enc, int width, int height);
-  struct image *img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
-
-  // struct image *img = create_image(IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+  //struct image *img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+  
+  struct image *img = create_image(IMGENC_RGB, IMAGE_WIDTH, IMAGE_HEIGHT);
 
   // convert image to cv Mat
   // const int sizes[3] = {img->height, img->width, NUM_CHANNELS};
