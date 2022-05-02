@@ -81,7 +81,7 @@ void show_background(struct system_status * system) {
     static struct shapeObj * opt_box = NULL;
     if (!opt_box) opt_box = create_rect(RIGHT_BOX_W, RIGHT_BOX_H, false, black, true, grey);
     static struct shapeObj * opt_cir = NULL;
-    if (!opt_cir) opt_cir = create_cir(CAM_SEL_BOX_RAD, true, green, false, black);
+    if (!opt_cir) opt_cir = create_circle(CAM_SEL_BOX_RAD, true, green, false, black);
 
     draw_shape(TOGGLE_OPT_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
     draw_text(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, "Show Boxes: ", light_green, 2);
@@ -98,10 +98,19 @@ void show_background(struct system_status * system) {
     draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
 
     //get the current camera information from the struct
-    struct camera_module * active_camera = &system->cameras[system->guiState];
+    //struct camera_module * active_camera = &system->cameras[system->guiState];
+
+    static struct shapeObj * camera_options = NULL;
+    if (!camera_options) camera_options = create_rect(OPTION_BOX_W + 50, 500, false, black, true, grey);
+    draw_shape(OPTION_BOX_TOP_LEFT_X, OPTION_BOX_TOP_LEFT_Y, camera_options, JUSTIFY_L, JUSTIFY_T);
+    draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+50, "Camera Options", violet, 2);
+
+    draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+150, "Brightness", violet, 2);
+
+    draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+350, "Contrast", violet, 2);
 
     //camera_boxes in bottom row
-    char num_str[3];
+    char num_str[10];
 
     static struct shapeObj * cmr_box = NULL;
     if (!cmr_box) cmr_box = create_rect(CAM_SEL_BOX_DIM, CAM_SEL_BOX_DIM, true, grey, true, violet);
@@ -289,7 +298,7 @@ void show_camera_info(struct system_status * system) {
     if (!sel_box) sel_box = create_rect(CAM_SEL_BOX_DIM + 6, CAM_SEL_BOX_DIM + 6, false, black, true, red);
 
     static struct shapeObj * sts_cir = NULL;
-    if (!sts_cir) sts_cir = create_cir(CAM_SEL_BOX_RAD, true, red, true, black);
+    if (!sts_cir) sts_cir = create_circle(CAM_SEL_BOX_RAD, true, red, true, black);
 
     for (int i = 0; i < system->numberOfCameras; i++) {
 
@@ -308,9 +317,9 @@ void show_camera_info(struct system_status * system) {
 
         //camera status circles
         if (system->cameras[i].status) {
-            sts->fillColor = green;
+            sts_cir->fillColor = green;
         } else {
-            sts->fillColor = red;
+            sts_cir->fillColor = red;
         }
 
         draw_shape(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_RAD / 2),
@@ -412,9 +421,17 @@ void show_camera_options(struct system_status * system) {
 
     char cbuf[5];
     sprintf(cbuf, "%d", system->cameras[system->guiState].brightness);
+#if DAVID_CODE
+    draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
+#else
     draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
+#endif
     sprintf(cbuf, "%d", system->cameras[system->guiState].contrast);
+#if DAVID_CODE
+    draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
+#else
     draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
+#endif
 
 }
 
