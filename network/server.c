@@ -14,7 +14,7 @@ struct server* new_server(const char* port)
     char bind_addr[19];
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://*:%s", port);
-    sprintf("%i", s->reg_port, port);
+    sprintf(s->reg_port, "%s", port);
     printf("Server registration address is %s\n", bind_addr);
     s->context = zmq_ctx_new();
     s->register_s = zmq_socket(s->context, ZMQ_REP);
@@ -74,8 +74,9 @@ received_message* receive_msg(zsock_t* responder)
 int register_client(struct server* s)
 {
     received_message* msg;
-    int port = atoi(s->reg_port);
-    const char* client_port[5];
+    int reg_port = atoi(s->reg_port);
+    int bind_port = reg_port; 
+    char client_port[5];
     char bind_addr[19];
     int lower = 10000;
     int upper = 65535;
@@ -92,18 +93,18 @@ int register_client(struct server* s)
     // TODO: Some magic checking to make sure that the camera id they request here is valid, crypto stuff if time
     // For now assume they are who they say they are and setup the connection
     // Generate a random port that isn't the registration port
-    while(port != atoi(s->reg_port))
+    while(bind_port != reg_port)
     {
-        port = rand() % (upper - lower + 1)) + lower;
+        bind_port = rand() % ((upper - lower + 1) + lower);
     }
-    sprintf(client_port, "%i", port);
+    sprintf(client_port, "%i", bind_port);
     printf("Generated port number for new client is %s\n", client_port);
     // Create a new zeromq pair socket on that port number
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://*:%s", client_port);
     printf("Server listening for new client on %s\n", bind_addr);
     s->clients[msg->cam_id] = zmq_socket(s->context, ZMQ_PAIR);
-    err = zmq_bind(s->clients[msg->cam_id], bind_addr);
+    int err = zmq_bind(s->clients[msg->cam_id], bind_addr);
     // Make sure we've successfully bound to that socket
     assert (err == 0);
     // Send back the assigned port number

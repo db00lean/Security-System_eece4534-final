@@ -14,7 +14,7 @@
 struct server {
     void* context;
     zsock_t* register_s;
-    char* reg_port[5];
+    char reg_port[5];
     uint32_t num_clients;
     zsock_t* clients[MAX_CLIENTS];
 } server;

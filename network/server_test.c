@@ -12,7 +12,7 @@ int main(void)
     received_message* msg;
     const char* port = "55000";
     struct server* s = new_server(port);
-    msg = receive_msg(s->responder);
+    msg = receive_msg(s->register_s);
     printf("Received message\n");
     printf("Camera id: %i\n", msg->cam_id);
     printf("Data type: %i\n", msg->type);
