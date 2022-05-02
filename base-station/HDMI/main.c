@@ -294,19 +294,18 @@ void show_camera_info(struct system_status * system) {
     for (int i = 0; i < system->numberOfCameras; i++) {
 
         if (i == system->guiState) {
-            draw_shape(CAM_SEL_BOX_X + (i * 200) - 3,
+            sel_box->outlineColor = red;
+        }
+        else {
+            sel_box->outlineColor = black;       
+        }
+
+        draw_shape(CAM_SEL_BOX_X + (i * 200) - 3,
                        CAM_SEL_BOX_Y - 3,
                        sel_box,
                        JUSTIFY_L,
                        JUSTIFY_T);
-        }
-        else {
-            draw_shape(CAM_SEL_BOX_X + (i * 200) - 3,
-                       CAM_SEL_BOX_Y - 3,
-                       sel_box,
-                       JUSTIFY_L,
-                       JUSTIFY_T);;        
-        }
+
         //camera status circles
         if (system->cameras[i].status) {
             sts->fillColor = green;
