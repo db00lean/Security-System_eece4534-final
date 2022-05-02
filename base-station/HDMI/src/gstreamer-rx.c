@@ -81,7 +81,7 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
      NULL);
 
   // 0.5 second timeout. is ok?
-  GstSample *converted_sample = gst_video_convert_sample(sample, caps, 50000000, NULL);
+  GstSample *converted_sample = gst_video_convert_sample(sample, caps, 500000000, NULL);
 
 
   if (!converted_sample) {

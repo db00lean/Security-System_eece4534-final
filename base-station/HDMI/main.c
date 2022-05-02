@@ -74,7 +74,7 @@ void show_background(struct system_status * system) {
     //top name
     draw_text(TITLE_X, TITLE_Y, "Security System", light_green, 4);
 
-    //camera fram border
+    //camera frame border
     static struct shapeObj * frm_bdr = NULL;
     if (!frm_bdr) frm_bdr = create_rect(IMAGE_WIDTH, IMAGE_HEIGHT, false, black, true, white);
     draw_shape(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, frm_bdr, JUSTIFY_L, JUSTIFY_T);
@@ -115,7 +115,7 @@ void show_background(struct system_status * system) {
     char num_str[10];
 
     static struct shapeObj * cmr_box = NULL;
-    if (!cmr_box) cmr_box = create_rect(CAM_SEL_BOX_DIM, CAM_SEL_BOX_DIM, true, grey, true, violet);
+    if (!cmr_box) cmr_box = create_rect(CAM_SEL_BOX_DIM, CAM_SEL_BOX_DIM, true, grey, true, white);
 
     for (int i = 0; i < system->numberOfCameras; i++) {
         draw_shape(CAM_SEL_BOX_X + (i * 200),
