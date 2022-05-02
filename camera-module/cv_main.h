@@ -7,13 +7,14 @@
 
 // If USE_DARKNET is 1, cv_main uses darknet. If its 0, it uses openCV's HOG Descriptors
 #define USE_DARKNET 0   // Enable Darknet
-#define DEBUG_MODE_CV 0 // iostream stuff; can be removed at the end
+#define DEBUG_MODE_CV 1 // iostream stuff; can be removed at the end
 
 #if DO_CV
 #if USE_DARKNET
 #include <darknet.h> // The main "darknet.h" file. Should update this to work with makefile
 // #include <darknet/parser.h>
 // #include <darknet.h/include/parser.h>
+#endif
 #endif
 
 #if USE_DARKNET == 0
@@ -22,7 +23,6 @@
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/opencv.hpp>
-#endif
 #endif
 
 #if DO_CV
