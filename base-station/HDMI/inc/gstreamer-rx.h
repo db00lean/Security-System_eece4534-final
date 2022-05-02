@@ -22,4 +22,8 @@ struct camera_rx * init_rx_camera(char* uri);
 
 void cleanup_rx_camera(struct camera_rx * cam);
 
+int pause_stream(struct camera_rx * cam);
+
+int play_stream(struct camera_rx * cam);
+
 #endif

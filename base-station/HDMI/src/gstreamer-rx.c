@@ -78,7 +78,7 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
   GstSample *sample = gst_app_sink_try_pull_sample(cam->appsink, GST_FRAME_PULL_TIMEOUT_NS);
 
   if (!sample) {
-    printf("no sample provided\n");
+    //printf("no sample provided\n");
     if (gst_app_sink_is_eos(cam->appsink)) {
       printf("stream is EOS\n");
     }
@@ -123,6 +123,27 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
   gst_sample_unref(converted_sample);
 
   return img;
+}
+
+int play_stream(struct camera_rx * cam) {
+  /* Start playing */
+  GstStateChangeReturn ret = gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
+  if (ret == GST_STATE_CHANGE_FAILURE) {
+    g_printerr("Unable to set the pipeline to the playing state.\n");
+    return 1;
+  }
+  printf("playing stream\n");
+  return 0;
+}
+
+int pause_stream(struct camera_rx * cam) {
+  GstStateChangeReturn ret = gst_element_set_state(cam->pipeline, GST_STATE_PAUSED);
+  if (ret == GST_STATE_CHANGE_FAILURE) {
+    g_printerr("Unable to set the pipeline to the playing state.\n");
+    return 1;
+  }
+  printf("paused stream\n");
+  return 0;
 }
 
 void cleanup_rx_camera(struct camera_rx * cam) {
