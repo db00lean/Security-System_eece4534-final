@@ -11,4 +11,9 @@
 // structure with bounding box data
 void aggregate_detect(struct camera_module *cam);
 
+// Detects the presence of a person in the restricted area on a 3d plane
+// state: state of system
+// cam_id: index of camera that has just changed
+void area_aggregate_detect(struct system_status *state, int cam_id);
+
 #endif

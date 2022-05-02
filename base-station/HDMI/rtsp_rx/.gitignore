@@ -1,3 +1,5 @@
 image-out
 gstreamer-rx
+rx-example
 test-image.ppm
+*.o
