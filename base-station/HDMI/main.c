@@ -15,8 +15,6 @@
 #include "../../common_headers/hdmi_main.h"
 #include "../../common_headers/system_management.h"
 #include "../../common_headers/cv_structs.h"
-#include "inc/draw_bounding_box.h"
-#include "inc/drawtext.h"
 #include "inc/imagelib.h"
 #include "inc/DRM_user.h"
 
@@ -212,7 +210,7 @@ void show_camera_frame(struct system_status * system) {
             color_image[i] = orange;
         }
         draw_map(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, color_image);
-        draw_text_scale(IMAGE_TOP_LEFT_X + IMAGE_WIDTH / 2, IMAGE_TOP_LEFT_Y + IMAGE_HEIGHT / 2, "NO SIGNAL", black, 5);
+        draw_text(IMAGE_TOP_LEFT_X + IMAGE_WIDTH / 2, IMAGE_TOP_LEFT_Y + IMAGE_HEIGHT / 2, "NO SIGNAL", black, 5);
 
         //then return
         return;
@@ -252,10 +250,17 @@ void show_bounding_box(struct system_status * system) {
     int b;
     for (b = 0; b < camera_metadata->num_bbox; b ++) {
         struct coordinate_data * box_data = &camera_metadata->box_data[b];
-        bbox->dim1 = box_data->x_len;
-        bbox->dim2 = box_data->y_len;
-        draw_shape(box_data->x_coord,
-                   box_data->y_coord,
+
+        //scaled down to region
+        int box_data_x_coord_scaled = box_data->x_coord / 2 + IMAGE_TOP_LEFT_X;
+        int box_data_y_coord_scaled = box_data->y_coord / 2 + IMAGE_TOP_LEFT_Y;
+        int box_data_x_len_scaled = box_data->x_len / 2;
+        int box_data_y_len_scaled = box_data->y_len / 2;
+
+        bbox->dim1 = box_data_x_len_scaled;
+        bbox->dim2 = box_data_y_len_scaled;
+        draw_shape(box_data_x_coord_scaled,
+                   box_data_y_coord_scaled,
                    bbox,
                    JUSTIFY_L,
                    JUSTIFY_T);
@@ -352,10 +357,16 @@ void show_camera_info(struct system_status * system) {
     // TODO: coordinate translation between camera coordinates and HDMI coordinates
     struct coordinate_data * zone_data = &active_camera->forbiddenZone;
 
-    static struct shapeObj * zone_box = NULL;
-    if (!zone_box) zone_box = create_rect(zone_data->x_len, zone_data->y_len, false, black, true, grey);
+    //scaled down to region
+    int zone_data_x_coord_scaled = zone_data->x_coord / 2 + IMAGE_TOP_LEFT_X;
+    int zone_data_y_coord_scaled = zone_data->y_coord / 2 + IMAGE_TOP_LEFT_Y;
+    int zone_data_x_len_scaled = zone_data->x_len / 2;
+    int zone_data_y_len_scaled = zone_data->y_len / 2;
 
-    draw_shape(zone_data->x_coord, zone_data->y_coord, zone_box, JUSTIFY_L, JUSTIFY_T);
+    static struct shapeObj * zone_box = NULL;
+    if (!zone_box) zone_box = create_rect(zone_data_x_len_scaled, zone_data_y_len_scaled, false, black, true, green);
+
+    draw_shape(zone_data_x_coord_scaled, zone_data_y_coord_scaled, zone_box, JUSTIFY_L, JUSTIFY_T);
 
     // could draw other information, like number of people here
 
