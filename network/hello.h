@@ -10,8 +10,8 @@ typedef struct server_hello {
 
 typedef struct client_hello {
     int cam_id;
-    const char * port;
-} server_hello;
+    const char* ip_addr;
+} client_hello;
 
 
 
