@@ -12,7 +12,7 @@ GST_LIBS:= $(shell pkg-config --libs gstreamer-1.0 gstreamer-app-1.0 gstreamer-p
 
 .PHONY: sysman_server button_listener clean
 
-sysman_server: management_server.o agg_detect.o button_client.o
+sysman_server: system_management_server.o agg_detect.o button_client.o
 	(cd button_driver && make)
 	(cd ../network && make server.o)
 	(cd HDMI && make hdmi-lib.a)
@@ -21,7 +21,7 @@ sysman_server: management_server.o agg_detect.o button_client.o
 button_listener: button_client_standalone.o
 	$(CC) -o $@ button_client_standalone.o $(LIBS)
 
-management_server.o: system_management_server.c aggregate_detect.h
+system_management_server.o: system_management_server.c aggregate_detect.h
 	$(CC) $(CFLAGS) -c system_management_server.c
 
 agg_detect.o: aggregate_detect.c aggregate_detect.h
