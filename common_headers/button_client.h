@@ -20,8 +20,8 @@
 #include "../base-station/button_driver/zed_btns.h"
 #include "system_management.h"
 
-#define FZ_INC_DELTA (10)
-#define FZ_DEC_DELTA (-10)
+#define FZ_INC_DELTA (100)
+#define FZ_DEC_DELTA (-100)
 
 #define CAN_READ_PFD(pfd) (pfd.revents & POLLIN)
 
@@ -60,14 +60,12 @@ struct button_actions {
 };
 
 /**
- * @brief Initializes the given pollfd struct to listen to read events on the zedbtns character device file
+ * @brief Initializes the internal pollfd struct to listen to read events on the zedbtns character device file
  *        defined by the ZEDBTNS_FILE macro
- * 
- * @param pfd - pointer to the pollfd struct to initialize
  * 
  * @return 0 on success, -1 if zedbtns file could not be opened.
  */
-int init_zedbtn_pollfd(struct pollfd* pfd);
+int initialize_buttons();
 
 /**
  * @brief Executes actions from the given set of button_actions, corresponding to what button(s) have been pressed. 
@@ -91,15 +89,6 @@ void exec_action(struct button_actions* actions, int n_actions, button_value btn
  * - Anything else useful? 
  */
 void* run_button_client(void* thread_args);
-
-/**
- * @brief Stops execution of the button listener thread in response to SIGINT (or any other signal, really). 
- *        Make sure to pass this to the signal syscall (see man 2 signal)
- *        Otherwise, button listener thread will not clean up properly!
- * 
- * @param _sig - Signal (as an integer). Unused, hence the prefix with "_" 
- */
-void stop_button_listener(int _sig);
 
 /**
  * @brief Adds a delta to the forbidden zone coordinates of the current active camera.

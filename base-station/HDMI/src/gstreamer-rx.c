@@ -5,8 +5,8 @@
 #include <gst/video/video.h>
 #include <gst/gst.h>
 
-#include "imagelib.h"
-#include "gstreamer-rx.h"
+#include "../inc/imagelib.h"
+#include "../inc/gstreamer-rx.h"
 
 static const char* const ENC_LOOKUP[] = {
   [IMGENC_RGB] = "RGB",
@@ -68,11 +68,10 @@ struct camera_rx * init_rx_camera(char* uri) {
 }
 
 struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int height) {
-  GstSample *sample = gst_app_sink_pull_sample(cam->appsink);
+  GstSample *sample = gst_app_sink_try_pull_sample(cam->appsink, GST_FRAME_PULL_TIMEOUT_NS);
 
   if (!sample) {
-    printf("sample is NULL\n");
-    exit(1); //TODO
+    return NULL;
   }
 
   GstCaps *caps = gst_caps_new_simple ("video/x-raw",

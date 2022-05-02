@@ -20,12 +20,6 @@ all: modules
 modules:
 	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERNEL_SRC) M=$(SRC)
 
-modules_install:
-	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERNEL_SRC) M=$(SRC) modules_install
-
-modules_upload: modules
-	scp $(MODULE_OBJ) root@$(ESL_ZEDBOARD_IP):$(UPLOAD_PATH)
-
 clean:
 	rm -f *.o *~ core .depend .*.cmd *.ko *.mod.c *.mod
 	rm -f Module.markers Module.symvers modules.order

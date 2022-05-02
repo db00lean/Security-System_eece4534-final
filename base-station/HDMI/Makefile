@@ -30,6 +30,6 @@ hdmi-lib.a: $(OBJS)
 	ar -q hdmi-lib.a $(OBJS)
 
 clean:
-	rm -rf $(OBJS) $(TARGET) *.o
+	rm -rf $(OBJS) $(TARGET) *.o *.a
 
 .PHONY: all clean rtsp-things
