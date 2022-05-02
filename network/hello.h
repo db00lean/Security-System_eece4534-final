@@ -10,9 +10,15 @@ typedef struct server_hello {
 
 typedef struct client_hello {
     int cam_id;
-    const char* ip_addr;
 } client_hello;
 
+// Structure containing received message data and the associated packet header data
+typedef struct received_message {
+    int cam_id;
+    PacketType type;
+    int len;
+    void* data;
+} received_message;
 
 
 #endif

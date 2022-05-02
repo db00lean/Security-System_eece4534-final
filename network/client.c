@@ -1,5 +1,6 @@
 #include "client.h"
 #include "packet.h"
+#include "hello.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -9,29 +10,49 @@
 #define REQUEST_TIMEOUT 2500 //milliseconds
 #define SERVER_RESPONSE_LENGTH 255
 
-// Initializes and returns a new client connection
-struct client* new_client(const char* server_port, const char* server_address)
+// Recieves a new request from client connections, this is currently a BLOCKING call
+// This will be changed in a future issue
+received_message* receive_server_msg(zsock_t* responder)
 {
-    int err; 
-    struct client* c = (struct client*) malloc(sizeof(struct client));
-    char bind_addr[22]; 
-    // Initialize the context and the requester socket
-    sprintf(bind_addr, "tcp://%s:%s", server_address, server_port);
-    printf("Client bind address is %s\n", bind_addr);
-    c->context = zmq_ctx_new();
-    // Bind requester to socket using the given server information
-    c->requester = (zsock_t*) zmq_socket(c->context, ZMQ_REQ);
-    if (!c->requester) {
-        fprintf(stderr, "Error creating socket: %s\n", strerror(errno));    
-    }
-    assert(c->requester != 0);
-    err = zmq_connect(c->requester, bind_addr);
-    if (err == -1)
+    int size;
+    // The zeromq message to store bytes read off socket in
+    zmq_msg_t zmsg;
+    // The message structure to store the data parsed in and return to the caller
+    received_message* msg = malloc(sizeof(received_message));
+    // Stores the packet header data
+    packet_header* header;
+    // Stores the packet data
+    void* data;
+
+    int rc = zmq_msg_init(&zmsg);
+    if (rc == -1) 
     {
-        fprintf(stderr, "Error connecting to server: %s\n", strerror(errno)); 
+        fprintf(stderr, "Error initializing message structure\n");
     }
-    assert(err == 0);
-    return c;
+    printf("Before receive call\n");
+    size = zmq_msg_recv(&zmsg, responder, 0);
+    if (size == -1)
+    {
+        // TODO: Check error code and see if a retry is necessary 
+        fprintf(stderr, "Error receiving messages: %s\n", strerror(errno));
+        return NULL;
+    }
+    printf("Received message from client\n");
+    // Parse out header and data, store in received_message structure to return to caller
+    header = parse_packet_header(&zmsg);
+    data = parse_packet_data(&zmsg);
+    msg->cam_id = header->cam_id;
+    msg->type = header->type;
+    msg->len = header->len;
+    // Copy data to new buffer to return to caller
+    msg->data = malloc(header->len);
+    memcpy(msg->data, data, header->len);
+    // TODO: send an ack to the client (probably to change in the future)
+    // size = zmq_send(responder, "ACK", 3, 0);
+    // Free memory
+    free_packet(header);
+    // Return message
+    return msg;
 }
 
 // Sends a new request to the previously initialized 0mq client, this currently polls periodically for an acknowledgement 
@@ -63,42 +84,68 @@ void send_msg(zsock_t* requester, int cam_id, PacketType type, void* buff, uint3
     }
     assert(rc == msg_len);
     return;
-    /*
-    // Wait for an ACK from the server
-    while(wait_reply)
+}
+
+// Returns the socket the server has asked us to bind to
+int send_client_hello(int cam_id, zsock_t* registration_port, struct client* c)
+{
+    struct client_hello ch;
+    struct received_message msg;
+    struct server_hello* sh;
+    ch.cam_id = cam_id;
+    
+    printf("Sending client hello to server\n");
+    send_msg(registration_port, cam_id, CLIENT_HELLO, (void*)&ch, sizeof(ch));
+    msg = *receive_server_msg(registration_port);
+    sh = (struct server_hello*)msg.data;
+    // if they assigned us a different camera id store that in the client
+    if (sh->cam_id != c->cam_id)
     {
-        printf("Waiting for reply from server\n");
-        zmq_pollitem_t items[] = {{zsock_resolve(requester), 0, ZMQ_POLLIN, 0}};
-        printf("After polling \n");
-        int rc = zmq_poll(items, 1, REQUEST_TIMEOUT * ZMQ_POLL_MSEC);
-        printf("Polling complete, rc:%i\n", rc);
-        if (rc == 0) 
-        {
-            break;
-        }
-        if (rc == -1)
-        {
-            fprintf(stderr, "Error polling socket for reply from server: %s\n", strerror(errno));
-        }
-        if(items[0].revents & ZMQ_POLLIN)
-        {
-            int size = zmq_recv(requester, response, SERVER_RESPONSE_LENGTH, 0);
-            if (size == -1)
-            {
-                printf("Received nothing from server\n");
-                return NULL;
-            }
-            // TODO: this was placed as a bounds check to prevent overflows in memory. Must confer with other members to figure out what the 
-            // max length of the server response should be. 
-            if (size > SERVER_RESPONSE_LENGTH)
-            {
-                size = SERVER_RESPONSE_LENGTH;
-            }
-            // We have received a reply from the server and want to break out of the loop and return the pointer to its response.
-            printf("Received %s from server\n", response);
-            break;
-        }
+        c->cam_id = sh->cam_id;
     }
-    return response;
-    */
+    printf("Server wants us to connect to port %i\n", sh->port);
+    return sh->port;
+}
+
+// Initializes and returns a new client connection
+struct client* new_client(const char* server_port, const char* server_address, int cam_id)
+{
+    int err;
+    zsock_t* register_port;
+    int client_port_num;
+    struct client* c = (struct client*) malloc(sizeof(struct client));
+    char bind_addr[25]; 
+    // Initialize the context and the registration socket
+    sprintf(bind_addr, "tcp://%s:%s", server_address, server_port);
+    printf("Client bind address is %s\n", bind_addr);
+    c->context = zmq_ctx_new();
+    // Create a client connection to the registration socket on the server side
+    register_port = (zsock_t*)zmq_socket(c->context, ZMQ_REQ);
+    if (!register_port) {
+        fprintf(stderr, "Error creating connection to registration socket on server: %s\n", strerror(errno));    
+    }
+    assert(register_port != 0);
+    err = zmq_connect(register_port, bind_addr);
+    if (err == -1)
+    {
+        fprintf(stderr, "Error connecting to server on registration socket: %s\n", strerror(errno)); 
+    }
+    assert(err == 0);
+    zmq_close((void*)register_port);
+    client_port_num = send_client_hello(cam_id, register_port, c);
+    // Initialize the new client socket
+    sprintf(bind_addr, "tcp://%s:%i", server_address, client_port_num);
+    printf("Client bind address is now %s\n", bind_addr);
+    c->requester = (zsock_t*)zmq_socket(c->context, ZMQ_PAIR);
+     if (!c->requester) {
+        fprintf(stderr, "Error creating connection to pair socket on server: %s\n", strerror(errno));    
+    }
+    assert(c->requester != 0);
+    err = zmq_connect(c->requester, bind_addr);
+    if (err == -1)
+    {
+        fprintf(stderr, "Error connecting to server on pair socket: %s\n", strerror(errno)); 
+    }
+    assert(err == 0);
+    return c;
 }

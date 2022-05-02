@@ -15,7 +15,7 @@ int main(void)
     struct cv_data cv;
     const char* port = "55000";
     const char* address = "127.0.0.1";
-    struct client* c = new_client(port, address);
+    struct client* c = new_client(port, address, 0);
     // first 2 boxes
     while(1) {
         // first 2 boxes

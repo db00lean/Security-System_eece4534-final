@@ -72,7 +72,7 @@ received_message* receive_msg(zsock_t* responder)
 }
 
 // Registers a new client and saves its state to the given server
-int register_client(struct server* s)
+int register_client(struct server* s, int cam_id)
 {
     received_message* msg;
     struct client_conn* client = (struct client_conn*)malloc(sizeof(client_conn));

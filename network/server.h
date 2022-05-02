@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "packet.h"
+#include "hello.h"
 #ifndef SERVER_H
 #define SERVER_H
 
@@ -24,19 +25,11 @@ struct server {
     struct client_conn* clients[MAX_CLIENTS];
 } server;
 
-// Structure containing received message data and the associated packet header data
-typedef struct received_message {
-    int cam_id;
-    PacketType type;
-    int len;
-    void* data;
-} received_message;
-
 // Initializes a new server connection 
 struct server* new_server(const char*);
 
 // Registers a new client connection to this server, returns 0 if successful and -1 if there was an issue registering
-int register_client(struct server*);
+int register_client(struct server*, int cam_id);
 
 // Recieves a new request from client connections
 received_message* receive_msg(zsock_t*);
