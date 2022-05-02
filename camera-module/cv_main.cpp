@@ -1,6 +1,6 @@
 #include "cv_main.h"
 
-#include "../base-station/HDMI/inc/imagelib.h"
+// #include "../base-station/HDMI/inc/imagelib.h"
 #include "../base-station/HDMI/inc/gstreamer-rx.h"
 
 #define NUM_CHANNELS 3
@@ -36,7 +36,7 @@ cv::Mat ImportFrame()
 
   // Read the image file as
   // imread("default.jpg");
-  cv::Mat image = cv::imread("people.jpg", cv::IMREAD_GRAYSCALE);
+  cv::Mat img = cv::imread("people.jpg", cv::IMREAD_GRAYSCALE);
 
   // Replace cv::imread() with darknet::load_image()
   // Testing with openCV's read first, as darknet's seems to be an opencv wrapper
@@ -44,22 +44,23 @@ cv::Mat ImportFrame()
 
   // Error Handling
   // TODO: Fix error handling on merge with cv_main
-  if (image.empty())
+  if (img.empty())
   {
 #if DEBUG_MODE_CV
     std::cout << "Invalid Image\n";
 #endif
   }
 
-  return image;
+  return img;
 }
 #endif
 
 cv::Mat StreamFrame(struct camera_rx *cam)
 {
-  // struct image * img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+  // struct image *get_frame(struct camera_rx * cam, enum img_enc enc, int width, int height);
+  struct image *img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
 
-  struct image *img = create_image(IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+  // struct image *img = create_image(IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
 
   // convert image to cv Mat
   // const int sizes[3] = {img->height, img->width, NUM_CHANNELS};
@@ -76,12 +77,12 @@ cv::Mat StreamFrame(struct camera_rx *cam)
     std::cout << "Unable to write test image\n";
   }
 
-  free_image(img);
+  // free_image(img);
   return cv_frame;
 }
 
 #if DO_CV
-cv_data GenerateBBoxes(cv::Mat image)
+cv_data GenerateBBoxes(cv::Mat img)
 {
   // https://docs.opencv.org/3.4/d1/de5/classcv_1_1CascadeClassifier.html#a90fe1b7778bed4a27aa8482e1eecc116
   struct cv_data cv_data_output;
@@ -98,7 +99,7 @@ cv_data GenerateBBoxes(cv::Mat image)
   hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
 
   // Uncalibrated, unscaled hog (Histogram of Oriented Gradients) --> Probably too expensive currently; TODO: REDUCE
-  hog.detectMultiScale(image, bboxes, found_weights, 0.0, cv::Size(8, 8), cv::Size(16, 16), 1.05, 2.0, false);
+  hog.detectMultiScale(img, bboxes, found_weights, 0.0, cv::Size(8, 8), cv::Size(16, 16), 1.05, 2.0, false);
 /*
 detectMultiScale(InputArray img,
                 std::vector< Rect > & foundLocations,
