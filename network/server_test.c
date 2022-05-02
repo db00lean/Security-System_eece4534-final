@@ -13,6 +13,11 @@ int main(void)
     const char* port = "55000";
     struct server* s = new_server(port);
     msg = receive_msg(s->register_s);
+    if (msg->type == CLIENT_HELLO)
+    {
+        printf("Processing new client\n");
+        register_client(s);
+    }
     printf("Received message\n");
     printf("Camera id: %i\n", msg->cam_id);
     printf("Data type: %i\n", msg->type);

@@ -1,5 +1,6 @@
 #include <czmq.h>
 #include "server.h"
+#include "hello.h"
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
@@ -74,6 +75,7 @@ received_message* receive_msg(zsock_t* responder)
 int register_client(struct server* s)
 {
     received_message* msg;
+    struct client_conn* client = (struct client_conn*)malloc(sizeof(client_conn));
     int reg_port = atoi(s->reg_port);
     int bind_port = reg_port; 
     char client_port[5];
@@ -103,10 +105,51 @@ int register_client(struct server* s)
     // Initialize the context and the requester socket
     sprintf(bind_addr, "tcp://*:%s", client_port);
     printf("Server listening for new client on %s\n", bind_addr);
-    s->clients[msg->cam_id] = zmq_socket(s->context, ZMQ_PAIR);
+    s->clients[msg->cam_id] = client;
+    s->clients[msg->cam_id]->sock = zmq_socket(s->context, ZMQ_PAIR);
+    s->clients[msg->cam_id]->port = bind_port;
     int err = zmq_bind(s->clients[msg->cam_id], bind_addr);
     // Make sure we've successfully bound to that socket
     assert (err == 0);
-    // Send back the assigned port number
+    // Send back 0 indicating success
     return 0;
+}
+
+// Sends a new request to the previously initialized 0mq client, timeout will be adjusted upon discussing with other sysman members.
+void send_client_msg(struct server* s, int cam_id, PacketType type, void* buff, uint32_t len)
+{
+    //char* response = (char*) malloc(SERVER_RESPONSE_LENGTH);
+    int msg_len;
+    packet_header* p;
+    zmq_msg_t msg;
+    zsock_t* client_socket = s->clients[cam_id]->sock;
+    // calculate total message length
+    msg_len = sizeof(packet_header)+len;
+    int rc = zmq_msg_init_size(&msg, msg_len);
+    // Ensure message size was initialized properly
+    assert(rc == 0);
+    // Get packet header
+    p = build_packet(cam_id, type, len);
+    // Copy header into message
+    memcpy(zmq_msg_data(&msg), p, sizeof(packet_header));
+    // Copy data into message
+    memcpy(zmq_msg_data(&msg)+sizeof(packet_header), buff, len);
+    // Send message to server
+    printf("Sending message to client\n");
+    rc = zmq_msg_send(&msg, (void*)client_socket, ZMQ_DONTWAIT);
+    if (rc == -1)
+    {
+        fprintf(stderr, "Error sending message to client: %s\n", strerror(errno));    
+    }
+    assert(rc == msg_len);
+    return;
+}
+
+// Sends a server hello to the requested client on their registered port
+void send_server_hello(struct server* s, int cam_id)
+{
+    struct server_hello sh;
+    sh.cam_id = cam_id;
+    sh.port = s->clients[cam_id]->port;
+    send_client_msg(s, cam_id, SERVER_HELLO, (void*)&sh, sizeof(server_hello));
 }

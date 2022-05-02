@@ -5,7 +5,7 @@
 
 typedef struct server_hello {
     int cam_id;
-    const char * port;
+    int port;
 } server_hello;
 
 typedef struct client_hello {
