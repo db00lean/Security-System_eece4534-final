@@ -16,7 +16,7 @@ static const char* const ENC_LOOKUP[] = {
 };
 
 
-struct camera_rx * init_rx_camera(char* uri) {
+struct camera_rx * init_rx_camera(char* ip) {
 
   struct camera_rx* cam = malloc(sizeof(struct camera_rx));
   // create structure
@@ -45,11 +45,18 @@ struct camera_rx * init_rx_camera(char* uri) {
   //    "appsink name=sink max-buffers=10 drop=true",
   //    NULL);
 
+
   // jpeg / cam decoding
-  cam->pipeline = gst_parse_launch(
-      "rtspsrc location=rtsp://129.10.156.169:8554/test ! rtpjpegdepay ! "
-      "decodebin ! appsink name=sink max-buffers=10 drop=true",
-      NULL);
+  // create pipeline string
+  char* pipeline_string = calloc(sizeof(char), 200);
+  snprintf(pipeline_string, 200, "rtspsrc location=rtsp://%s:8554/test ! rtpjpegdepay ! "
+      "decodebin ! appsink name=sink max-buffers=10 drop=true", ip);
+
+  printf("%s", pipeline_string);
+
+  cam->pipeline = gst_parse_launch(pipeline_string, NULL);
+
+  free(pipeline_string);
 
   gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
 

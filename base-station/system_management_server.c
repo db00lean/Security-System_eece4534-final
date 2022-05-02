@@ -71,7 +71,10 @@ int initialize_camera(int cameraNumber) {
   securitySystem.cameras[cameraNumber].forbiddenZone.y_len = 200;
 
   if (cameraNumber == 0) {
-    securitySystem.cameras[0].gstream_info = init_rx_camera("some string");
+    securitySystem.cameras[cameraNumber].gstream_info = init_rx_camera("129.10.156.169");
+  }
+  if (cameraNumber == 1) {
+    securitySystem.cameras[cameraNumber].gstream_info = init_rx_camera("129.10.156.158");
   }
 
   return 0;
@@ -114,6 +117,7 @@ int initialize_security_system() {
 
 void cleanup_cameras() {
   cleanup_rx_camera(securitySystem.cameras[0].gstream_info);
+  cleanup_rx_camera(securitySystem.cameras[1].gstream_info);
   free(securitySystem.cameras);
 }
 

@@ -199,9 +199,9 @@ void show_camera_frame(struct system_status * system) {
     // int active_camera_no = system->guiState;
 
     // pass the camera number to get the frame corresponding to the active camera number
-    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_BGRA, IMAGE_WIDTH, IMAGE_HEIGHT);
+    printf("pull frame from camera %d\n", system->guiState);
+    struct image * img = get_frame(system->cameras[system->guiState].gstream_info, IMGENC_BGRA, IMAGE_WIDTH, IMAGE_HEIGHT);
     if (img == NULL) {
-        
         //display no signal text
         uint32_t array_size = IMAGE_WIDTH*IMAGE_HEIGHT;
         uint32_t color_image[array_size];
@@ -505,9 +505,9 @@ void render(struct system_status * system) {
 void* hdmi_main(void* thread_args) {
     // run indefinitely
     struct system_status *system = (system_status*) thread_args;
-    system->cameras[0].gstream_info = init_rx_camera("some string");
+//    system->cameras[0].gstream_info = init_rx_camera("some string");
     render(system);
-    cleanup_rx_camera(system->cameras[0].gstream_info);
+ //   cleanup_rx_camera(system->cameras[0].gstream_info);
     printf("[ HDMI ] - Exiting HDMI thread...\n");
     return NULL;
 }
