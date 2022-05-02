@@ -78,6 +78,10 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
   GstSample *sample = gst_app_sink_try_pull_sample(cam->appsink, GST_FRAME_PULL_TIMEOUT_NS);
 
   if (!sample) {
+    printf("no sample provided\n");
+    if (gst_app_sink_is_eos(cam->appsink)) {
+      printf("stream is EOS\n");
+    }
     return NULL;
   }
 
@@ -103,6 +107,9 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
   gst_buffer_map(buffer, &map, GST_MAP_READ);
 
   struct image *img = create_image_size(enc, map.size);
+  if(!img) {
+    printf("failed to allocate image\n");
+  }
   memcpy(img->buf, map.data, map.size);
   img->buf_len = map.size;
   img->width=width;
