@@ -448,18 +448,24 @@ void show_camera_info(struct system_status * system) {
 void show_camera_options(struct system_status * system) {
     // TODO: no toggling options are included in the system struct, current mockup includes them.
     //       There would have to be elemetns added to the system_status struct
+    static struct shapeObj * black_box = NULL;
+    if (!black_box) black_box = create_rect(48, 16, true, black, false, black);
 
     char cbuf[6];
     sprintf(cbuf, "%d", system->cameras[system->guiState].brightness);
 #if DAVID_CODE
+    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, black_box, JUSTIFY_C, JUSTIFY_C);
     draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
 #else
+    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, black_box, JUSTIFY_L, JUSTIFY_T);
     draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
 #endif
     sprintf(cbuf, "%d", system->cameras[system->guiState].contrast);
 #if DAVID_CODE
+    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, black_box, JUSTIFY_C, JUSTIFY_C);  
     draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
 #else
+    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, black_box, JUSTIFY_L, JUSTIFY_T);
     draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
 #endif
 
