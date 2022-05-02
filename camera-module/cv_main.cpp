@@ -1,7 +1,8 @@
 #include "cv_main.h"
 
-// #include "../base-station/HDMI/inc/imagelib.h"
+extern "C" {
 #include "../base-station/HDMI/inc/gstreamer-rx.h"
+}
 
 #define NUM_CHANNELS 3
 #define ARRAY_DIM 3
