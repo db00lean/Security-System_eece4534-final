@@ -461,11 +461,8 @@ void show_camera_options(struct system_status * system) {
     draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
 #else
     draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
-<<<<<<< HEAD
-=======
 #endif
 
->>>>>>> master
 }
 
 int initialize_hdmi() {
