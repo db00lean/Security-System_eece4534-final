@@ -128,6 +128,18 @@ void show_camera_frame(struct system_status * system) {
     // pass the camera number to get the frame corresponding to the active camera number
     struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_ARGB, IMAGE_WIDTH, IMAGE_HEIGHT);
     if (img == NULL) {
+        
+        //display no signal text
+        uint32_t array_size = IMAGE_WIDTH*IMAGE_HEIGHT;
+        uint32_t color_image[array_size];
+
+        for(int i=0; i<array_size; i++) {
+            color_image[i] = orange;
+        }
+        draw_map(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, color_image);
+        draw_text_scale(IMAGE_TOP_LEFT_X + IMAGE_WIDTH / 2, IMAGE_TOP_LEFT_Y + IMAGE_HEIGHT / 2, "NO SIGNAL", black, 5);
+
+        //then return
         return;
     }
 
@@ -150,6 +162,7 @@ void show_bounding_box(struct system_status * system) {
 
     //people count number - dynamic
     int camera_num_display = camera_metadata->num_bbox + 48;
+
     draw_rectangle_filled(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 - 12, PEOPLE_BOX_TOP_LEFT_Y + 88, 24, 24, black);
     draw_text_scale(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 100, (char *)&camera_num_display, 0x00ff00, 3);
 
@@ -243,7 +256,7 @@ void show_camera_info(struct system_status * system) {
                       zone_data_y_coord_scaled,
                       zone_data_x_len_scaled,
                       zone_data_y_len_scaled,
-                      0xcccccc);
+                      green);
 
     // could draw other information, like number of people here
 }
