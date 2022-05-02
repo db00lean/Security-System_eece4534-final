@@ -79,12 +79,12 @@ void show_background(struct system_status * system) {
     if (!frm_bdr) frm_bdr = create_rect(IMAGE_WIDTH, IMAGE_HEIGHT, false, black, true, white);
     draw_shape(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, frm_bdr, JUSTIFY_L, JUSTIFY_T);
 
-    //shown box and people status block
+    //shown box and people status block and menu box
     static struct shapeObj * opt_box = NULL;
     if (!opt_box) opt_box = create_rect(RIGHT_BOX_W, RIGHT_BOX_H, false, black, true, grey);
     static struct shapeObj * opt_cir = NULL;
     if (!opt_cir) opt_cir = create_circle(CAM_SEL_BOX_RAD, true, green, false, black);
-
+    
     draw_shape(TOGGLE_OPT_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
     draw_text(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, "Show Boxes: ", light_green, 2);
     draw_shape(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, opt_cir, JUSTIFY_C, JUSTIFY_C);
@@ -110,6 +110,12 @@ void show_background(struct system_status * system) {
     draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+150, "Brightness", violet, 2);
 
     draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+350, "Contrast", violet, 2);
+
+    //menu box
+    static struct shapeObj * menu_box = NULL;
+    if (!menu_box) menu_box = create_rect(OPTION_BOX_W + 50, RIGHT_BOX_H, false, black, true, grey);
+    draw_shape(OPTION_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y, menu_box, JUSTIFY_L, JUSTIFY_T);
+    draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, "Button Mode", violet, 2);
 
     //camera_boxes in bottom row
     char num_str[10];
@@ -366,6 +372,8 @@ void show_camera_info(struct system_status * system) {
     static struct shapeObj * zone_box = NULL;
     if (!zone_box) zone_box = create_rect(zone_data_x_len_scaled, zone_data_y_len_scaled, false, black, true, green);
 
+    zone_box->dim1 = zone_data_x_len_scaled;
+    zone_box->dim2 = zone_data_y_len_scaled;
     draw_shape(zone_data_x_coord_scaled, zone_data_y_coord_scaled, zone_box, JUSTIFY_L, JUSTIFY_T);
 
     // could draw other information, like number of people here
@@ -453,6 +461,35 @@ void show_camera_options(struct system_status * system) {
 
     char cbuf[6];
     sprintf(cbuf, "%d", system->cameras[system->guiState].brightness);
+
+    static struct shapeObj * menu_black_box = NULL;
+    if (!menu_black_box) menu_black_box = create_rect(160, 16, true, black, false, black);
+    char menuBuf[16];
+    switch(system->mode)
+    {
+        case MODE_FZ_X:
+            sprintf(menuBuf, "%s", "X Position");
+            break;
+        case MODE_FZ_Y:
+            sprintf(menuBuf, "%s", "Y Position");
+            break;
+        case MODE_FZ_XLEN:
+            sprintf(menuBuf, "%s", "X Length");
+            break;
+        case MODE_FZ_YLEN:
+            sprintf(menuBuf, "%s", "Y Length");
+            break;
+        case MODE_CAM_BRIGHTNESS:
+            sprintf(menuBuf, "%s", "Brightness");
+            break;
+        case MODE_CAM_CONTRAST:
+            sprintf(menuBuf, "%s", "Contrast");
+            break;
+        default:
+            break;
+    }
+
+
 #if DAVID_CODE
     draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, black_box, JUSTIFY_C, JUSTIFY_C);
     draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
@@ -467,6 +504,14 @@ void show_camera_options(struct system_status * system) {
 #else
     draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, black_box, JUSTIFY_L, JUSTIFY_T);
     draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
+#endif
+
+#if DAVID_CODE  
+    draw_shape(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menu_black_box, JUSTIFY_C, JUSTIFY_C);
+    draw_text(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menuBuf, red, 2);
+#else
+    draw_shape(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menu_black_box, JUSTIFY_C, JUSTIFY_C);
+    draw_text_scale(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menuBuf, red, 2));
 #endif
 
 }
