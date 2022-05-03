@@ -49,6 +49,6 @@ struct shapeObj * create_rect(uint16_t l, uint16_t h, bool hasFill, uint32_t fil
 
 void draw_shape(uint16_t x, uint16_t y, struct shapeObj * shape, uint8_t justify_h, uint8_t jusitfy_v);
 
-void draw_text(int x_start, int y_start, char* str, uint32_t color, int scale);
+void draw_text(int x_start, int y_start, char* str, uint32_t color, int scale, uint8_t justify_h, uint8_t jusitfy_v);
 
 #endif

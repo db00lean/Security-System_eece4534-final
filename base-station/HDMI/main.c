@@ -62,6 +62,15 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
 #define OPTION_BOX_W RIGHT_BOX_W/2
 #define OPTION_BOX_H RIGHT_BOX_H * 2
 
+#define BACKGROUND_COLOR black
+#define HEADING_1_COLOR light_green
+#define HEADING_2_COLOR violet
+#define TEXT_COLOR green
+#define SHAPE_OUTLINE white
+
+#define DRAW_HEADING_1(x,y,s) draw_text(x,y,s,HEADING_1_COLOR,4,JUSTIFY_L,JUSTIFY_T)
+#define DRAW_HEADING_2(x,y,s) draw_text(x,y,s,HEADING_2_COLOR,3,JUSTIFY_L,JUSTIFY_T)
+#define DRAW_TEXT(x,y,s) draw_text(x,y,s,TEXT_COLOR,2,JUSTIFY_L,JUSTIFY_T)
 
 /**
  * @brief draws the background of the GUI (static elements)
@@ -82,14 +91,6 @@ void show_background(struct system_status * system) {
     //shown box and people status block and menu box
     static struct shapeObj * opt_box = NULL;
     if (!opt_box) opt_box = create_rect(RIGHT_BOX_W, RIGHT_BOX_H, false, black, true, grey);
-    static struct shapeObj * opt_cir = NULL;
-    if (!opt_cir) opt_cir = create_circle(CAM_SEL_BOX_RAD, true, green, false, black);
-    
-    draw_shape(TOGGLE_OPT_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
-    draw_text(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, "Show Boxes: ", light_green, 2);
-    draw_shape(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, opt_cir, JUSTIFY_C, JUSTIFY_C);
-    draw_text(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, "Show Person #: ", light_green, 2);
-    draw_shape(TOGGLE_OPT_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 150, opt_cir, JUSTIFY_C, JUSTIFY_C);
 
     //people count block and label
     draw_shape(PEOPLE_BOX_TOP_LEFT_X, PEOPLE_BOX_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
@@ -111,11 +112,15 @@ void show_background(struct system_status * system) {
 
     draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+350, "Contrast", violet, 2);
 
-    //menu box
-    static struct shapeObj * menu_box = NULL;
-    if (!menu_box) menu_box = create_rect(OPTION_BOX_W + 50, RIGHT_BOX_H, false, black, true, grey);
-    draw_shape(OPTION_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y, menu_box, JUSTIFY_L, JUSTIFY_T);
-    draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + 50, "Button Mode", violet, 2);
+    //control box
+    static struct shapeObj * btn_cir = NULL;
+    if (!btn_cir) btn_cir = create_circle(25, false, BACKGROUND_COLOR, true, SHAPE_OUTLINE);
+    draw_shape(OPTION_BOX_TOP_LEFT_X + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y, btn_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_shape(OPTION_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y + 100, btn_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_shape(OPTION_BOX_TOP_LEFT_X + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 100, btn_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_shape(OPTION_BOX_TOP_LEFT_X + 200, TOGGLE_OPT_BOX_TOP_LEFT_Y + 100, btn_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_shape(OPTION_BOX_TOP_LEFT_X + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 200, btn_cir, JUSTIFY_C, JUSTIFY_C);
+    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X - 100, OPTION_BOX_TOP_LEFT_Y - 100, "Button Controls");
 
     //camera_boxes in bottom row
     char num_str[10];

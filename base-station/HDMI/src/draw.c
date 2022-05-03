@@ -134,9 +134,29 @@ static void draw_circle(uint16_t x_center, uint16_t y_center, struct shapeObj * 
     }
 }
 
-void draw_text(int xPos, int yPos, char* str, uint32_t color, int scale)
+void draw_text(int xPos, int yPos, char* str, uint32_t color, int scale, uint8_t justify_h, uint8_t justify_v)
 {
-	draw_string_scale(xPos, yPos, str, strlen(str), color, scale);
+	unsigned int len = strlen(str);
+
+	if (justify_h == JUSTIFY_C)
+	{
+		xPos = xPos + (len * 4 * scale);
+	}
+	else if (justify_h == JUSTIFY_R)
+	{
+		xPos = xPos + (len * 8 * scale);
+	}
+
+	if (justify_v == JUSTIFY_C)
+	{
+		yPos = yPos + (4 * scale);
+	}
+	else if (justify_v == JUSTIFY_R)
+	{
+		yPos = yPos + (8 * scale);
+	}
+
+	draw_string_scale(xPos, yPos, str, len, color, scale);
 }
 
 static void draw_string_scale(int x, int y, char *s, unsigned int len, uint32_t color, int scale)
