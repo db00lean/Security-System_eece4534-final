@@ -300,8 +300,8 @@ struct button_actions fz_y_actions = {
     .on_center = cycle_active_camera,
     .on_left = prev_mode,
     .on_right = next_mode, 
-    .on_down = decrement_fz_y,
-    .on_up = increment_fz_y,
+    .on_down = increment_fz_y,
+    .on_up = decrement_fz_y,
 };
 
 struct button_actions fz_xlen_actions = {
