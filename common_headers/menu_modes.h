@@ -15,8 +15,8 @@
 
 #include "system_management.h"
 
-#define FZ_POS_INC_DELTA (10)
-#define FZ_POS_DEC_DELTA (-10)
+#define FZ_POS_INC_DELTA (20)
+#define FZ_POS_DEC_DELTA (-20)
 
 #define FZ_LEN_INC_DELTA (10)
 #define FZ_LEN_DEC_DELTA (-10)
