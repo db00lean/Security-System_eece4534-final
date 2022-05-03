@@ -54,7 +54,7 @@ int main() {
     // Get actual data associated with test image.
     cout << "check"<<endl;
     float *frame_data = sized.data;
-cout << "check"<<endl;
+
     // Do prediction.
     double time = what_time_is_it_now();
     network_predict(net, frame_data);
