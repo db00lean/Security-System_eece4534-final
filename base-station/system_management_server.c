@@ -198,6 +198,11 @@ int main(int argc, char **argv) {
   while (securitySystem.running) {
     int assigned_cam_id = 0;
     msg = receive_msg(networkServer->register_s);
+    if (msg == NULL) {
+      printf("[ Main ] - Received NULL msg\n");
+      continue;
+    }
+
     struct client_hello* ch = (struct client_hello*)msg->data;
     if (msg->type == CLIENT_HELLO)
     {
@@ -208,10 +213,7 @@ int main(int argc, char **argv) {
       metadata_thread.assigned_camera_id = assigned_cam_id;
       pthread_create(&camera_data_threads[assigned_cam_id], NULL, camera_metadata_main, &metadata_thread);
     }
-    if (msg == NULL) {
-      printf("[ Main ] - Received NULL msg\n");
-      continue;
-    }
+  
     // check if the data in the message has valid coordinates
     int valid = validateCVData((struct cv_data*) msg->data);
 
