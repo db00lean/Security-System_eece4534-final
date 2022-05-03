@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../camera/camera_control/camera_control.h"
 #ifndef __CV_STRUCT_H__
 #include "../common_headers/system_management.h"
 #else
@@ -44,12 +45,13 @@ void *cv_t(void *thread_args)
 {
   bool do_run_cv = true;
   cv_data current_data;
+  struct camera_rx* cam = (struct camera_rx*) thread_args;  
 
   while (do_run_cv)
   {
     // TODO: Add "gstream camera_stream" as argument to GetBBoxesFromFrame (or
     // whatever the gstream type is)
-    current_data = GetBBoxesFromFrame();
+    current_data = GetBBoxesFromFrame(cam);
     pthread_mutex_lock(&mutex); // Lock
     cv_data_q.push(current_data);
     pthread_mutex_unlock(&mutex); // Unlock
@@ -70,8 +72,12 @@ int main(int argc, char *argv[])
   const char *port = "55000"; // Statically defined for now
   const char *address = "129.10.156.154";
   int cam_id = 0;
-  struct client *c = new_client(port, address);
+  struct client* c = new_client(port, address);
+  struct camera_rx* cam = init_rx_camera("cv_cam");
 
+  if (cam == NULL) {
+    puts("[ main ] - camera is null");
+  }
   // ### kick off threads ###
 
   // stream
@@ -82,7 +88,7 @@ int main(int argc, char *argv[])
   // CV
   pthread_t cv_main_thread;
   pthread_mutex_init(&mutex, NULL);
-  pthread_create(&cv_main_thread, NULL, cv_t, NULL);
+  pthread_create(&cv_main_thread, NULL, cv_t, &cam);
   
   struct cv_data out;
   while(1){
@@ -100,6 +106,7 @@ int main(int argc, char *argv[])
   pthread_join(cv_main_thread, NULL);
   pthread_mutex_destroy(&mutex);
   free(c);
+  cleanup_rx_camera(cam);
 
   return 0;
 }

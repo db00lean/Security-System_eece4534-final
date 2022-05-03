@@ -65,7 +65,7 @@ struct image *create_image(enum img_enc enc, int width, int height) {
   struct image *img = malloc(sizeof(struct image));
 
   *img = (struct image){
-      .enc = enc, .time = 0, .width = width, .height = height, .buf = buf};
+      .enc = enc, .time = 0, .width = width, .height = height, .buf = buf, .buf_len = bytes_in_data};
 
   return img;
 }
