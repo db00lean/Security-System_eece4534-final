@@ -39,10 +39,10 @@ void print_sys_fzones(system_status* system) {
         printf("\t");
         if (ii == system->guiState) {
             //active camera
-            printf("*");
+            printf("* ");
         }
         else {
-            printf(" ");
+            printf("  ");
         }
 
         printf("[%d] - { x: %d, y: %d, x-len: %d, y-len: %d, brightness: %d, contrast: %d }\n", 
@@ -398,18 +398,10 @@ void* run_button_client(void* thread_args) {
     ssize_t bytes_read;
     system_status* system = (system_status*) thread_args; 
 
-    puts("[ Btns ] - Hello from button listener thread!");
+    puts("[ Btns ] - Button listener thread starting...");
 
     while(system->running) {
-#ifdef DEBUG
-        puts("[ Btns ] - Going to sleep until button is pressed...");
-#endif
-
         poll(&zedbtns_pfd, 1, -1);
-
-#ifdef DEBUG
-        puts("[ Btns ] - Woken up...");
-#endif
 
         if (system->running && CAN_READ_PFD(zedbtns_pfd)) {
             bytes_read = read(zedbtns_pfd.fd, btn_val_buffer, BUTTON_BUFFER_MAX_SIZE);
