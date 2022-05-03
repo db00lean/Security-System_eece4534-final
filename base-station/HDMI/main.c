@@ -63,7 +63,8 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
 #define OPTION_BOX_W RIGHT_BOX_W/2
 #define OPTION_BOX_H RIGHT_BOX_H * 2
 
-int running_total, totalframes;
+double running_total = 0;
+int totalframes = 0;
 
 /**
  * @brief draws the background of the GUI (static elements)
@@ -564,7 +565,7 @@ void render(struct system_status * system) {
         //g_usleep(166667);
         //pageFlip();
     }
-    printf("time: %d\n", running_total/totalframes);
+    printf("time: %f\n", running_total/totalframes);
 }
 
 void* hdmi_main(void* thread_args) {
