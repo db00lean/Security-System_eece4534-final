@@ -3,7 +3,7 @@ CFLAGS:=-g $(shell pkg-config --cflags gstreamer-1.0 gstreamer-rtsp-server-1.0 o
 
 main: system_management_client.o stream.o cv_main.o
 	(cd ../network && make cplus)
-#	(cd ../camera/camera_control && make)
+	(cd ../camera/camera_control && make)
 	(cd ../base-station/HDMI && make hdmi-lib.a)
 	${CXX} -o main system_management_client.o stream.o cv_main.o ../network/client.o ../network/packet.o ../camera/camera_control/camera_control.o ../base-station/HDMI/hdmi-lib.a ${LDFLAGS} ${libs}
 

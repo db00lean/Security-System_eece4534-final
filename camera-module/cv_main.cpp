@@ -1,9 +1,5 @@
 #include "cv_main.h"
 
-extern "C" {
-#include "../base-station/HDMI/inc/gstreamer-rx.h"
-}
-
 #define NUM_CHANNELS 3
 #define ARRAY_DIM 3
 
@@ -59,15 +55,22 @@ cv::Mat ImportFrame()
 cv::Mat StreamFrame(struct camera_rx *cam)
 {
   // struct image *get_frame(struct camera_rx * cam, enum img_enc enc, int width, int height);
-  //struct image *img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+  // struct image *img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
 
-  struct image *img = create_image(IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+  struct image *img = create_image(IMGENC_RGB, IMAGE_WIDTH, IMAGE_HEIGHT);
+  printf("[ stream ] - img width: %d, img height: %d\n", IMAGE_WIDTH, IMAGE_HEIGHT);
+  if (img == NULL) {
+    puts("[ stream ] - received null img");
+    cv::Mat empty; 
+    return empty;
+  }
 
   // convert image to cv Mat
   // const int sizes[3] = {img->height, img->width, NUM_CHANNELS};
   // const size_t steps[2] = {(img->width * sizeof(char)), sizeof(char)};
   // cv::Mat cv_frame = cv::Mat(ARRAY_DIM, &sizes, CV_8UC3, (void *) img->buf, &steps);
-  cv::Mat frame = cv::Mat(sizeof(img->buf), 1, CV_8UC3, img->buf).clone();
+  cv::Mat frame = cv::Mat(1, img->buf_len, CV_8UC3, img->buf);
+  
   cv::Mat cv_frame = frame.reshape(0, IMAGE_HEIGHT);
 
   // write to an image file to test if this works
@@ -193,11 +196,15 @@ network SetupDarknet(char *cfgfile, char *weightfile)
 // TODO: Make this accept gstream as an input
 // Gets the newest frame from a stream  // TOOO: Make "gstream camera_stream" an input
 // Creates/returns coordinates of bounding boxes of people detected in the frame
-cv_data GetBBoxesFromFrame()
+cv_data GetBBoxesFromFrame(struct camera_rx* cam)
 {
 #if DO_CV
   cv::Mat frame;         // Could consolidate this into one mega-line, but this looks cleaner
-  frame = ImportFrame(); // TODO: Update ImportFrame() to get frame from gstream; accepts "gstream camera_stream" as argument
+  //frame = ImportFrame(); // TODO: Update ImportFrame() to get frame from gstream; accepts "gstream camera_stream" as argument
+  frame = StreamFrame(cam);
+  if (frame.empty()) {
+    puts("[ cv ] - received empty frame");
+  }
   // frame = StreamFrame();
   return GenerateBBoxes(frame);
 #else
@@ -220,12 +227,11 @@ int cv_main()
   struct cv_data cv_data_current;
 #if DO_CV
   cv::Mat image;
-  image = ImportFrame();
+  //image = ImportFrame();
 
-  /**
+
   struct camera_rx * cam = init_rx_camera("cv_cam");
   image = StreamFrame(cam);
-  **/
 
   if (image.empty())
   {
