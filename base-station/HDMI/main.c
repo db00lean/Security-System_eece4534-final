@@ -62,6 +62,11 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
 #define OPTION_BOX_W RIGHT_BOX_W/2
 #define OPTION_BOX_H RIGHT_BOX_H * 2
 
+#define BTN_CONTROL_RAD 20
+#define BTN_CONTROL_SPACE BTN_CONTROL_RAD * 4
+#define BTN_CONTROL_X ZONE_STATUS_TOP_LEFT_X + 150
+#define BTN_CONTROL_Y ZONE_STATUS_TOP_LEFT_Y + 650
+
 #define BACKGROUND_COLOR black
 #define HEADING_1_COLOR light_green
 #define HEADING_2_COLOR violet
@@ -98,7 +103,7 @@ void show_background(struct system_status * system) {
 
     //zone status block and label
     draw_shape(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
-    DRAW_HEADING_2(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status",);
+    DRAW_HEADING_2(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status");
 
     //get the current camera information from the struct
     //struct camera_module * active_camera = &system->cameras[system->guiState];
@@ -112,13 +117,14 @@ void show_background(struct system_status * system) {
 
     //control box
     static struct shapeObj * btn_cir = NULL;
-    if (!btn_cir) btn_cir = create_circle(25, false, BACKGROUND_COLOR, true, SHAPE_OUTLINE);
-    draw_shape(OPTION_BOX_TOP_LEFT_X + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y, btn_cir, JUSTIFY_C, JUSTIFY_C);
-    draw_shape(OPTION_BOX_TOP_LEFT_X, TOGGLE_OPT_BOX_TOP_LEFT_Y + 100, btn_cir, JUSTIFY_C, JUSTIFY_C);
-    draw_shape(OPTION_BOX_TOP_LEFT_X + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 100, btn_cir, JUSTIFY_C, JUSTIFY_C);
-    draw_shape(OPTION_BOX_TOP_LEFT_X + 200, TOGGLE_OPT_BOX_TOP_LEFT_Y + 100, btn_cir, JUSTIFY_C, JUSTIFY_C);
-    draw_shape(OPTION_BOX_TOP_LEFT_X + 100, TOGGLE_OPT_BOX_TOP_LEFT_Y + 200, btn_cir, JUSTIFY_C, JUSTIFY_C);
-    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X - 100, OPTION_BOX_TOP_LEFT_Y - 100, "Button Controls");
+    if (!btn_cir) btn_cir = create_circle(BTN_CONTROL_RAD, false, BACKGROUND_COLOR, true, SHAPE_OUTLINE);
+    draw_shape(BTN_CONTROL_X + BTN_CONTROL_SPACE, BTN_CONTROL_Y, btn_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_shape(BTN_CONTROL_X, BTN_CONTROL_Y + BTN_CONTROL_SPACE, btn_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_shape(BTN_CONTROL_X + BTN_CONTROL_SPACE, BTN_CONTROL_Y + BTN_CONTROL_SPACE, btn_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_shape(BTN_CONTROL_X + (2 * BTN_CONTROL_SPACE), BTN_CONTROL_Y + BTN_CONTROL_SPACE, btn_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_shape(BTN_CONTROL_X + BTN_CONTROL_SPACE, BTN_CONTROL_Y + (2 * BTN_CONTROL_SPACE), btn_cir, JUSTIFY_C, JUSTIFY_C);
+    draw_text(BTN_CONTROL_X + BTN_CONTROL_SPACE,BTN_CONTROL_Y - BTN_CONTROL_RAD,"+", HEADING_2_COLOR,4,JUSTIFY_C, JUSTIFY_B);
+    draw_text(BTN_CONTROL_X + BTN_CONTROL_SPACE,BTN_CONTROL_Y + (2 * BTN_CONTROL_SPACE) + BTN_CONTROL_RAD,"-", HEADING_2_COLOR,4,JUSTIFY_C, JUSTIFY_T);
 
     //camera_boxes in bottom row
     char num_str[10];
@@ -136,7 +142,7 @@ void show_background(struct system_status * system) {
         sprintf(num_str, "%d", i+1);
         draw_text(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_DIM / 2),
                   CAM_SEL_BOX_Y + (CAM_SEL_BOX_DIM / 2),
-                  num_str, violet, 10, JUSTIFY_C, JUSTIFY_T);
+                  num_str, violet, 10, JUSTIFY_C, JUSTIFY_C);
     }
 
 #else
@@ -459,63 +465,78 @@ void show_camera_info(struct system_status * system) {
 void show_camera_options(struct system_status * system) {
     // TODO: no toggling options are included in the system struct, current mockup includes them.
     //       There would have to be elemetns added to the system_status struct
-    static struct shapeObj * black_box = NULL;
-    if (!black_box) black_box = create_rect(48, 16, true, black, false, black);
-
+    char bbuf[6];
     char cbuf[6];
-    sprintf(cbuf, "%d", system->cameras[system->guiState].brightness);
+    sprintf(bbuf, "%d", system->cameras[system->guiState].brightness);
+    sprintf(cbuf, "%d", system->cameras[system->guiState].contrast);
 
-    static struct shapeObj * menu_black_box = NULL;
-    if (!menu_black_box) menu_black_box = create_rect(160, 16, true, black, false, black);
-    char menuBuf[16];
+    char menuBuf[32];
+    char leftBuf[16];
+    char rightBuf[16];
     switch(system->mode)
     {
         case MODE_FZ_X:
-            sprintf(menuBuf, "%s", "X Position");
+            sprintf(menuBuf, "Button Mode: %s", "X Position");
+            sprintf(leftBuf, "%s", "Contrast");
+            sprintf(rightBuf, "%s", "Y Position");
             break;
         case MODE_FZ_Y:
-            sprintf(menuBuf, "%s", "Y Position");
+            sprintf(menuBuf, "Button Mode: %s", "Y Position");
+            sprintf(leftBuf, "%s", "X Position");
+            sprintf(rightBuf, "%s", "X Length");
             break;
         case MODE_FZ_XLEN:
-            sprintf(menuBuf, "%s", "X Length");
+            sprintf(menuBuf, "Button Mode: %s", "X Length");
+            sprintf(leftBuf, "%s", "Y Position");
+            sprintf(rightBuf, "%s", "Y Length");
             break;
         case MODE_FZ_YLEN:
-            sprintf(menuBuf, "%s", "Y Length");
+            sprintf(menuBuf, "Button Mode: %s", "Y Length");
+            sprintf(leftBuf, "%s", "X Length");
+            sprintf(rightBuf, "%s", "Brightness");
             break;
         case MODE_CAM_BRIGHTNESS:
-            sprintf(menuBuf, "%s", "Brightness");
+            sprintf(menuBuf, "Button Mode: %s", "Brightness");
+            sprintf(leftBuf, "%s", "Y Length");
+            sprintf(rightBuf, "%s", "Contrast");
             break;
         case MODE_CAM_CONTRAST:
-            sprintf(menuBuf, "%s", "Contrast");
+            sprintf(menuBuf, "Button Mode: %s", "Contrast");
+            sprintf(leftBuf, "%s", "Brightness");
+            sprintf(rightBuf, "%s", "X Position");
             break;
         default:
             break;
     }
+    static struct shapeObj * black_box = NULL;
+    if (!black_box) black_box = create_rect(48, 16, true, black, false, black);
+    
+    int menu_scale = 2;
+    int dir_scale = 2;
 
+    static struct shapeObj * menu_black_box = NULL;
+    if (!menu_black_box) menu_black_box = create_rect(30 * menu_scale * 8, menu_scale * 8, true, black, false, black);
 
-#if DAVID_CODE
-    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, black_box, JUSTIFY_C, JUSTIFY_C);
-    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf);
-#else
-    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, black_box, JUSTIFY_L, JUSTIFY_T);
-    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
-#endif
-    sprintf(cbuf, "%d", system->cameras[system->guiState].contrast);
-#if DAVID_CODE
-    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, black_box, JUSTIFY_C, JUSTIFY_C);
-    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf);
-#else
-    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, black_box, JUSTIFY_L, JUSTIFY_T);
-    draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
-#endif
+    static struct shapeObj * left_black_box = NULL;
+    if (!left_black_box) left_black_box = create_rect(11 * dir_scale * 8, dir_scale * 8, true, black, false, black);
 
-#if DAVID_CODE  
-    draw_shape(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menu_black_box, JUSTIFY_C, JUSTIFY_C);
-    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menuBuf);
-#else
-    draw_shape(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menu_black_box, JUSTIFY_C, JUSTIFY_C);
-    draw_text_scale(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menuBuf, red, 2));
-#endif
+    static struct shapeObj * right_black_box = NULL;
+    if (!right_black_box) right_black_box = create_rect(11 * dir_scale * 8, dir_scale * 8, true, black, false, black);
+
+    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, black_box, JUSTIFY_C, JUSTIFY_T);
+    draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, bbuf, green, 2, JUSTIFY_C, JUSTIFY_T);
+
+    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, black_box, JUSTIFY_C, JUSTIFY_T);
+    draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2, JUSTIFY_C, JUSTIFY_T);
+
+    draw_shape(BTN_CONTROL_X + BTN_CONTROL_SPACE, BTN_CONTROL_Y - BTN_CONTROL_SPACE, menu_black_box, JUSTIFY_C, JUSTIFY_B);
+    draw_text(BTN_CONTROL_X + BTN_CONTROL_SPACE, BTN_CONTROL_Y - BTN_CONTROL_SPACE, menuBuf, violet, menu_scale, JUSTIFY_C, JUSTIFY_B);
+
+    draw_shape(BTN_CONTROL_X - BTN_CONTROL_RAD - (BTN_CONTROL_RAD/4), BTN_CONTROL_Y + BTN_CONTROL_SPACE, left_black_box, JUSTIFY_R, JUSTIFY_C);
+    draw_text(BTN_CONTROL_X - BTN_CONTROL_RAD - (BTN_CONTROL_RAD/4), BTN_CONTROL_Y + BTN_CONTROL_SPACE, leftBuf,violet,dir_scale, JUSTIFY_R, JUSTIFY_C);
+
+    draw_shape(BTN_CONTROL_X + (2 * BTN_CONTROL_SPACE) + BTN_CONTROL_RAD + (BTN_CONTROL_RAD/4), BTN_CONTROL_Y + BTN_CONTROL_SPACE, right_black_box, JUSTIFY_L, JUSTIFY_C);
+    draw_text(BTN_CONTROL_X + (2 * BTN_CONTROL_SPACE) + BTN_CONTROL_RAD + (BTN_CONTROL_RAD/4), BTN_CONTROL_Y + BTN_CONTROL_SPACE, rightBuf,violet,dir_scale,JUSTIFY_L, JUSTIFY_C);
 
 }
 

@@ -140,20 +140,20 @@ void draw_text(int xPos, int yPos, char* str, uint32_t color, int scale, uint8_t
 
 	if (justify_h == JUSTIFY_C)
 	{
-		xPos = xPos - (len * 4 * scale);
+		xPos -= (len * 4 * scale);
 	}
 	else if (justify_h == JUSTIFY_R)
 	{
-		xPos = xPos - (len * 8 * scale);
+		xPos -= (len * 8 * scale);
 	}
 
 	if (justify_v == JUSTIFY_C)
 	{
-		yPos = yPos - (4 * scale);
+		yPos -= (4 * scale);
 	}
-	else if (justify_v == JUSTIFY_R)
+	else if (justify_v == JUSTIFY_B)
 	{
-		yPos = yPos - (8 * scale);
+		yPos -= (8 * scale);
 	}
 
 	if (xPos < 0)
@@ -163,6 +163,14 @@ void draw_text(int xPos, int yPos, char* str, uint32_t color, int scale, uint8_t
 	if (yPos < 0)
 	{
 		yPos = 0;
+	}
+	if (xPos > 1920)
+	{
+		xPos = 1920;
+	}
+	if (yPos > 1080)
+	{
+		yPos = 1080;
 	}
 
 	draw_string_scale(xPos, yPos, str, len, color, scale);
