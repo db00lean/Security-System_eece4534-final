@@ -16,7 +16,7 @@ static const char* const ENC_LOOKUP[] = {
 };
 
 
-struct camera_rx * init_rx_camera(char* uri) {
+struct camera_rx * init_rx_camera(char* ip) {
 
   struct camera_rx* cam = malloc(sizeof(struct camera_rx));
   // create structure
@@ -45,11 +45,18 @@ struct camera_rx * init_rx_camera(char* uri) {
   //    "appsink name=sink max-buffers=10 drop=true",
   //    NULL);
 
+
   // jpeg / cam decoding
-  cam->pipeline = gst_parse_launch(
-      "rtspsrc location=rtsp://129.10.156.169:8554/test ! rtpjpegdepay ! "
-      "decodebin ! appsink name=sink max-buffers=10 drop=true",
-      NULL);
+  // create pipeline string
+  char* pipeline_string = calloc(sizeof(char), 200);
+  snprintf(pipeline_string, 200, "rtspsrc location=rtsp://%s:8554/test ! rtpjpegdepay ! "
+      "decodebin ! appsink name=sink max-buffers=10 drop=true", ip);
+
+  printf("%s", pipeline_string);
+
+  cam->pipeline = gst_parse_launch(pipeline_string, NULL);
+
+  free(pipeline_string);
 
   gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
 
@@ -71,6 +78,10 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
   GstSample *sample = gst_app_sink_try_pull_sample(cam->appsink, GST_FRAME_PULL_TIMEOUT_NS);
 
   if (!sample) {
+    //printf("no sample provided\n");
+    if (gst_app_sink_is_eos(cam->appsink)) {
+      printf("stream is EOS\n");
+    }
     return NULL;
   }
 
@@ -96,6 +107,9 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
   gst_buffer_map(buffer, &map, GST_MAP_READ);
 
   struct image *img = create_image_size(enc, map.size);
+  if(!img) {
+    printf("failed to allocate image\n");
+  }
   memcpy(img->buf, map.data, map.size);
   img->buf_len = map.size;
   img->width=width;
@@ -109,6 +123,27 @@ struct image * get_frame(struct camera_rx *cam, enum img_enc enc, int width, int
   gst_sample_unref(converted_sample);
 
   return img;
+}
+
+int play_stream(struct camera_rx * cam) {
+  /* Start playing */
+  GstStateChangeReturn ret = gst_element_set_state(cam->pipeline, GST_STATE_PLAYING);
+  if (ret == GST_STATE_CHANGE_FAILURE) {
+    g_printerr("Unable to set the pipeline to the playing state.\n");
+    return 1;
+  }
+  printf("playing stream\n");
+  return 0;
+}
+
+int pause_stream(struct camera_rx * cam) {
+  GstStateChangeReturn ret = gst_element_set_state(cam->pipeline, GST_STATE_PAUSED);
+  if (ret == GST_STATE_CHANGE_FAILURE) {
+    g_printerr("Unable to set the pipeline to the playing state.\n");
+    return 1;
+  }
+  printf("paused stream\n");
+  return 0;
 }
 
 void cleanup_rx_camera(struct camera_rx * cam) {
