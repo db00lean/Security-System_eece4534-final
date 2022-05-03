@@ -172,11 +172,13 @@ int main(int argc, char **argv) {
   pthread_create(&btn_listener_thread, NULL, run_button_client, &securitySystem);
   pthread_create(&hdmi_thread, NULL, hdmi_main ,&securitySystem);
 
+  puts("[ ZMQ  ] - Starting ZMQ...");
+
   // get metadata from the network
   while (securitySystem.running) {
     msg = receive_msg(networkServer->responder);
     if (msg == NULL) {
-      printf("[ Main ] - Received NULL msg\n");
+      printf("[ ZMQ  ] - Received NULL msg\n");
       continue;
     }
     // check if the data in the message has valid coordinates
@@ -198,15 +200,20 @@ int main(int argc, char **argv) {
     }
   }
 
+  puts("[ ZMQ  ] - Exiting ZMQ...");
+
   // cleanup
   pthread_join(btn_listener_thread, NULL);
   pthread_join(hdmi_thread, NULL);
 
+  puts("[ Main ] - Threads terminated successfully, starting cleanup...");
   cleanup_cameras();
+  puts("[ Main ] - Done cleaning cameras...");
+
   pthread_mutex_destroy(&securitySystem.lock);
   free(networkServer);
 
-  printf("[ Main ] - Security camera system exited successfully. Bye!\n");
+  puts("[ Main ] - Security camera system exited successfully. Bye!");
 
   return 0;
 }

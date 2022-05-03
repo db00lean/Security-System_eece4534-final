@@ -152,5 +152,4 @@ void cleanup_rx_camera(struct camera_rx * cam) {
   gst_object_unref(cam->pipeline);
   gst_object_unref(cam->appsink);
   free(cam);
-  gst_deinit();
 }
