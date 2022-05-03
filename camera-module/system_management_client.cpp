@@ -9,7 +9,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../camera/camera_control/camera_control.h"
 #ifndef __CV_STRUCT_H__
 #include "../common_headers/system_management.h"
 #else

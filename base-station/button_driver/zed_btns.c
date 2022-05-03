@@ -199,7 +199,7 @@ static void log_btn_press() {
 }
 
 static irqreturn_t button_interrupt_handler(int irq, void* dev_id) {
-    log_btn_press(); // wakes up sleeping threads
+    log_btn_press();
     clear_gpio_interrupt(&kbtns_global);
     return IRQ_HANDLED;
 }
