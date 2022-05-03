@@ -1,10 +1,5 @@
 #include "cv_main.h"
 
-<<<<<<< HEAD
-#include "../base-station/HDMI/inc/gstreamer-rx.h"
-
-=======
->>>>>>> 8e2c37ae1baab604765298b73f8e3dff67f32012
 #define NUM_CHANNELS 3
 #define ARRAY_DIM 3
 
@@ -38,7 +33,7 @@ cv::Mat ImportFrame()
 
   // Read the image file as
   // imread("default.jpg");
-  cv::Mat img = cv::imread("people.jpg", cv::IMREAD_GRAYSCALE);
+  cv::Mat img = cv::imread("streamed_frame_test.png", cv::IMREAD_GRAYSCALE);
 
   // Replace cv::imread() with darknet::load_image()
   // Testing with openCV's read first, as darknet's seems to be an opencv wrapper
@@ -60,30 +55,26 @@ cv::Mat ImportFrame()
 cv::Mat StreamFrame(struct camera_rx *cam)
 {
   // struct image *get_frame(struct camera_rx * cam, enum img_enc enc, int width, int height);
-<<<<<<< HEAD
-  //struct image *img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
-  
-  struct image *img = create_image(IMGENC_RGB, IMAGE_WIDTH, IMAGE_HEIGHT);
-=======
-  // struct image *img = get_frame(cam, IMGENC_BGR, IMAGE_WIDTH, IMAGE_HEIGHT);
+  struct image *img = NULL;  
 
-  struct image *img = create_image(IMGENC_RGB, IMAGE_WIDTH, IMAGE_HEIGHT);
-  printf("[ stream ] - img width: %d, img height: %d\n", IMAGE_WIDTH, IMAGE_HEIGHT);
-  if (img == NULL) {
-    puts("[ stream ] - received null img");
-    cv::Mat empty; 
-    return empty;
+  //struct image *img = create_image(IMGENC_RGB, IMAGE_WIDTH, IMAGE_HEIGHT);
+  while (img == NULL) {
+    img = get_frame(cam, IMGENC_RGB, IMAGE_WIDTH, IMAGE_HEIGHT);
+    usleep(500000);
+    if(img == NULL)
+    {
+	    printf("image is null, trying again!\n");
+    }
   }
->>>>>>> 8e2c37ae1baab604765298b73f8e3dff67f32012
 
+  printf("[ stream ] - img width: %d, img height: %d\n", img->width, img->height);
+  
   // convert image to cv Mat
-  // const int sizes[3] = {img->height, img->width, NUM_CHANNELS};
-  // const size_t steps[2] = {(img->width * sizeof(char)), sizeof(char)};
-  // cv::Mat cv_frame = cv::Mat(ARRAY_DIM, &sizes, CV_8UC3, (void *) img->buf, &steps);
-  cv::Mat frame = cv::Mat(1, img->buf_len, CV_8UC3, img->buf);
-  printf("[ stream ] - frame width: %d, frame height: %d\n", frame.cols, frame.rows);
-  cv::Mat cv_frame = frame.reshape(0, IMAGE_HEIGHT);
+  cv::Mat cv_frame = cv::Mat(img->height, img->width, CV_8UC3, img->buf, (3 * img->width));
+  //printf("[ stream ] - frame width: %d, frame height: %d\n", frame.cols, frame.rows);
+  //cv::Mat cv_frame = frame.reshape(0, IMAGE_HEIGHT);
   printf("[ stream ] - cvframe width: %d, cvframe height: %d\n", cv_frame.cols, cv_frame.rows);
+  printf("[ stream ] - num channels: %d\n", cv_frame.channels());
 
   // write to an image file to test if this works
   bool result = cv::imwrite("streamed_frame_test.png", cv_frame);
@@ -93,7 +84,7 @@ cv::Mat StreamFrame(struct camera_rx *cam)
     std::cout << "Unable to write test image\n";
   }
 
-  // free_image(img);
+  free_image(img);
   return cv_frame;
 }
 
@@ -214,6 +205,7 @@ cv_data GetBBoxesFromFrame(struct camera_rx* cam)
   cv::Mat frame;         // Could consolidate this into one mega-line, but this looks cleaner
   //frame = ImportFrame(); // TODO: Update ImportFrame() to get frame from gstream; accepts "gstream camera_stream" as argument
   frame = StreamFrame(cam);
+  frame = ImportFrame();
   if (frame.empty()) {
     puts("[ cv ] - received empty frame");
   }
@@ -242,7 +234,7 @@ int cv_main()
   //image = ImportFrame();
 
 
-  struct camera_rx * cam = init_rx_camera("cv_cam");
+  struct camera_rx * cam = init_rx_camera("localhost");
   image = StreamFrame(cam);
 
   if (image.empty())
@@ -266,7 +258,5 @@ int cv_main()
   }
 #endif
 
-  // cleanup_rx_camera(cam);
-  // free_rx_camera(cam);
   return 0;
 }

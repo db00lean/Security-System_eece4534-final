@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
   const char *address = "129.10.156.154";
   int cam_id = 0;
   struct client* c = new_client(port, address);
-  struct camera_rx* cam = init_rx_camera("cv_cam");
+  struct camera_rx* cam = init_rx_camera("localhost");
 
   if (cam == NULL) {
     puts("[ main ] - camera is null");
@@ -86,9 +86,11 @@ int main(int argc, char *argv[])
   pthread_create(&stream_thread, NULL, stream, &arg);
 
   // CV
+  // add delay so gstream can get set up
+  usleep(5000000);
   pthread_t cv_main_thread;
   pthread_mutex_init(&mutex, NULL);
-  pthread_create(&cv_main_thread, NULL, cv_t, &cam);
+  pthread_create(&cv_main_thread, NULL, cv_t, cam);
   
   struct cv_data out;
   while(1){
