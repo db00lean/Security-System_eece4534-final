@@ -140,20 +140,29 @@ void draw_text(int xPos, int yPos, char* str, uint32_t color, int scale, uint8_t
 
 	if (justify_h == JUSTIFY_C)
 	{
-		xPos = xPos + (len * 4 * scale);
+		xPos = xPos - (len * 4 * scale);
 	}
 	else if (justify_h == JUSTIFY_R)
 	{
-		xPos = xPos + (len * 8 * scale);
+		xPos = xPos - (len * 8 * scale);
 	}
 
 	if (justify_v == JUSTIFY_C)
 	{
-		yPos = yPos + (4 * scale);
+		yPos = yPos - (4 * scale);
 	}
 	else if (justify_v == JUSTIFY_R)
 	{
-		yPos = yPos + (8 * scale);
+		yPos = yPos - (8 * scale);
+	}
+
+	if (xPos < 0)
+	{
+		xPos = 0;
+	}
+	if (yPos < 0)
+	{
+		yPos = 0;
 	}
 
 	draw_string_scale(xPos, yPos, str, len, color, scale);
@@ -161,27 +170,14 @@ void draw_text(int xPos, int yPos, char* str, uint32_t color, int scale, uint8_t
 
 static void draw_string_scale(int x, int y, char *s, unsigned int len, uint32_t color, int scale)
 {
-	int i, topLeftX, topLeftY;
-
-	topLeftX = x - (4 * len * scale);
-	topLeftY = y - (4 * scale);
-
-	if (topLeftX < 0)
-	{
-		topLeftX = 0;
-	}
-	if (topLeftY < 0)
-	{
-		topLeftY = 0;
-	}
-
+	int i;
 
 	// for each char in string
 	for (i = 0; i < len; i++) {
 
 		// draw it (x + 8 * i * scale term is necessary since each char is 8 pixels wide, 
 		// so rather than moving over 1 pixel for next char, move over 8 * scale pixels)
-		draw_char_scale((topLeftX + 8 * i * scale), topLeftY, s[i], color, scale);
+		draw_char_scale((x + 8 * i * scale), y, s[i], color, scale);
 	}
 }
 

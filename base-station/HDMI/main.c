@@ -68,9 +68,9 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
 #define TEXT_COLOR green
 #define SHAPE_OUTLINE white
 
-#define DRAW_HEADING_1(x,y,s) draw_text(x,y,s,HEADING_1_COLOR,4,JUSTIFY_L,JUSTIFY_T)
-#define DRAW_HEADING_2(x,y,s) draw_text(x,y,s,HEADING_2_COLOR,3,JUSTIFY_L,JUSTIFY_T)
-#define DRAW_TEXT(x,y,s) draw_text(x,y,s,TEXT_COLOR,2,JUSTIFY_L,JUSTIFY_T)
+#define DRAW_HEADING_1(x,y,s) draw_text(x,y,s,HEADING_1_COLOR,4,JUSTIFY_C,JUSTIFY_T)
+#define DRAW_HEADING_2(x,y,s) draw_text(x,y,s,HEADING_2_COLOR,2,JUSTIFY_C,JUSTIFY_T)
+#define DRAW_TEXT(x,y,s) draw_text(x,y,s,TEXT_COLOR,2,JUSTIFY_C,JUSTIFY_T)
 
 /**
  * @brief draws the background of the GUI (static elements)
@@ -81,7 +81,7 @@ void show_background(struct system_status * system) {
 
 #if DAVID_CODE
     //top name
-    draw_text(TITLE_X, TITLE_Y, "Security System", light_green, 4);
+    DRAW_HEADING_1(TITLE_X, TITLE_Y, "Security System");
 
     //camera frame border
     static struct shapeObj * frm_bdr = NULL;
@@ -94,11 +94,11 @@ void show_background(struct system_status * system) {
 
     //people count block and label
     draw_shape(PEOPLE_BOX_TOP_LEFT_X, PEOPLE_BOX_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
-    draw_text(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 50, "Number of People", violet, 2);
+    DRAW_HEADING_2(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 50, "Number of People");
 
     //zone status block and label
     draw_shape(ZONE_STATUS_TOP_LEFT_X, ZONE_STATUS_TOP_LEFT_Y, opt_box, JUSTIFY_L, JUSTIFY_T);
-    draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status", violet, 2);
+    DRAW_HEADING_2(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 50, "Zone Status",);
 
     //get the current camera information from the struct
     //struct camera_module * active_camera = &system->cameras[system->guiState];
@@ -106,11 +106,9 @@ void show_background(struct system_status * system) {
     static struct shapeObj * camera_options = NULL;
     if (!camera_options) camera_options = create_rect(OPTION_BOX_W + 50, 500, false, black, true, grey);
     draw_shape(OPTION_BOX_TOP_LEFT_X, OPTION_BOX_TOP_LEFT_Y, camera_options, JUSTIFY_L, JUSTIFY_T);
-    draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+50, "Camera Options", violet, 2);
-
-    draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+150, "Brightness", violet, 2);
-
-    draw_text(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+350, "Contrast", violet, 2);
+    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+50, "Camera Options");
+    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+150, "Brightness");
+    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X+(OPTION_BOX_W+50)/2, OPTION_BOX_TOP_LEFT_Y+350, "Contrast");
 
     //control box
     static struct shapeObj * btn_cir = NULL;
@@ -138,7 +136,7 @@ void show_background(struct system_status * system) {
         sprintf(num_str, "%d", i+1);
         draw_text(CAM_SEL_BOX_X + (i * 200) + (CAM_SEL_BOX_DIM / 2),
                   CAM_SEL_BOX_Y + (CAM_SEL_BOX_DIM / 2),
-                  num_str, violet, 10);
+                  num_str, violet, 10, JUSTIFY_C, JUSTIFY_T);
     }
 
 #else
@@ -221,7 +219,7 @@ void show_camera_frame(struct system_status * system) {
             color_image[i] = orange;
         }
         draw_map(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, color_image);
-        draw_text(IMAGE_TOP_LEFT_X + IMAGE_WIDTH / 2, IMAGE_TOP_LEFT_Y + IMAGE_HEIGHT / 2, "NO SIGNAL", black, 5);
+        draw_text(IMAGE_TOP_LEFT_X + IMAGE_WIDTH / 2, IMAGE_TOP_LEFT_Y + IMAGE_HEIGHT / 2, "NO SIGNAL", black, 5, JUSTIFY_C, JUSTIFY_T);
 
         //then return
         return;
@@ -253,7 +251,7 @@ void show_bounding_box(struct system_status * system) {
     if (!bkgrnd) bkgrnd = create_rect(24, 24, true, black, false, black);
 
     draw_shape(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2 - 12, PEOPLE_BOX_TOP_LEFT_Y + 88, bkgrnd, JUSTIFY_L, JUSTIFY_T);
-    draw_text(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 100, (char *)&camera_num_display, 0x00ff00, 3);
+    draw_text(PEOPLE_BOX_TOP_LEFT_X + RIGHT_BOX_W/2, PEOPLE_BOX_TOP_LEFT_Y + 100, (char *)&camera_num_display, 0x00ff00, 3, JUSTIFY_C, JUSTIFY_T);
 
     static struct shapeObj * bbox = NULL;
     if (!bbox) bbox = create_rect(0, 0, false, black, true, red);
@@ -319,14 +317,14 @@ void show_camera_info(struct system_status * system) {
     //zone status - dynamic
     if (active_camera->detection) {
         //first clear old text
-        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", black, 3);
+        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", black, 3, JUSTIFY_C, JUSTIFY_T);
         // draw "ZONE OCCUPIED"
-        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", red, 3);
+        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", red, 3, JUSTIFY_C, JUSTIFY_T);
     } else {
         //first clear old text
-        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", black, 3);
+        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Occupied", black, 3, JUSTIFY_C, JUSTIFY_T);
         // draw "ZONE VACANT"
-        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", green, 3);
+        draw_text(ZONE_STATUS_TOP_LEFT_X + RIGHT_BOX_W/2, ZONE_STATUS_TOP_LEFT_Y + 100, "Vacant", green, 3, JUSTIFY_C, JUSTIFY_T);
     }
 
     static struct shapeObj * sel_box = NULL;
@@ -497,15 +495,15 @@ void show_camera_options(struct system_status * system) {
 
 #if DAVID_CODE
     draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, black_box, JUSTIFY_C, JUSTIFY_C);
-    draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
+    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf);
 #else
     draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, black_box, JUSTIFY_L, JUSTIFY_T);
     draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+200, cbuf, green, 2);
 #endif
     sprintf(cbuf, "%d", system->cameras[system->guiState].contrast);
 #if DAVID_CODE
-    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, black_box, JUSTIFY_C, JUSTIFY_C);  
-    draw_text(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
+    draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, black_box, JUSTIFY_C, JUSTIFY_C);
+    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf);
 #else
     draw_shape(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, black_box, JUSTIFY_L, JUSTIFY_T);
     draw_text_scale(OPTION_BOX_TOP_LEFT_X+OPTION_BOX_W/2 + 20, OPTION_BOX_TOP_LEFT_Y+400, cbuf, green, 2);
@@ -513,7 +511,7 @@ void show_camera_options(struct system_status * system) {
 
 #if DAVID_CODE  
     draw_shape(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menu_black_box, JUSTIFY_C, JUSTIFY_C);
-    draw_text(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menuBuf, red, 2);
+    DRAW_HEADING_2(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menuBuf);
 #else
     draw_shape(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menu_black_box, JUSTIFY_C, JUSTIFY_C);
     draw_text_scale(OPTION_BOX_TOP_LEFT_X + (OPTION_BOX_W + 50)/2, TOGGLE_OPT_BOX_TOP_LEFT_Y + (RIGHT_BOX_H)/2, menuBuf, red, 2));
