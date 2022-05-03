@@ -74,9 +74,17 @@ int initialize_camera(int cameraNumber) {
   cam->brightness = 50; 
   cam->contrast = 50;
 
-  if (cameraNumber == 0) {
-    cam->gstream_info = init_rx_camera("some string");
+  if (cameraNumber == 1) {
+    securitySystem.cameras[cameraNumber].gstream_info = init_rx_camera("129.10.156.169");
   }
+  if (cameraNumber == 0) {
+    //securitySystem.cameras[cameraNumber].gstream_info = init_rx_camera("129.10.156.158");
+    // TODO TODO TODO: this is my laptop's dhcp address
+    // don't use this.
+    // try to fix the jetson jpeg streaming
+    securitySystem.cameras[cameraNumber].gstream_info = init_rx_camera("10.110.171.150");
+  }
+  pause_stream(securitySystem.cameras[cameraNumber].gstream_info);
 
   return 0;
 }
@@ -105,6 +113,8 @@ int initialize_cameras() {
         return -1;
       }
   }
+
+  play_stream(securitySystem.cameras[securitySystem.guiState].gstream_info);
 
   securitySystem.running = 1;
 

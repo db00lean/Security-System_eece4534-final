@@ -205,9 +205,9 @@ void show_camera_frame(struct system_status * system) {
     // int active_camera_no = system->guiState;
 
     // pass the camera number to get the frame corresponding to the active camera number
-    struct image * img = get_frame(system->cameras[0].gstream_info, IMGENC_BGRA, IMAGE_WIDTH, IMAGE_HEIGHT);
+    struct image * img = get_frame(system->cameras[system->guiState].gstream_info, IMGENC_BGRA, IMAGE_WIDTH, IMAGE_HEIGHT);
     if (img == NULL) {
-        
+        //printf("failed to pull frame from camera %d\n", system->guiState);
         //display no signal text
         uint32_t array_size = IMAGE_WIDTH*IMAGE_HEIGHT;
         uint32_t color_image[array_size];

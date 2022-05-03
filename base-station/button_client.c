@@ -217,10 +217,14 @@ void decrement_fz_ylen(system_status* system) {
 void cycle_active_camera(system_status* system) {
     pthread_mutex_lock(&system->lock);
 
+    pause_stream(system->cameras[system->guiState].gstream_info);
+
     system->guiState++;
     if (system->guiState == system->numberOfCameras) {
-        system->guiState = 0; 
+        system->guiState = 0;
     }
+
+    play_stream(system->cameras[system->guiState].gstream_info);
 
     pthread_mutex_unlock(&system->lock);
 #ifdef DEBUG
