@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
   // CV
   // add delay so gstream can get set up
-  usleep(5000000);
+  usleep(10000000);
   pthread_t cv_main_thread;
   pthread_mutex_init(&mutex, NULL);
   pthread_create(&cv_main_thread, NULL, cv_t, cam);
