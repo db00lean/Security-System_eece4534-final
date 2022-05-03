@@ -20,6 +20,7 @@ struct server* new_server(const char* port)
     s->context = zmq_ctx_new();
     s->register_s = zmq_socket(s->context, ZMQ_REP);
     s->num_clients = 0;
+    s->available_port = 55001 // one more than the registration port;
     // Bind to registration port and begin listening for new client connections
     err = zmq_bind(s->register_s, bind_addr);
     assert (err == 0);
@@ -82,7 +83,7 @@ int register_client(struct server* s, int cam_id)
 {
     struct client_conn* client = (struct client_conn*)malloc(sizeof(client_conn));
     int reg_port = atoi(s->reg_port);
-    int bind_port = reg_port; 
+    int bind_port = s->available_port; 
     char client_port[8];
     char bind_addr[19];
     int lower = 10000;
@@ -103,10 +104,6 @@ int register_client(struct server* s, int cam_id)
     // TODO: Some magic checking to make sure that the camera id they request here is valid, crypto stuff if time
     // For now assume they are who they say they are and setup the connection
     // Generate a random port that isn't the registration port
-    while(bind_port == reg_port)
-    {
-        bind_port = rand() % ((upper - lower + 1) + lower);
-    }
     sprintf(client_port, "%i", bind_port);
     printf("Generated port number for new client is %s\n", client_port);
     // Create a new zeromq pair socket on that port number
@@ -124,8 +121,9 @@ int register_client(struct server* s, int cam_id)
     }
     assert (err == 0);
     s->num_clients+=1;
-    // Send back 0 indicating success
-    return 0;
+    s->available_port+=1;
+    // Send back assigned camera id
+    return cam_id;
 }
 
 // Sends a new request to the previously initialized 0mq client, timeout will be adjusted upon discussing with other sysman members.

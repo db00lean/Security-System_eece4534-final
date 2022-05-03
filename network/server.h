@@ -22,6 +22,7 @@ struct server {
     zsock_t* register_s;
     char reg_port[9];
     uint32_t num_clients;
+    uint32_t available_port;
     struct client_conn* clients[MAX_CLIENTS];
 } server;
 

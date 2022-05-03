@@ -12,6 +12,7 @@
 #include <czmq.h>
 #include "../network/client.h"
 #include "../network/server.h"
+#include "../network/hello.h"
 
 // global variable to track the system charateristics
 system_status securitySystem = {
@@ -117,8 +118,39 @@ void cleanup_cameras() {
   free(securitySystem.cameras);
 }
 
+void* camera_metadata_main(struct server* s, int cam_id)
+{
+  received_message* msg;
+  while (1)
+  {
+    msg = receive_msg(s->clients[cam_id]->sock);
+    if (msg == NULL) {
+      printf("[ Main ] - Received NULL msg\n");
+      continue;
+    }
+    // check if the data in the message has valid coordinates
+    int valid = validateCVData((struct cv_data*) msg->data);
+
+    if (valid) {
+      securitySystem.cameras[msg->cam_id].cvMetadata = *((struct cv_data*) msg->data);
+      printf("Received valid message\n");
+      printf("active camera: %i\n", securitySystem.guiState);
+      printf("Camera id: %i\n", msg->cam_id);
+      printf("Data type: %i\n", msg->type);
+      printf("Data length: %i\n", msg->len);
+  
+    // Perform a detection of whether or not a person is in the FZ on camera n
+    area_aggregate_detect(&securitySystem, 0);
+    } else {
+      printf("Received INVALID message\n");
+      securitySystem.cameras[msg->cam_id].cvMetadata.num_bbox = 0;
+    }
+  }
+}
+
 int main(int argc, char **argv) {
   pthread_t btn_listener_thread, hdmi_thread;
+  pthread_t camera_data_threads[MAX_NUM_CAMERAS];
 
   // init metadata network
   received_message* msg;
@@ -152,10 +184,19 @@ int main(int argc, char **argv) {
   // launching threads
   pthread_create(&btn_listener_thread, NULL, run_button_client, &securitySystem);
   pthread_create(&hdmi_thread, NULL, hdmi_main ,&securitySystem);
-
   // get metadata from the network
   while (securitySystem.running) {
-    msg = receive_msg(networkServer->responder);
+    int assigned_cam_id = 0;
+    msg = receive_msg(networkServer->register_s);
+    struct client_hello* ch = (struct client_hello*)msg->data;
+    if (msg->type == CLIENT_HELLO)
+    {
+      printf("Processing new client\n");
+      assigned_cam_id = register_client(s, ch->cam_id);
+      printf("Registered new client\n: %i", s->clients[assigned_cam_id]->port);
+      send_server_hello(s, assigned_cam_id);
+      pthread_create(camera_data_threads[assigned_cam_id], NULL, camera_metadata_main, networkServer, assigned_cam_id);
+    }
     if (msg == NULL) {
       printf("[ Main ] - Received NULL msg\n");
       continue;
@@ -182,6 +223,10 @@ int main(int argc, char **argv) {
   // cleanup
   pthread_join(btn_listener_thread, NULL);
   pthread_join(hdmi_thread, NULL);
+  for (int ii = 0; ii < MAX_NUM_CAMERAS; ii++)
+  {
+    pthread_join(camera_data_threads[ii], NULL);
+  }
 
   cleanup_cameras();
   pthread_mutex_destroy(&securitySystem.lock);

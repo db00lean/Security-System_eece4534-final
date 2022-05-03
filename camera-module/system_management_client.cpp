@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
   const char *port = "55000"; // Statically defined for now
   const char *address = "129.10.156.154";
   int cam_id = 0;
-  struct client *c = new_client(port, address);
+  struct client *c = new_client(port, address, 0);
 
   // ### kick off threads ###
 
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
       out = cv_data_q.front();
       cv_data_q.pop();
       pthread_mutex_unlock(&mutex); // Unlock
-      send_msg(c->requester, cam_id, CV_DATA, (void *)&out, sizeof(struct cv_data) + sizeof(struct coordinate_data));
+      send_msg(c->requester, c->cam_id, CV_DATA, (void *)&out, sizeof(struct cv_data) + sizeof(struct coordinate_data));
     }
     usleep(100000);
   }
