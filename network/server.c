@@ -82,6 +82,10 @@ int register_client(struct server* s, int cam_id)
     int lower = 10000;
     int upper = 65535;
     
+    if (cam_id != s->num_clients)
+    {
+        cam_id = s->num_clients;
+    }
     // Only support MAX_NUM clients at a time
     // TODO: Add a way to check for existing taken ports
     if (s->num_clients >= MAX_CLIENTS) 
