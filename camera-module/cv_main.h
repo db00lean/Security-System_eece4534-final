@@ -3,6 +3,8 @@
 
 #include "../common_headers/cv_structs.h"
 
+#include <unistd.h>
+
 extern "C" {
 #include "../base-station/HDMI/inc/gstreamer-rx.h"
 }
