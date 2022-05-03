@@ -13,6 +13,9 @@
         "system_management.h": "c",
         "button_client.h": "c",
         "zed_btns.h": "c",
-        "gstreamer-rx.h": "c"
+        "gstreamer-rx.h": "c",
+        "chrono": "c",
+        "random": "c",
+        "limits": "c"
     }
 }

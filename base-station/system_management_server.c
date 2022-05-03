@@ -16,7 +16,7 @@
 // global variable to track the system charateristics
 system_status securitySystem = {
     .numberOfCameras = 0,
-    .menuMode = 0,
+    .mode = MODE_FZ_X,
     .running = 0
 };
 
@@ -191,11 +191,11 @@ int main(int argc, char **argv) {
   }
 
   // cleanup
-  pthread_mutex_destroy(&securitySystem.lock);
   pthread_join(btn_listener_thread, NULL);
   pthread_join(hdmi_thread, NULL);
 
   cleanup_cameras();
+  pthread_mutex_destroy(&securitySystem.lock);
   free(networkServer);
 
   printf("[ Main ] - Security camera system exited successfully. Bye!\n");
