@@ -70,8 +70,9 @@ cv::Mat StreamFrame(struct camera_rx *cam)
   // const size_t steps[2] = {(img->width * sizeof(char)), sizeof(char)};
   // cv::Mat cv_frame = cv::Mat(ARRAY_DIM, &sizes, CV_8UC3, (void *) img->buf, &steps);
   cv::Mat frame = cv::Mat(1, img->buf_len, CV_8UC3, img->buf);
-  
+  printf("[ stream ] - frame width: %d, frame height: %d\n", frame.cols, frame.rows);
   cv::Mat cv_frame = frame.reshape(0, IMAGE_HEIGHT);
+  printf("[ stream ] - cvframe width: %d, cvframe height: %d\n", cv_frame.cols, cv_frame.rows);
 
   // write to an image file to test if this works
   bool result = cv::imwrite("streamed_frame_test.png", cv_frame);

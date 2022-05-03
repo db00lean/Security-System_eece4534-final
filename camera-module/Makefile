@@ -17,5 +17,6 @@ cv_main.o: cv_main.cpp
 	${CXX} -c cv_main.cpp ${CFLAGS}
 
 clean:
+	(cd ../base-station/HDMI && make clean)
 	rm -f main *.o
 
