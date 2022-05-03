@@ -22,10 +22,10 @@ system_status securitySystem = {
 };
 
 // metadata threads struct
-struct metadata_thread = {
+struct metadata_thread {
   struct server* s;
   int assigned_camera_id;
-}
+} metadata_thread;
 
 // TODO ports need to be calculated via some networking code
 int ports[2] = {123, 456};
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
   received_message* msg;
   const char* port = "55000";
   struct server* networkServer = new_server(port);
-  metadata_thread.server = networkServer;
+  metadata_thread.s = networkServer;
   
   // initalize
   if (initialize_security_system()) {
@@ -202,11 +202,11 @@ int main(int argc, char **argv) {
     if (msg->type == CLIENT_HELLO)
     {
       printf("Processing new client\n");
-      assigned_cam_id = register_client(s, ch->cam_id);
-      printf("Registered new client\n: %i", s->clients[assigned_cam_id]->port);
-      send_server_hello(s, assigned_cam_id);
-      metadata_thread.assigned_camera_id = assigned_cam_id
-      pthread_create(camera_data_threads[assigned_cam_id], NULL, camera_metadata_main, &metadata_thread);
+      assigned_cam_id = register_client(networkServer, ch->cam_id);
+      printf("Registered new client\n: %i", networkServer->clients[assigned_cam_id]->port);
+      send_server_hello(networkServer, assigned_cam_id);
+      metadata_thread.assigned_camera_id = assigned_cam_id;
+      pthread_create(&camera_data_threads[assigned_cam_id], NULL, camera_metadata_main, &metadata_thread);
     }
     if (msg == NULL) {
       printf("[ Main ] - Received NULL msg\n");

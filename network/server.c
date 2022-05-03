@@ -20,7 +20,7 @@ struct server* new_server(const char* port)
     s->context = zmq_ctx_new();
     s->register_s = zmq_socket(s->context, ZMQ_REP);
     s->num_clients = 0;
-    s->available_port = 55001 // one more than the registration port;
+    s->available_port = 55001; // one more than the registration port;
     // Bind to registration port and begin listening for new client connections
     err = zmq_bind(s->register_s, bind_addr);
     assert (err == 0);
