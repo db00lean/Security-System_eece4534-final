@@ -556,9 +556,8 @@ void render(struct system_status * system) {
 void* hdmi_main(void* thread_args) {
     // run indefinitely
     struct system_status *system = (system_status*) thread_args;
-//    system->cameras[0].gstream_info = init_rx_camera("some string");
+    puts("[ HDMI ] - Starting HDMI thread...");
     render(system);
- //   cleanup_rx_camera(system->cameras[0].gstream_info);
-    printf("[ HDMI ] - Exiting HDMI thread...\n");
+    puts("[ HDMI ] - Exiting HDMI thread...");
     return NULL;
 }
