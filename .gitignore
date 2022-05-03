@@ -2,6 +2,7 @@
 .vscode
 
 button_listener
+sysman_server
 
 Module.markers 
 Module.symvers
@@ -11,3 +12,4 @@ modules.order
 *.mod
 .*.cmd
 *.out
+*.a

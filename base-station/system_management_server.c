@@ -66,19 +66,23 @@ void enumerate_cameras() {
 
 // set important values for each camera module
 int initialize_camera(int cameraNumber) {
-  securitySystem.cameras[cameraNumber].cameraNumber = cameraNumber;
-  securitySystem.cameras[cameraNumber].sysManPortNumber = ports[cameraNumber];
-  securitySystem.cameras[cameraNumber].streamPortNumber = ports[cameraNumber];
+  camera_module* cam = securitySystem.cameras + cameraNumber;
 
-  securitySystem.cameras[cameraNumber].status = 1;
+  cam->cameraNumber = cameraNumber;
+  cam->sysManPortNumber = ports[cameraNumber];
+  cam->streamPortNumber = ports[cameraNumber];
+  cam->status = 1;
 
-  securitySystem.cameras[cameraNumber].forbiddenZone.x_coord = 0;
-  securitySystem.cameras[cameraNumber].forbiddenZone.y_coord = 0;
-  securitySystem.cameras[cameraNumber].forbiddenZone.x_len = 150;
-  securitySystem.cameras[cameraNumber].forbiddenZone.y_len = 200;
+  cam->forbiddenZone.x_coord = 0;
+  cam->forbiddenZone.y_coord = 0;
+  cam->forbiddenZone.x_len = 150;
+  cam->forbiddenZone.y_len = 200;
+
+  cam->brightness = 50; 
+  cam->contrast = 50;
 
   if (cameraNumber == 0) {
-    securitySystem.cameras[0].gstream_info = init_rx_camera("some string");
+    cam->gstream_info = init_rx_camera("some string");
   }
 
   return 0;
@@ -104,7 +108,7 @@ int initialize_cameras() {
   securitySystem.cameras = malloc(securitySystem.numberOfCameras * sizeof(camera_module));
   // init each camera
   for (int ii = 0; ii < securitySystem.numberOfCameras; ii++) {
-      if(initialize_camera(ii)) {
+      if (initialize_camera(ii)) {
         return -1;
       }
   }
@@ -120,7 +124,12 @@ int initialize_security_system() {
 }
 
 void cleanup_cameras() {
-  cleanup_rx_camera(securitySystem.cameras[0].gstream_info);
+  int i; 
+  for (i = 0; i < securitySystem.numberOfCameras; i++) {
+    if (securitySystem.cameras[i].gstream_info != NULL) {
+      cleanup_rx_camera(securitySystem.cameras[i].gstream_info);
+    }
+  }
   free(securitySystem.cameras);
 }
 
@@ -219,14 +228,14 @@ int main(int argc, char **argv) {
 
     if (valid) {
       securitySystem.cameras[msg->cam_id].cvMetadata = *((struct cv_data*) msg->data);
-      printf("Received valid message\n");
-      printf("active camera: %i\n", securitySystem.guiState);
-      printf("Camera id: %i\n", msg->cam_id);
-      printf("Data type: %i\n", msg->type);
-      printf("Data length: %i\n", msg->len);
+      //printf("Received valid message\n");
+      //printf("active camera: %i\n", securitySystem.guiState);
+      //printf("Camera id: %i\n", msg->cam_id);
+      //printf("Data type: %i\n", msg->type);
+      //printf("Data length: %i\n", msg->len);
   
-    // Perform a detection of whether or not a person is in the FZ on camera n
-    area_aggregate_detect(&securitySystem, 0);
+      // Perform a detection of whether or not a person is in the FZ on camera n
+      area_aggregate_detect(&securitySystem, msg->cam_id);
     } else {
       printf("Received INVALID message\n");
       securitySystem.cameras[msg->cam_id].cvMetadata.num_bbox = 0;
