@@ -10,6 +10,7 @@ enum img_enc {
   IMGENC_RGB,
   IMGENC_ARGB,
   IMGENC_BGR,
+  IMGENC_BGRA,
 };
 
 struct image {
