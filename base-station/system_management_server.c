@@ -16,7 +16,7 @@
 // global variable to track the system charateristics
 system_status securitySystem = {
     .numberOfCameras = 0,
-    .mode = MODE_FZ_X,
+    .menuMode = 0,
     .running = 0
 };
 
@@ -59,32 +59,20 @@ void enumerate_cameras() {
 
 // set important values for each camera module
 int initialize_camera(int cameraNumber) {
-  camera_module* cam = securitySystem.cameras + cameraNumber;
+  securitySystem.cameras[cameraNumber].cameraNumber = cameraNumber;
+  securitySystem.cameras[cameraNumber].sysManPortNumber = ports[cameraNumber];
+  securitySystem.cameras[cameraNumber].streamPortNumber = ports[cameraNumber];
 
-  cam->cameraNumber = cameraNumber;
-  cam->sysManPortNumber = ports[cameraNumber];
-  cam->streamPortNumber = ports[cameraNumber];
-  cam->status = 1;
+  securitySystem.cameras[cameraNumber].status = 1;
 
-  cam->forbiddenZone.x_coord = 0;
-  cam->forbiddenZone.y_coord = 0;
-  cam->forbiddenZone.x_len = 150;
-  cam->forbiddenZone.y_len = 200;
+  securitySystem.cameras[cameraNumber].forbiddenZone.x_coord = 0;
+  securitySystem.cameras[cameraNumber].forbiddenZone.y_coord = 0;
+  securitySystem.cameras[cameraNumber].forbiddenZone.x_len = 150;
+  securitySystem.cameras[cameraNumber].forbiddenZone.y_len = 200;
 
-  cam->brightness = 50; 
-  cam->contrast = 50;
-
-  if (cameraNumber == 1) {
-    securitySystem.cameras[cameraNumber].gstream_info = init_rx_camera("129.10.156.169");
-  }
   if (cameraNumber == 0) {
-    //securitySystem.cameras[cameraNumber].gstream_info = init_rx_camera("129.10.156.158");
-    // TODO TODO TODO: this is my laptop's dhcp address
-    // don't use this.
-    // try to fix the jetson jpeg streaming
-    securitySystem.cameras[cameraNumber].gstream_info = init_rx_camera("10.110.171.150");
+    securitySystem.cameras[0].gstream_info = init_rx_camera("some string");
   }
-  pause_stream(securitySystem.cameras[cameraNumber].gstream_info);
 
   return 0;
 }
@@ -109,12 +97,10 @@ int initialize_cameras() {
   securitySystem.cameras = malloc(securitySystem.numberOfCameras * sizeof(camera_module));
   // init each camera
   for (int ii = 0; ii < securitySystem.numberOfCameras; ii++) {
-      if (initialize_camera(ii)) {
+      if(initialize_camera(ii)) {
         return -1;
       }
   }
-
-  play_stream(securitySystem.cameras[securitySystem.guiState].gstream_info);
 
   securitySystem.running = 1;
 
@@ -127,12 +113,7 @@ int initialize_security_system() {
 }
 
 void cleanup_cameras() {
-  int i; 
-  for (i = 0; i < securitySystem.numberOfCameras; i++) {
-    if (securitySystem.cameras[i].gstream_info != NULL) {
-      cleanup_rx_camera(securitySystem.cameras[i].gstream_info);
-    }
-  }
+  cleanup_rx_camera(securitySystem.cameras[0].gstream_info);
   free(securitySystem.cameras);
 }
 
@@ -184,14 +165,14 @@ int main(int argc, char **argv) {
 
     if (valid) {
       securitySystem.cameras[msg->cam_id].cvMetadata = *((struct cv_data*) msg->data);
-      //printf("Received valid message\n");
-      //printf("active camera: %i\n", securitySystem.guiState);
-      //printf("Camera id: %i\n", msg->cam_id);
-      //printf("Data type: %i\n", msg->type);
-      //printf("Data length: %i\n", msg->len);
+      printf("Received valid message\n");
+      printf("active camera: %i\n", securitySystem.guiState);
+      printf("Camera id: %i\n", msg->cam_id);
+      printf("Data type: %i\n", msg->type);
+      printf("Data length: %i\n", msg->len);
   
-      // Perform a detection of whether or not a person is in the FZ on camera n
-      area_aggregate_detect(&securitySystem, msg->cam_id);
+    // Perform a detection of whether or not a person is in the FZ on camera n
+    area_aggregate_detect(&securitySystem, 0);
     } else {
       printf("Received INVALID message\n");
       securitySystem.cameras[msg->cam_id].cvMetadata.num_bbox = 0;
@@ -199,11 +180,11 @@ int main(int argc, char **argv) {
   }
 
   // cleanup
+  pthread_mutex_destroy(&securitySystem.lock);
   pthread_join(btn_listener_thread, NULL);
   pthread_join(hdmi_thread, NULL);
 
   cleanup_cameras();
-  pthread_mutex_destroy(&securitySystem.lock);
   free(networkServer);
 
   printf("[ Main ] - Security camera system exited successfully. Bye!\n");
