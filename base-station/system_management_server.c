@@ -21,6 +21,12 @@ system_status securitySystem = {
     .running = 0
 };
 
+// metadata threads struct
+struct metadata_thread = {
+  struct server* s;
+  int assigned_camera_id;
+}
+
 // TODO ports need to be calculated via some networking code
 int ports[2] = {123, 456};
 
@@ -118,8 +124,11 @@ void cleanup_cameras() {
   free(securitySystem.cameras);
 }
 
-void* camera_metadata_main(struct server* s, int cam_id)
+void* camera_metadata_main(void* arguments)
 {
+  struct metadata_thread* args = (struct metadata_thread*)arguments;
+  int cam_id = args->assigned_camera_id;
+  struct server* s = args->s;
   received_message* msg;
   while (1)
   {
@@ -156,6 +165,7 @@ int main(int argc, char **argv) {
   received_message* msg;
   const char* port = "55000";
   struct server* networkServer = new_server(port);
+  metadata_thread.server = networkServer;
   
   // initalize
   if (initialize_security_system()) {
@@ -195,7 +205,8 @@ int main(int argc, char **argv) {
       assigned_cam_id = register_client(s, ch->cam_id);
       printf("Registered new client\n: %i", s->clients[assigned_cam_id]->port);
       send_server_hello(s, assigned_cam_id);
-      pthread_create(camera_data_threads[assigned_cam_id], NULL, camera_metadata_main, networkServer, assigned_cam_id);
+      metadata_thread.assigned_camera_id = assigned_cam_id
+      pthread_create(camera_data_threads[assigned_cam_id], NULL, camera_metadata_main, &metadata_thread);
     }
     if (msg == NULL) {
       printf("[ Main ] - Received NULL msg\n");
