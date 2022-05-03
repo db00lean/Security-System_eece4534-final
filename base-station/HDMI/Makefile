@@ -9,7 +9,7 @@ DRM_CFLAGS := $(shell pkg-config --cflags libdrm)
 DRM_LDFLAGS := $(shell pkg-config --libs libdrm)
 
 INCLUDE_DIRS:=.. $(ZED_INCLUDE) ./inc
-CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O1 $(DRM_CFLAGS) $(GST_CFLAGS)
+CFLAGS:=$(foreach incdir, $(INCLUDE_DIRS), -I$(incdir)) -g -O3 $(DRM_CFLAGS) $(GST_CFLAGS)
 LALSA:= -lasound -lpthread -lrt -ldl -lm
 
 .PHONY: clean

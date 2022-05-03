@@ -17,6 +17,7 @@
 #include "../../common_headers/cv_structs.h"
 #include "inc/imagelib.h"
 #include "inc/DRM_user.h"
+#include <time.h>
 
 // IMPORTANT: 1 will run David's changes, 0 will run the old code
 #define DAVID_CODE 1
@@ -62,6 +63,7 @@ enum bounding_box_colors{black = 0x000000, white = 0xffffff, red = 0xff0000, ora
 #define OPTION_BOX_W RIGHT_BOX_W/2
 #define OPTION_BOX_H RIGHT_BOX_H * 2
 
+int running_total, totalframes;
 
 /**
  * @brief draws the background of the GUI (static elements)
@@ -223,7 +225,18 @@ void show_camera_frame(struct system_status * system) {
     }
 
     // draw image to screen using draw pixel
+    clock_t start, end;
+    double cpu_time_used;
+     
+    start = clock();
+
     draw_map(IMAGE_TOP_LEFT_X, IMAGE_TOP_LEFT_Y, IMAGE_WIDTH, IMAGE_HEIGHT, (uint32_t*)img->buf);
+
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+    running_total += cpu_time_used;
+    totalframes++;
 
     // free the memory space of the frame
     free_image(img);
@@ -542,7 +555,8 @@ void render(struct system_status * system) {
     changeActiveBuffer();
     show_background(system);
 
-    while (system->running) {
+    //while (system->running) {
+    while (totalframes < 100) {
         show_camera_frame(system);
         show_bounding_box(system);
         show_camera_info(system);
@@ -550,7 +564,7 @@ void render(struct system_status * system) {
         //g_usleep(166667);
         //pageFlip();
     }
-    
+    printf("time: %d\n", running_total/totalframes);
 }
 
 void* hdmi_main(void* thread_args) {
