@@ -70,14 +70,21 @@ Hopefully pretty straightforward!
     - This allows for minimal system usage, since the thread will be put to sleep if `/dev/zedbtns0` has no data to report.
     - The `zed_btns.ko` kernel module takes care of waking up the listener thread when a button press is recorded. 
 
-### Standalone button_listener executable build/usage instructions
+### Supported menu operations and button usage
 
-- Build: 
-  - From the `system` directory, run `make button_listener`
-    - This will create the `button_listener` executable
-- Usage: 
-  - `scp` the executable to the ZedBoard, (e.g. `scp button_listener root@10.42.1.1:`)
-  - Connect to the ZedBoard via `ssh` (e.g. `ssh root@10.42.1.1`)
-  - Run the executable with `./button_listener`
-    - **NOTE: make sure that the button driver module (zed_btns.ko) has been inserted before you run `button_listener`!**
-      - Follow the build/insertion instructions in the previous section if necessary. 
+- Menu operations: users can change the following properties
+  - x-position of orbidden zone
+  - y-position of forbidden zone
+  - x-length of forbidden zone
+  - y-length of forbidden zone
+  - camera brightness
+  - camera contrast
+
+- Button actions
+  - Center button: cycles active camera
+  - Left/Right buttons: cycles through menu modes
+  - Up/down: increments/decrements value
+
+### Building and executing the binaryUsage
+  - Building the overall sysman client also builds the button driver/client dependencies.
+  - Of course, make sure to insert the kernel module for the button driver before launching the system management server

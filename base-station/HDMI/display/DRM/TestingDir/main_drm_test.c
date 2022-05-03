@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "DRM_user_test.h"
-
+#include <unistd.h>
 
 #define SIXTYFPSMICROSECONDS 166667
 
@@ -16,6 +16,7 @@ int main()
     int fd, ret;
 
     fd = drm_open();
+    printf("Opened device");
     drmSetMaster(fd);
 
     drm_init(fd);
@@ -44,7 +45,7 @@ int main()
     drm_close();
     drmDropMaster(fd);
 
-    drm_unmap(bufs[0]);
-    drm_unmap(bufs[1]);
+   // drm_unmap(bufs[0]);
+    //drm_unmap(bufs[1]);
 }
 

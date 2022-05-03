@@ -1,8 +1,8 @@
 /**
  * @file button_client.c
  * @author Siddharth Chenrayan (chenrayan.s@northeastern.edu)
- * @brief Button press client
- * @version 0.1
+ * @brief Button press client. Now supports menu v2
+ * @version 0.2
  * @date 2022-03-31
  * 
  * @copyright Copyright (c) 2022
@@ -20,52 +20,199 @@
 #include "../common_headers/cv_structs.h"
 #include "../common_headers/system_management.h"
 #include "../common_headers/button_client.h"
+#include "../common_headers/menu_modes.h"
 
-char run_button_listener = 1;
+// global pollfd struct
+struct pollfd zedbtns_pfd;
 
-void stop_button_listener(int _sig) {
-    run_button_listener = 0;
-    puts("[ Btn Listener ] - Press any button on the ZedBoard to terminate process...");
-}
-
-/* Button action helpers */
+/////////////////////////////
+/* Debug/print functions  */
+/////////////////////////////
 
 void print_sys_fzones(system_status* system) {
     int ii;
-    camera_module* cam;  
+    camera_module* cam;
+    puts("[ Btns ] - Camera data:");
+    print_sys_menu_mode(system); 
     for (ii = 0; ii < system->numberOfCameras; ii++) {
         cam = system->cameras + ii;
-        printf("[%d] - { X: %d, Y: %d }\n", ii, cam->forbiddenZone.x_coord, cam->forbiddenZone.y_coord);
+        printf("\t");
+        if (ii == system->guiState) {
+            //active camera
+            printf("* ");
+        }
+        else {
+            printf("  ");
+        }
+
+        printf("[%d] - { x: %d, y: %d, x-len: %d, y-len: %d, brightness: %d, contrast: %d }\n", 
+            ii,
+            cam->forbiddenZone.x_coord,
+            cam->forbiddenZone.y_coord,
+            cam->forbiddenZone.x_len,
+            cam->forbiddenZone.y_len,
+            cam->brightness,
+            cam->contrast
+        );
     }
 }
 
-void change_fz_x(system_status* system, int8_t delta) {
-     pthread_mutex_lock(&system->lock);
-    
-    struct coordinate_data* zone = &(system->cameras[system->guiState].forbiddenZone);
-    APPLY_DELTA_ENFORCE_RANGE(zone->x_coord, delta, (CAMERA_MAX_X - zone->x_len));
-
-    pthread_mutex_unlock(&system->lock);
-#ifdef DEBUG
-    printf("[ Menu ] - Change forbidden zone x-coord; Delta: %d, New value: %u\n", delta, zone->x_coord);
-    print_sys_fzones(system);
-#endif
+void print_sys_menu_mode(system_status* system) {
+    switch(system->mode) {
+        case MODE_FZ_X:
+            puts("[ Menu ] - Forbidden zone x-position mode");
+            break; 
+        case MODE_FZ_Y:
+            puts("[ Menu ] - Forbidden zone y-position mode");
+            break; 
+        case MODE_FZ_XLEN:
+            puts("[ Menu ] - Forbidden zone x-length mode");
+            break;
+        case MODE_FZ_YLEN:
+            puts("[ Menu ] - Forbidden zone y-length mode");
+            break;
+        case MODE_CAM_BRIGHTNESS:
+            puts("[ Menu ] - Camera brightness mode");
+            break;
+        case MODE_CAM_CONTRAST:
+            puts("[ Menu ] - Camera contrast mode");
+            break;
+        default:
+            puts("[ Menu ] - Unknown mode");
+    }
 }
 
-void change_fz_y(system_status* system, int8_t delta) {
-    pthread_mutex_lock(&system->lock);
-    
-    struct coordinate_data* zone = &(system->cameras[system->guiState].forbiddenZone);
-    APPLY_DELTA_ENFORCE_RANGE(zone->y_coord, delta, (CAMERA_MAX_Y - zone->y_len));
-
-    pthread_mutex_unlock(&system->lock);
-#ifdef DEBUG
-    printf("[ Menu ] - Change forbidden zone y-coord; Delta: %d, New value: %u\n", delta, zone->y_coord);
-    print_sys_fzones(system);
-#endif
-}
-
+/////////////////////////////
 /* Button action functions */
+/////////////////////////////
+
+/* Menu mode actions */
+
+void next_mode(system_status* system) {
+    pthread_mutex_lock(&system->lock);
+    system->mode++;
+    if (system->mode == MODE_LAST) {
+        system->mode = 0;
+    }
+    pthread_mutex_unlock(&system->lock);
+#ifdef DEBUG
+    print_sys_menu_mode(system);
+#endif
+}
+
+void prev_mode(system_status* system) {
+    pthread_mutex_lock(&system->lock);
+    if (system->mode == 0) {
+        system->mode = MODE_LAST - 1; // mode last is just a placeholder - the real "last" mode will always be MODE_LAST - 1
+    }
+    else {
+        system->mode--;
+    }
+    pthread_mutex_unlock(&system->lock);
+#ifdef DEBUG
+    print_sys_menu_mode(system);
+#endif
+}
+
+/* Forbidden zone functions */
+
+void increment_fz_x(system_status* system) {
+    CHANGE_FZONE_PROPERTY(
+        system,
+        x_coord,
+        FZ_POS_INC_DELTA,
+        COORDINATE_MAX_X
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
+}
+
+void decrement_fz_x(system_status* system) {
+    CHANGE_FZONE_PROPERTY(
+        system,
+        x_coord,
+        FZ_POS_DEC_DELTA,
+        COORDINATE_MAX_X
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
+}
+
+void increment_fz_y(system_status* system) {
+    CHANGE_FZONE_PROPERTY(
+        system,
+        y_coord,
+        FZ_POS_INC_DELTA,
+        COORDINATE_MAX_Y
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
+}
+
+void decrement_fz_y(system_status* system) {
+    CHANGE_FZONE_PROPERTY(
+        system,
+        y_coord,
+        FZ_POS_DEC_DELTA,
+        COORDINATE_MAX_Y
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
+}
+
+void increment_fz_xlen(system_status* system) {
+    CHANGE_FZONE_PROPERTY(
+        system,
+        x_len,
+        FZ_LEN_INC_DELTA,
+        COORDINATE_MAX_X
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
+}
+
+void decrement_fz_xlen(system_status* system) {
+    CHANGE_FZONE_PROPERTY(
+        system,
+        x_len,
+        FZ_LEN_DEC_DELTA,
+        COORDINATE_MAX_X
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
+}
+
+void increment_fz_ylen(system_status* system) {
+    CHANGE_FZONE_PROPERTY(
+        system,
+        y_len,
+        FZ_LEN_INC_DELTA,
+        COORDINATE_MAX_Y
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
+}
+
+void decrement_fz_ylen(system_status* system) {
+    CHANGE_FZONE_PROPERTY(
+        system,
+        y_len,
+        FZ_LEN_DEC_DELTA,
+        COORDINATE_MAX_Y
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
+}
+
+/* Camera actions */ 
 
 void cycle_active_camera(system_status* system) {
     pthread_mutex_lock(&system->lock);
@@ -77,59 +224,61 @@ void cycle_active_camera(system_status* system) {
 
     pthread_mutex_unlock(&system->lock);
 #ifdef DEBUG
-    printf("[ Menu ] - Increment active camera; New active camera: %d\n", system->guiState);
+    printf("[ Menu ] - New active camera: %d\n", system->guiState);
 #endif
 }
 
-void increment_fz_x(system_status* system) {
-    change_fz_x(system, FZ_INC_DELTA);
+void increment_cam_brightness(system_status* system) {
+    CHANGE_CAMERA_PROPERTY(
+        system,
+        brightness,
+        CAM_BRIGHTNESS_INC_DELTA,
+        CAM_BRIGHTNESS_MAX
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
 }
 
-void decrement_fz_x(system_status* system) {
-    change_fz_x(system, FZ_DEC_DELTA);
+void decrement_cam_brightness(system_status* system) {
+    CHANGE_CAMERA_PROPERTY(
+        system,
+        brightness,
+        CAM_BRIGHTNESS_DEC_DELTA,
+        CAM_BRIGHTNESS_MAX
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
 }
 
-void increment_fz_y(system_status* system) {
-    change_fz_y(system, FZ_INC_DELTA); 
+void increment_cam_contrast(system_status* system) {
+    CHANGE_CAMERA_PROPERTY(
+        system,
+        contrast,
+        CAM_BRIGHTNESS_INC_DELTA,
+        CAM_CONTRAST_MAX
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
 }
 
-void decrement_fz_y(system_status* system) {
-    change_fz_y(system, FZ_DEC_DELTA); 
+void decrement_cam_contrast(system_status* system) {
+    CHANGE_CAMERA_PROPERTY(
+        system,
+        contrast,
+        CAM_BRIGHTNESS_DEC_DELTA,
+        CAM_CONTRAST_MAX
+    );
+#ifdef DEBUG
+    print_sys_fzones(system);
+#endif
 }
 
-/* Debug button actions */ 
-
-
-/* Debug/print functions for a basic set of button actions */
-void print_center(struct system_status* _args) {
-    puts("Center button pressed!");
-}
-
-void print_up(struct system_status* _args) {
-    puts("Up button pressed!");
-}
-
-void print_down(struct system_status* _args) {
-    puts("Down button pressed!");
-}
-
-void print_left(struct system_status* _args) {
-    puts("Left button pressed!");
-}
-
-void print_right(struct system_status* _args) {
-    puts("Right button pressed!");
-}
-
-/* Button action Structs */
-
-struct button_actions debug_actions = {
-    .on_center = print_center,
-    .on_down = print_down,
-    .on_up = print_up,
-    .on_left = print_left,
-    .on_right = print_right
-};
+/////////////////////////////
+/* Button action structs */
+/////////////////////////////
 
 struct button_actions basic_menu_actions = {
     .on_center = cycle_active_camera,
@@ -139,26 +288,87 @@ struct button_actions basic_menu_actions = {
     .on_right = increment_fz_x
 };
 
-/* Thread setup and helpers */
+struct button_actions fz_x_actions = {
+    .on_center = cycle_active_camera,
+    .on_left = prev_mode,
+    .on_right = next_mode, 
+    .on_down = decrement_fz_x,
+    .on_up = increment_fz_x,
+};
 
-int init_zedbtn_pollfd(struct pollfd* pfd) {
-    int zedbtns_fd = open(ZEDBTNS_FILE, O_RDONLY);
-    if (zedbtns_fd == -1) {
+struct button_actions fz_y_actions = {
+    .on_center = cycle_active_camera,
+    .on_left = prev_mode,
+    .on_right = next_mode, 
+    .on_down = decrement_fz_y,
+    .on_up = increment_fz_y,
+};
+
+struct button_actions fz_xlen_actions = {
+    .on_center = cycle_active_camera,
+    .on_left = prev_mode,
+    .on_right = next_mode, 
+    .on_down = decrement_fz_xlen,
+    .on_up = increment_fz_xlen,
+};
+
+struct button_actions fz_ylen_actions = {
+    .on_center = cycle_active_camera,
+    .on_left = prev_mode,
+    .on_right = next_mode, 
+    .on_down = decrement_fz_ylen,
+    .on_up = increment_fz_ylen,
+};
+
+struct button_actions cam_brightness_actions = {
+    .on_center = cycle_active_camera,
+    .on_left = prev_mode,
+    .on_right = next_mode, 
+    .on_down = decrement_cam_brightness,
+    .on_up = increment_cam_brightness,
+};
+
+struct button_actions cam_contrast_actions = {
+    .on_center = cycle_active_camera,
+    .on_left = prev_mode,
+    .on_right = next_mode, 
+    .on_down = decrement_cam_contrast,
+    .on_up = increment_cam_contrast,
+};
+
+struct button_actions* menu_actions[MODE_LAST] = {
+    [MODE_FZ_X] = &fz_x_actions,
+    [MODE_FZ_Y] = &fz_y_actions,
+    [MODE_FZ_XLEN] = &fz_xlen_actions,
+    [MODE_FZ_YLEN] = &fz_ylen_actions,
+    [MODE_CAM_BRIGHTNESS] = &cam_brightness_actions,
+    [MODE_CAM_CONTRAST] = &cam_contrast_actions,
+};
+
+/////////////////////////////
+/* Thread helpers */
+/////////////////////////////
+
+int initialize_buttons() {
+    int fd = open(ZEDBTNS_FILE, O_RDONLY);
+    if (fd == -1) {
+        puts("[ Btns ] - Could not open ZEDBTNS_FILE");
+        perror("[ Btns ]");
         return -1; 
     }
 
-    pfd->fd = zedbtns_fd; 
-    pfd->events = POLLIN | POLLRDNORM;
+    zedbtns_pfd.fd = fd; 
+    zedbtns_pfd.events = POLLIN;
     return 0;
 }
 
-void exec_action(struct button_actions* actions, int n_actions, button_value btn_val, struct system_status* system) {
-    struct button_actions actions_to_exec;
-    uint8_t mode = system->menuMode;
+void exec_action(struct button_actions** actions, int n_actions, button_value btn_val, struct system_status* system) {
+    struct button_actions* actions_to_exec;
+    enum menu_mode mode = system->mode;
 
     if (actions == NULL || system == NULL || mode >= n_actions) {
 #ifdef DEBUG
-        puts("[ Btn Listener ] - Err when executing action: invalid args");
+        puts("[ Btns ] - Err when executing action: invalid args");
 #endif
         return; 
     }
@@ -166,83 +376,51 @@ void exec_action(struct button_actions* actions, int n_actions, button_value btn
     actions_to_exec = actions[mode];
 
     if (IS_PRESSED(BTN_C, btn_val)) {
-        actions_to_exec.on_center(system);
+        actions_to_exec->on_center(system);
     }
     if (IS_PRESSED(BTN_D, btn_val)) {
-        actions_to_exec.on_down(system);
+        actions_to_exec->on_down(system);
     }
     if (IS_PRESSED(BTN_U, btn_val)) {
-        actions_to_exec.on_up(system);
+        actions_to_exec->on_up(system);
     }
     if (IS_PRESSED(BTN_L, btn_val)) {
-        actions_to_exec.on_left(system);
+        actions_to_exec->on_left(system);
     }
     if (IS_PRESSED(BTN_R, btn_val)) {
-        actions_to_exec.on_right(system);
+        actions_to_exec->on_right(system);
     }
 }
 
 void* run_button_client(void* thread_args) {
-    int err, i; 
+    int i; 
     button_value btn_val_buffer[BUTTON_BUFFER_MAX_SIZE];
     ssize_t bytes_read;
-    struct pollfd zedbtns_pfd;
     system_status* system = (system_status*) thread_args; 
 
-    err = init_zedbtn_pollfd(&zedbtns_pfd);
-    if (err) {
-        puts("[ Btn Listener ] - Could not open zedbtn character device file.\n");
-        return NULL;
-    }
+    puts("[ Btns ] - Button listener thread starting...");
 
-    puts("[ Btn Listener ] - Hello from button listener thread!\n");
-
-    while(run_button_listener) {
-#ifdef DEBUG
-        printf("[ Btn Listener ] - Going to sleep until button is pressed...\n");
-#endif
-
+    while(system->running) {
         poll(&zedbtns_pfd, 1, -1);
 
-#ifdef DEBUG
-        printf("[ Btn Listener ] - Woken up...\n");
-#endif
-
-        if (run_button_listener && CAN_READ_PFD(zedbtns_pfd)) {
+        if (system->running && CAN_READ_PFD(zedbtns_pfd)) {
             bytes_read = read(zedbtns_pfd.fd, btn_val_buffer, BUTTON_BUFFER_MAX_SIZE);
 #ifdef DEBUG
-            printf("[ Btn Listener ] - Read button values - bytes_read = %d\n", bytes_read);
+            printf("[ Btns ] - Read button values - bytes_read = %d\n", bytes_read);
 #endif
 
             for (i = 0; i < BUTTON_BUFFER_MAX_SIZE && btn_val_buffer[i] != 0; i++) {
-#ifndef BUTTON_CLIENT_MAIN
-                exec_action(&basic_menu_actions, 1, btn_val_buffer[i], system);
-#else
-                exec_action(&debug_actions, 1, btn_val_buffer[i], system);
-#endif
+                exec_action(
+                    menu_actions,
+                    (int) MODE_LAST,
+                    btn_val_buffer[i],
+                    system
+                );
             }
         }
     }
 
     close(zedbtns_pfd.fd);
-    puts("[ Btn Listener ] - Exiting button listener thread.");
+    puts("[ Btns ] - Exiting button listener thread...");
     return NULL;
 }
-
-#ifdef BUTTON_CLIENT_MAIN
-int main(int argc, char** argv) {
-    pthread_t btn_listener_thread;
-    struct system_status sys = {
-        .menuMode = 0
-    };
-
-    signal(SIGINT, stop_button_listener);
-    pthread_create(&btn_listener_thread, NULL, run_button_client, &sys);
-
-    puts("Hello from main button listener main!");
-    // Can do other stuff in main...
-
-    pthread_join(btn_listener_thread, NULL); 
-    return 0; 
-}
-#endif

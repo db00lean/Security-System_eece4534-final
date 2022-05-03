@@ -7,14 +7,12 @@
 
 #define BUFF_AMOUNTS 2
 
+#define PIXEL(x, y) ((y * IMG_W * 3) + (x * 3))
 
-
+// This is the default and only card on the zedboard
+#define CARD_PATH "/dev/dri/card0"
 
 //Struct to hold frame contents
-
-//Pointer to memory mapped region for writing to card
-//void *map;
-
 struct buf_context{
     void *map;
     int fd;

@@ -30,12 +30,12 @@ struct buf_context{
 };
 
 //all buf conexted
-struct buf_context *bufs[BUFF_AMOUNTS];
+//extern struct buf_context *bufs[BUFF_AMOUNTS];
 
 
 //current frame buffer
 
-int current_buff;
+//extern int current_buff;
 
 
 

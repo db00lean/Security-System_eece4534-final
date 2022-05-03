@@ -7,6 +7,8 @@
 
 #include "imagelib.h"
 
+#define GST_FRAME_PULL_TIMEOUT_NS 1000000
+
 struct camera_rx {
   GstElement *pipeline;
   GstAppSink *appsink;

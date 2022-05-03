@@ -9,9 +9,8 @@ int main(int argc, char *argv[]) {
 
 
   // note to developer: break at these points to check data
-  for (int ii = 0; ii < 100; ii++) {
-    struct image * img = get_frame(cam, IMGENC_BGR, 640, 480);
-    printf("first\n");
+  for (int ii = 0; ii < 5; ii++) {
+    struct image * img = get_frame(cam, IMGENC_ARGB, 320, 180);
     free_image(img);
     printf("number %d\n", ii);
   }
