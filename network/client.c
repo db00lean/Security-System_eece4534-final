@@ -18,7 +18,7 @@ received_message* receive_server_msg(zsock_t* responder)
     // The zeromq message to store bytes read off socket in
     zmq_msg_t zmsg;
     // The message structure to store the data parsed in and return to the caller
-    received_message* msg = malloc(sizeof(received_message));
+    received_message* msg = (received_message*)malloc(sizeof(received_message));
     // Stores the packet header data
     packet_header* header;
     // Stores the packet data
